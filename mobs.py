@@ -251,6 +251,32 @@ def closest_to_center(mobs):
     return min(mobs, key=lambda m: (m.x - cx) ** 2 + (m.y - cy) ** 2)
 
 
+def closest_to_player(mobs):
+    """El mob cuyo cuerpo está más cerca del personaje (abajo-centro). Ese es
+    el que tenemos físicamente más cerca, así le damos prioridad."""
+    return min(mobs, key=lambda m: (m.x - PLAYER_X) ** 2 + (m.y - PLAYER_Y) ** 2)
+
+
+# Spots donde el bot ya falló (cadáver sin barra) o ya mató: no re-clickear el
+# mismo lugar un rato, así no se queda en bucle sobre un cadáver.
+IGNORE_RADIUS_PX = 70
+IGNORE_SECONDS = 12.0
+_RECENT_SPOTS = []        # lista de (x, y, expiry_time)
+
+
+def blacklist_spot(x, y):
+    """Marca un punto de pantalla como 'no tocar' por IGNORE_SECONDS."""
+    _RECENT_SPOTS.append((x, y, time.time() + IGNORE_SECONDS))
+
+
+def is_blacklisted(mob):
+    """True si el mob cae sobre un spot recién fallado/matado (y limpia vencidos)."""
+    now = time.time()
+    _RECENT_SPOTS[:] = [s for s in _RECENT_SPOTS if s[2] > now]
+    return any((mob.x - x) ** 2 + (mob.y - y) ** 2 <= IGNORE_RADIUS_PX ** 2
+               for (x, y, _e) in _RECENT_SPOTS)
+
+
 def pick_target(mobs):
     """
     Elige el mob más cercano físicamente. El nameplate más grande = mob más
@@ -547,7 +573,9 @@ def turn_camera(dx_pixels):
     """
     if dx_pixels == 0:
         return
-    key = TURN_RIGHT_KEY if dx_pixels > 0 else TURN_LEFT_KEY
+    # Invertido a propósito: en este setup de GW2/Parsec las teclas giran al
+    # revés. Mob a la derecha (dx>0) → tecla izquierda, y viceversa.
+    key = TURN_LEFT_KEY if dx_pixels > 0 else TURN_RIGHT_KEY
     duration = min(abs(dx_pixels) * TURN_SECONDS_PER_PIXEL, TURN_MAX_SECONDS)
     duration = max(duration, 0.06)
     pyautogui.keyDown(key)
@@ -767,8 +795,9 @@ def kill_target(mob, scan_img=None, scan_mobs=None):
     """
     HP_BAR_GONE_SECONDS = 1.0     # segundos sin barra (sostenido) para cantar muerte
     LOCK_TOLERANCE_PX = 120       # cuánto se mueve el mob entre scans y sigue siendo el mismo
-    WALK_STEP_MAX = 0.5           # tope de W por paso: corto para re-medir y re-trackear seguido
-    APPROACH_FACE_PX = 200        # solo gira la cámara si el mob está más descentrado que esto
+    WALK_STEP_MAX = 3.0           # tope de W de un tirón (seguridad), recaptura igual mientras camina
+    RECHECK_SECONDS = 0.25        # cada cuánto recaptura y re-trackea mientras camina
+    APPROACH_FACE_PX = 60         # gira hacia el mob si está más descentrado que esto (px)
 
     # --- 1. AGARRAR ---
     click_to_select(mob)
@@ -776,9 +805,10 @@ def kill_target(mob, scan_img=None, scan_mobs=None):
 
     img = capture_screen_bgr()
     if not has_target_hp_bar(img):
-        log("    sin HP bar tras click, no agarré el mob")
+        log("    sin HP bar tras click (cadáver?), desisto y voy al siguiente")
         show_debug_window(img, scan_mobs or [mob], mob)
         save_capture(img, scan_mobs or [mob], mob, 'engage_end_miss')
+        blacklist_spot(mob.x, mob.y)
         return False
 
     log("    HP bar roja, mob agarrado")
@@ -801,17 +831,33 @@ def kill_target(mob, scan_img=None, scan_mobs=None):
             log(f"    en rango (dY={dY}), ataco")
             break
 
-        # Lejos: el paso es SIEMPRE W. Solo corrige la cámara (q/e) si el mob
-        # está MUY descentrado; si no, caminar de frente alcanza. Así casi todo
-        # es W y el giro pasa una o dos veces, no en cada paso.
+        # Apuntar al mob si está descentrado, ANTES de caminar.
         dx = last_target.x - SCREEN_W // 2
         if abs(dx) > APPROACH_FACE_PX:
             turn_camera(dx)
-        # Paso de W proporcional a lo que falta para llegar al rango.
-        step = min((dY - APPROACH_CLOSE_Y) / 100.0 * WALK_SECONDS_PER_100PX, WALK_STEP_MAX)
+
+        # Caminar W de frente el tiempo que pide el dY (2s por cada 100px de
+        # más), pero CONTINUO y recapturando cada RECHECK_SECONDS para seguir
+        # trackeando, re-apuntar y frenar apenas entra en rango.
+        walk_dur = min((dY - APPROACH_CLOSE_Y) / 100.0 * WALK_SECONDS_PER_100PX, WALK_STEP_MAX)
         pyautogui.keyDown('w')
-        time.sleep(step)
-        human_key_up('w')
+        walked = 0.0
+        try:
+            while walked < walk_dur and not is_kill_requested():
+                time.sleep(RECHECK_SECONDS)
+                walked += RECHECK_SECONDS
+                img = capture_screen_bgr()
+                mobs = find_mobs(img)
+                last_target = _track_mob(mobs, last_target, LOCK_TOLERANCE_PX)
+                show_debug_window(img, mobs, last_target)
+                if abs(last_target.y - PLAYER_Y) <= APPROACH_CLOSE_Y:
+                    break
+                # Corregir rumbo mientras camina si se descentró.
+                dx = last_target.x - SCREEN_W // 2
+                if abs(dx) > APPROACH_FACE_PX:
+                    turn_camera(dx)
+        finally:
+            human_key_up('w')
         save_capture(img, mobs, last_target, 'approach')
 
     # --- 3. MATAR (parado) ---
@@ -847,11 +893,13 @@ def kill_target(mob, scan_img=None, scan_mobs=None):
                 log("    cola de HP bar sin rojo, mob muerto (0%)")
                 STATS.kills += 1
                 save_capture(last_img, mobs, last_target, 'engage_end_kill')
+                blacklist_spot(last_target.x, last_target.y)
                 return True
 
     # Salió por timeout sin confirmar muerte
     save_capture(last_img, [last_target], last_target,
                  'engage_end_hit' if damage_seen else 'engage_end_miss')
+    blacklist_spot(last_target.x, last_target.y)
     return False
 
 
@@ -952,7 +1000,9 @@ def main():
         while time.time() < END_TIME and not is_kill_requested():
             img = capture_screen_bgr()
             mobs = find_mobs(img)
-            target = closest_to_center(mobs) if mobs else None
+            # Excluir spots recién fallados/matados (cadáveres) para no re-clickear.
+            live = [m for m in mobs if not is_blacklisted(m)]
+            target = closest_to_player(live) if live else None
             show_debug_window(img, mobs, target)
 
             STATS.scans += 1
