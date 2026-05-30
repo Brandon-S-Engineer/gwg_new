@@ -63,6 +63,18 @@ else:
 
 
 # ============================================================================
+# AJUSTES RÁPIDOS — los que toqueteás seguido
+# ============================================================================
+# dY máximo (en px) para considerar al mob "en rango" y atacarlo parado.
+# Tiene que ser chico: si es alto, ataca de lejos. Subir/bajar a gusto.
+APPROACH_CLOSE_Y = 90
+
+# Cuánto camina (W) por cada 100px de dY que le falta para llegar al rango.
+# Ej: dY=200 con rango 90 → faltan 110px → ~2.2s de W. dY menos → menos W.
+WALK_SECONDS_PER_100PX = 2.0
+
+
+# ============================================================================
 # Config — tamaños proporcionales a la resolución, así sirve para cualquier res
 # ============================================================================
 # Zona donde buscar mobs: excluye UI de arriba (objetivos), abajo (skill bar),
@@ -102,11 +114,6 @@ MAX_NAMEPLATE_Y = PLAYER_Y - 50
 # Proporcional al alto de pantalla. Para melee (greatsword) habrá que bajarlo.
 CLOSE_ENOUGH_Y = int(SCREEN_H * 0.30)
 
-# En --single: qué tan cerca (dY en px) debe estar el mob para dejar de caminar
-# y atacarlo PARADO. Mucho más chico que CLOSE_ENOUGH_Y a propósito. Bajar/subir
-# para que pare más cerca o más lejos.
-APPROACH_CLOSE_Y = int(SCREEN_H * 0.12)   # ~108 px
-
 # Tamaño esperado de un nameplate, proporcional al ancho de pantalla
 MIN_NAME_W = max(20, int(SCREEN_W * 0.015))
 MAX_NAME_W = int(SCREEN_W * 0.20)
@@ -128,6 +135,17 @@ HPBAR_RIGHT = int(SCREEN_W * 0.5368)   # ~773 px
 HPBAR_MIN_WIDTH = int(SCREEN_W * 0.04)
 HPBAR_MIN_HEIGHT = max(4, int(SCREEN_H * 0.005))
 
+# Cola de la HP bar: el tramo IZQUIERDO de la barra. GW2 vacía la vida de
+# derecha a izquierda, así que este sliver es lo último que queda con rojo.
+# Mientras siga rojo = mob vivo. Cuando deja de estar rojo = muerto de verdad
+# (0% HP). Usar la barra entera daba falsos "muerto" como al 25% porque al
+# achicarse bajaba del ancho mínimo. Medido en 1440x900: x=601 y=118, 12x8 px.
+HP_TAIL_LEFT = int(SCREEN_W * 0.4174)    # ~601 px
+HP_TAIL_RIGHT = int(SCREEN_W * 0.4257)   # ~613 px
+HP_TAIL_TOP = int(SCREEN_H * 0.1311)     # ~118 px
+HP_TAIL_BOTTOM = int(SCREEN_H * 0.1400)  # ~126 px
+HP_TAIL_MIN_RED = 10                     # px rojos mínimos en la cola para = vivo
+
 # Comportamiento
 ATTACK_SECONDS = 12.0      # tope máximo de un combate (sale antes si pierde al mob)
 WANDER_SECONDS = 1.5       # cuánto vaga si no ve mobs
@@ -135,7 +153,7 @@ SCAN_INTERVAL = 0.14       # pausa entre escaneos del loop principal (~7/s)
 STARTUP_DELAY = 5          # segundos para que cliques Parsec
 SHOW_OVERLAY = False       # se enciende con --show
 DURATION = 60              # duración del run en segundos (cambiar con --duration N)
-SINGLE_KILL = False        # --single: mata el primer mob confirmado y para el bot
+SINGLE_KILL = False        # --single: usa el flujo escalonado kill_target (no corta tras un kill)
 
 # Estado de la sesión
 RECORD = False
@@ -259,6 +277,16 @@ def draw_overlay(image_bgr, mobs, current_target=None):
     cv2.putText(img, f"HP bar: {'SI' if hp_on else 'no'}",
                 (HPBAR_LEFT, HPBAR_BOTTOM + 26),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.9, hp_color, 2)
+
+    # Cola de la HP bar (último tramo de vida). Verde = aún rojo (vivo),
+    # rojo = sin vida (muerto). Es la señal de muerte real.
+    alive = target_alive(image_bgr)
+    tail_color = (0, 255, 0) if alive else (0, 0, 255)
+    cv2.rectangle(img, (HP_TAIL_LEFT, HP_TAIL_TOP), (HP_TAIL_RIGHT, HP_TAIL_BOTTOM),
+                  tail_color, 2)
+    cv2.putText(img, f"vivo: {'SI' if alive else 'no'}",
+                (HPBAR_LEFT, HPBAR_BOTTOM + 52),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, tail_color, 2)
 
     # Todos los mobs detectados
     for m in mobs:
@@ -470,12 +498,26 @@ def has_target_hp_bar(image_bgr):
     return False
 
 
+def target_alive(image_bgr):
+    """
+    True si la cola izquierda de la HP bar sigue roja = al mob le queda vida.
+    Es el último tramo en vaciarse, así que cuando deja de estar rojo el mob
+    murió de verdad (0%), no al 25% como con la barra entera.
+    """
+    roi = image_bgr[HP_TAIL_TOP:HP_TAIL_BOTTOM, HP_TAIL_LEFT:HP_TAIL_RIGHT]
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+    mask = np.zeros(hsv.shape[:2], dtype=np.uint8)
+    for lo, hi in RED_HSV_RANGES:
+        mask = cv2.bitwise_or(mask, cv2.inRange(hsv, lo, hi))
+    return int(mask.sum() / 255) >= HP_TAIL_MIN_RED
+
+
 # ============================================================================
 # Acciones (input)
 # ============================================================================
 TURN_LEFT_KEY = 'q'                # bind en GW2: Camera Rotate Left
 TURN_RIGHT_KEY = 'e'               # bind en GW2: Camera Rotate Right
-TURN_SECONDS_PER_PIXEL = 0.0012    # cuánto tiempo de hold por pixel de desfase
+TURN_SECONDS_PER_PIXEL = 0.0005    # hold por pixel de desfase (bajo, q/e se pasaban)
 TURN_MAX_SECONDS = 0.5             # tope para no girar más de la cuenta
 
 
@@ -703,20 +745,32 @@ def engage(initial_mob, scan_img=None, scan_mobs=None):
         save_capture(last_img, last_mobs, last_target, end_label)
 
 
+def _track_mob(mobs, last_target, tol):
+    """Devuelve el mob más cercano a donde estaba last_target. Si no hay, el mismo."""
+    near = [m for m in mobs
+            if abs(m.x - last_target.x) < tol and abs(m.y - last_target.y) < tol]
+    if near:
+        return min(near, key=lambda m: (m.x - last_target.x) ** 2 + (m.y - last_target.y) ** 2)
+    return last_target
+
+
 def kill_target(mob, scan_img=None, scan_mobs=None):
     """
-    Flujo para --single:
-      1. Click en el mob para seleccionarlo. Espera 1s.
-      2. Si la HP bar está roja (mob agarrado) → camina de frente SOLO mientras
-         esté lejos (dY > APPROACH_CLOSE_Y).
-      3. Cuando queda cerca, suelta la W y lo mata PARADO con '1'.
-      4. Termina cuando la barra desaparece 1s seguido = muerto.
-    No corre hacia la manada: para apenas el mob está cerca y se queda quieto.
+    Flujo escalonado para --single, en 3 etapas claras:
+      1. AGARRAR: click en el mob, espera 1s, checa la HP bar. Sin barra = no
+         lo agarró → corta.
+      2. ACERCARSE: paso a paso. Saca foto, mide dY. Si está lejos, da un paso
+         de W, saca OTRA foto, vuelve a medir. Repite hasta quedar cerca.
+      3. MATAR: ya cerca, parado, aprieta '1' hasta que la barra desaparezca
+         1s seguido = muerto.
     Devuelve True si confirmó la muerte, False si no agarró el mob o no murió.
     """
     HP_BAR_GONE_SECONDS = 1.0     # segundos sin barra (sostenido) para cantar muerte
     LOCK_TOLERANCE_PX = 120       # cuánto se mueve el mob entre scans y sigue siendo el mismo
+    WALK_STEP_MAX = 0.5           # tope de W por paso: corto para re-medir y re-trackear seguido
+    APPROACH_FACE_PX = 200        # solo gira la cámara si el mob está más descentrado que esto
 
+    # --- 1. AGARRAR ---
     click_to_select(mob)
     time.sleep(1.0)
 
@@ -730,66 +784,70 @@ def kill_target(mob, scan_img=None, scan_mobs=None):
     log("    HP bar roja, mob agarrado")
     save_capture(img, scan_mobs or [mob], mob, 'engage_start')
 
-    face_mob(mob)
+    last_target = mob
+    end = min(time.time() + ATTACK_SECONDS, END_TIME) if END_TIME else time.time() + ATTACK_SECONDS
 
+    # --- 2. ACERCARSE (escalonado: foto → mido → paso → foto → ...) ---
+    while time.time() < end and not is_kill_requested():
+        img = capture_screen_bgr()
+        mobs = find_mobs(img)
+        last_target = _track_mob(mobs, last_target, LOCK_TOLERANCE_PX)
+        show_debug_window(img, mobs, last_target)
+
+        # En rango = el dY ya está por debajo del umbral. Sí o sí, sin atajos:
+        # antes "si ya pega" lo dejaba parar de lejos.
+        dY = abs(last_target.y - PLAYER_Y)
+        if dY <= APPROACH_CLOSE_Y:
+            log(f"    en rango (dY={dY}), ataco")
+            break
+
+        # Lejos: el paso es SIEMPRE W. Solo corrige la cámara (q/e) si el mob
+        # está MUY descentrado; si no, caminar de frente alcanza. Así casi todo
+        # es W y el giro pasa una o dos veces, no en cada paso.
+        dx = last_target.x - SCREEN_W // 2
+        if abs(dx) > APPROACH_FACE_PX:
+            turn_camera(dx)
+        # Paso de W proporcional a lo que falta para llegar al rango.
+        step = min((dY - APPROACH_CLOSE_Y) / 100.0 * WALK_SECONDS_PER_100PX, WALK_STEP_MAX)
+        pyautogui.keyDown('w')
+        time.sleep(step)
+        human_key_up('w')
+        save_capture(img, mobs, last_target, 'approach')
+
+    # --- 3. MATAR (parado) ---
     damage_seen = False
     damage_captured_once = False
-    hp_bar_gone_since = None
-    last_target = mob
+    dead_since = None
     last_img = img
-    walking = False
+    while time.time() < end and not is_kill_requested():
+        human_press('1')
+        time.sleep(random.uniform(0.30, 0.50))
 
-    end = min(time.time() + ATTACK_SECONDS, END_TIME) if END_TIME else time.time() + ATTACK_SECONDS
-    try:
-        while time.time() < end and not is_kill_requested():
-            human_press('1')
-            time.sleep(random.uniform(0.30, 0.50))
+        img = capture_screen_bgr()
+        last_img = img
+        mobs = find_mobs(img)
+        last_target = _track_mob(mobs, last_target, LOCK_TOLERANCE_PX)
+        show_debug_window(img, mobs, last_target)
 
-            img = capture_screen_bgr()
-            last_img = img
-            mobs = find_mobs(img)
+        if has_damage_visible(img):
+            STATS.damage_frames += 1
+            damage_seen = True
+            if not damage_captured_once:
+                save_capture(img, mobs, last_target, 'damage_first')
+                damage_captured_once = True
 
-            # Seguir al mismo mob: el más cercano a donde estaba antes.
-            near = [m for m in mobs
-                    if abs(m.x - last_target.x) < LOCK_TOLERANCE_PX
-                    and abs(m.y - last_target.y) < LOCK_TOLERANCE_PX]
-            if near:
-                last_target = min(near, key=lambda m: (m.x - last_target.x) ** 2
-                                  + (m.y - last_target.y) ** 2)
-            show_debug_window(img, mobs, last_target)
-
-            # Caminar SOLO si está lejos. Apenas se acerca, parar y atacar parado.
-            dY = abs(last_target.y - PLAYER_Y)
-            if dY > APPROACH_CLOSE_Y:
-                if not walking:
-                    pyautogui.keyDown('w')
-                    walking = True
-            else:
-                if walking:
-                    human_key_up('w')
-                    walking = False
-
-            if has_damage_visible(img):
-                STATS.damage_frames += 1
-                damage_seen = True
-                if not damage_captured_once:
-                    save_capture(img, mobs, last_target, 'damage_first')
-                    damage_captured_once = True
-
-            if has_target_hp_bar(img):
-                hp_bar_gone_since = None
-            else:
-                now = time.time()
-                if hp_bar_gone_since is None:
-                    hp_bar_gone_since = now
-                elif now - hp_bar_gone_since >= HP_BAR_GONE_SECONDS:
-                    log("    HP bar ausente >1s, mob muerto")
-                    STATS.kills += 1
-                    save_capture(last_img, mobs, last_target, 'engage_end_kill')
-                    return True
-    finally:
-        if walking:
-            human_key_up('w')
+        # Muerte = la cola de la HP bar dejó de estar roja (0% real), sostenido.
+        if target_alive(img):
+            dead_since = None
+        else:
+            now = time.time()
+            if dead_since is None:
+                dead_since = now
+            elif now - dead_since >= HP_BAR_GONE_SECONDS:
+                log("    cola de HP bar sin rojo, mob muerto (0%)")
+                STATS.kills += 1
+                save_capture(last_img, mobs, last_target, 'engage_end_kill')
+                return True
 
     # Salió por timeout sin confirmar muerte
     save_capture(last_img, [last_target], last_target,
@@ -907,10 +965,9 @@ def main():
                 log(f"engage → mob en ({target.x}, {target.y}), "
                     f"nameplate {target.name_w}x{target.name_h}")
                 if SINGLE_KILL:
-                    killed = kill_target(target, scan_img=img, scan_mobs=mobs)
-                    if killed:
-                        log("kill confirmado, modo --single → fin del run")
-                        break
+                    # Usa el flujo escalonado de kill_target, pero NO corta tras
+                    # un kill: sigue cazando hasta que se acabe la duración.
+                    kill_target(target, scan_img=img, scan_mobs=mobs)
                 else:
                     engage(target, scan_img=img, scan_mobs=mobs)
             else:
@@ -948,7 +1005,7 @@ if __name__ == "__main__":
             print("Faltan dependencias. Instala:")
             print("  pip3 install pyautogui mss opencv-python numpy")
             sys.exit(1)
-        # Modo single: caza hasta confirmar 1 kill y para
+        # Modo single: usa el flujo escalonado kill_target durante todo el run
         if '--single' in sys.argv:
             SINGLE_KILL = True
         # Flag para mostrar overlay en vivo
