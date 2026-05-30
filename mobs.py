@@ -27,6 +27,7 @@ Modo debug (sin tocar el juego):
 import sys
 import time
 import random
+import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -79,10 +80,12 @@ PLAYER_Y = int(SCREEN_H * 0.60)
 
 # Color de nameplates hostiles en GW2: rojo brillante saturado.
 # Rojo en HSV está al inicio (0-10) y al final (170-180) del hue — dos rangos.
-# Saturation y Value altos para descartar carne/piel de criaturas (S/V medios).
+# S>=90 V>=50: el texto del nameplate es saturado (S~119) y medio brillante
+# (V~76). El terreno rojizo del Brand es oscuro y poco saturado (S~72 V~29),
+# así que estos mínimos lo descartan y evitan que inunde la máscara.
 RED_HSV_RANGES = [
-    (np.array([0, 50, 30]), np.array([12, 255, 255])),
-    (np.array([170, 50, 30]), np.array([180, 255, 255])),
+    (np.array([0, 90, 50]), np.array([12, 255, 255])),
+    (np.array([170, 90, 50]), np.array([180, 255, 255])),
 ]
 
 # Los nameplates de texto son mucho más anchos que altos. Esto descarta
@@ -99,6 +102,11 @@ MAX_NAMEPLATE_Y = PLAYER_Y - 50
 # Proporcional al alto de pantalla. Para melee (greatsword) habrá que bajarlo.
 CLOSE_ENOUGH_Y = int(SCREEN_H * 0.30)
 
+# En --single: qué tan cerca (dY en px) debe estar el mob para dejar de caminar
+# y atacarlo PARADO. Mucho más chico que CLOSE_ENOUGH_Y a propósito. Bajar/subir
+# para que pare más cerca o más lejos.
+APPROACH_CLOSE_Y = int(SCREEN_H * 0.12)   # ~108 px
+
 # Tamaño esperado de un nameplate, proporcional al ancho de pantalla
 MIN_NAME_W = max(20, int(SCREEN_W * 0.015))
 MAX_NAME_W = int(SCREEN_W * 0.20)
@@ -108,6 +116,18 @@ MAX_NAME_H = int(SCREEN_H * 0.032)
 # Cuánto bajar del nameplate al cuerpo del mob
 NAMEPLATE_TO_BODY_Y = int(SCREEN_H * 0.04)
 
+# HP bar del target: cuando seleccionas un mob, GW2 muestra arriba al centro
+# una barra roja con su nombre. Mientras esté ahí = mob vivo y seleccionado.
+# Zona medida sobre captura real (1440x900): barra en x=599 y=117, 174x9 px.
+# Fracciones para que aguante otras resoluciones. +3px vertical de margen.
+HPBAR_TOP = int(SCREEN_H * 0.1267)     # ~114 px
+HPBAR_BOTTOM = int(SCREEN_H * 0.1433)  # ~129 px
+HPBAR_LEFT = int(SCREEN_W * 0.4160)    # ~599 px
+HPBAR_RIGHT = int(SCREEN_W * 0.5368)   # ~773 px
+# Mínimo ancho/alto del blob rojo dentro de la zona para considerarlo "barra"
+HPBAR_MIN_WIDTH = int(SCREEN_W * 0.04)
+HPBAR_MIN_HEIGHT = max(4, int(SCREEN_H * 0.005))
+
 # Comportamiento
 ATTACK_SECONDS = 12.0      # tope máximo de un combate (sale antes si pierde al mob)
 WANDER_SECONDS = 1.5       # cuánto vaga si no ve mobs
@@ -115,6 +135,7 @@ SCAN_INTERVAL = 0.14       # pausa entre escaneos del loop principal (~7/s)
 STARTUP_DELAY = 5          # segundos para que cliques Parsec
 SHOW_OVERLAY = False       # se enciende con --show
 DURATION = 60              # duración del run en segundos (cambiar con --duration N)
+SINGLE_KILL = False        # --single: mata el primer mob confirmado y para el bot
 
 # Estado de la sesión
 RECORD = False
@@ -229,6 +250,16 @@ def draw_overlay(image_bgr, mobs, current_target=None):
     cv2.rectangle(img, (SCAN_LEFT, SCAN_TOP), (SCAN_RIGHT, SCAN_BOTTOM),
                   (80, 80, 80), 2)
 
+    # HP bar del target: zona + estado. Verde si está agarrado el mob, rojo si no.
+    # Así en la captura se ve si el click realmente seleccionó algo.
+    hp_on = has_target_hp_bar(image_bgr)
+    hp_color = (0, 255, 0) if hp_on else (0, 0, 255)
+    cv2.rectangle(img, (HPBAR_LEFT, HPBAR_TOP), (HPBAR_RIGHT, HPBAR_BOTTOM),
+                  hp_color, 2)
+    cv2.putText(img, f"HP bar: {'SI' if hp_on else 'no'}",
+                (HPBAR_LEFT, HPBAR_BOTTOM + 26),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, hp_color, 2)
+
     # Todos los mobs detectados
     for m in mobs:
         is_target = current_target is not None and m is current_target
@@ -282,6 +313,7 @@ class RunStats:
         self.mobs_seen_total = 0       # sumatoria de mobs en todos los scans
         self.max_mobs_in_scan = 0
         self.engagements = 0
+        self.kills = 0                  # mobs con muerte confirmada (HP bar apareció y desapareció)
         self.damage_frames = 0          # frames donde se detectó damage
         self.lost_targets = 0           # veces que perdió al target durante engage
         self.wanders = 0
@@ -294,6 +326,7 @@ class RunStats:
             f"Mobs detectados (total): {self.mobs_seen_total}",
             f"Mobs por scan (máx):     {self.max_mobs_in_scan}",
             f"Combates iniciados:      {self.engagements}",
+            f"Kills confirmados:       {self.kills}",
             f"Frames con damage:       {self.damage_frames}",
             f"Targets perdidos:        {self.lost_targets}",
             f"Vagabundeos:             {self.wanders}",
@@ -304,6 +337,11 @@ STATS = RunStats()
 # Throttling de capturas tipo "scan" (vagabundeo)
 _LAST_SCAN_CAPTURE_AT = 0.0
 SCAN_CAPTURE_MIN_GAP = 3.0   # segundos mínimos entre dos scan caps
+
+# Cuántas capturas conservar dentro de un run. Al pasarse, se borra la más vieja.
+MAX_CAPTURES = 3
+# Cuántas carpetas de run conservar. Al arrancar una nueva, se borra la más vieja.
+MAX_RUNS = 3
 
 # Kill switch por archivo: el bot revisa si existe `STOP` y se detiene.
 # Para parar: en otra terminal, `touch /Users/bran/Documents/gwg/STOP`
@@ -331,6 +369,12 @@ def init_run_dir():
     RUN_DIR.mkdir(parents=True, exist_ok=True)
     print(f"Grabando capturas en: {RUN_DIR}")
 
+    # Dejar solo las MAX_RUNS carpetas de run más nuevas: borrar las más viejas.
+    # El nombre lleva la fecha-hora, así que ordenar por nombre = cronológico.
+    runs = sorted(RUN_DIR.parent.glob("run_*"))
+    for old in runs[:-MAX_RUNS]:
+        shutil.rmtree(old, ignore_errors=True)
+
 
 def log(msg):
     """Imprime y guarda en log.txt con timestamp relativo al run."""
@@ -352,6 +396,13 @@ def save_capture(image_bgr, mobs, current_target, event):
     ts = f"{elapsed:07.3f}_{datetime.now().strftime('%H%M%S')}"
     path = RUN_DIR / f"{ts}_{event}.jpg"
     cv2.imwrite(str(path), overlay, [cv2.IMWRITE_JPEG_QUALITY, 80])
+
+    # Dejar solo las MAX_CAPTURES más nuevas: borrar las más viejas.
+    # El nombre arranca con el segundo (con padding) así que ordenar por nombre
+    # = orden cronológico.
+    caps = sorted(RUN_DIR.glob("*.jpg"))
+    for old in caps[:-MAX_CAPTURES]:
+        old.unlink()
 
 
 def save_summary(elapsed):
@@ -392,6 +443,31 @@ def has_damage_visible(image_bgr):
     return False
 
 
+def has_target_hp_bar(image_bgr):
+    """
+    Detecta la HP bar del target en top-center.
+    Cuando seleccionas un mob, GW2 muestra arriba al centro una barra roja
+    horizontal con su nombre y vida. Si está visible → mob seleccionado y vivo.
+    Si desaparece → mob muerto o target perdido.
+    """
+    roi = image_bgr[HPBAR_TOP:HPBAR_BOTTOM, HPBAR_LEFT:HPBAR_RIGHT]
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+
+    mask = np.zeros(hsv.shape[:2], dtype=np.uint8)
+    for lo, hi in RED_HSV_RANGES:
+        mask = cv2.bitwise_or(mask, cv2.inRange(hsv, lo, hi))
+
+    # Dilatar horizontal para conectar pixeles de la barra
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (12, 2))
+    mask = cv2.dilate(mask, kernel, iterations=1)
+
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for c in contours:
+        x, y, cw, ch = cv2.boundingRect(c)
+        # Barra horizontal: muy ancha, poco alta
+        if cw >= HPBAR_MIN_WIDTH and ch >= HPBAR_MIN_HEIGHT and cw / max(ch, 1) >= 4.0:
+            return True
+    return False
 
 
 # ============================================================================
@@ -627,6 +703,100 @@ def engage(initial_mob, scan_img=None, scan_mobs=None):
         save_capture(last_img, last_mobs, last_target, end_label)
 
 
+def kill_target(mob, scan_img=None, scan_mobs=None):
+    """
+    Flujo para --single:
+      1. Click en el mob para seleccionarlo. Espera 1s.
+      2. Si la HP bar está roja (mob agarrado) → camina de frente SOLO mientras
+         esté lejos (dY > APPROACH_CLOSE_Y).
+      3. Cuando queda cerca, suelta la W y lo mata PARADO con '1'.
+      4. Termina cuando la barra desaparece 1s seguido = muerto.
+    No corre hacia la manada: para apenas el mob está cerca y se queda quieto.
+    Devuelve True si confirmó la muerte, False si no agarró el mob o no murió.
+    """
+    HP_BAR_GONE_SECONDS = 1.0     # segundos sin barra (sostenido) para cantar muerte
+    LOCK_TOLERANCE_PX = 120       # cuánto se mueve el mob entre scans y sigue siendo el mismo
+
+    click_to_select(mob)
+    time.sleep(1.0)
+
+    img = capture_screen_bgr()
+    if not has_target_hp_bar(img):
+        log("    sin HP bar tras click, no agarré el mob")
+        show_debug_window(img, scan_mobs or [mob], mob)
+        save_capture(img, scan_mobs or [mob], mob, 'engage_end_miss')
+        return False
+
+    log("    HP bar roja, mob agarrado")
+    save_capture(img, scan_mobs or [mob], mob, 'engage_start')
+
+    face_mob(mob)
+
+    damage_seen = False
+    damage_captured_once = False
+    hp_bar_gone_since = None
+    last_target = mob
+    last_img = img
+    walking = False
+
+    end = min(time.time() + ATTACK_SECONDS, END_TIME) if END_TIME else time.time() + ATTACK_SECONDS
+    try:
+        while time.time() < end and not is_kill_requested():
+            human_press('1')
+            time.sleep(random.uniform(0.30, 0.50))
+
+            img = capture_screen_bgr()
+            last_img = img
+            mobs = find_mobs(img)
+
+            # Seguir al mismo mob: el más cercano a donde estaba antes.
+            near = [m for m in mobs
+                    if abs(m.x - last_target.x) < LOCK_TOLERANCE_PX
+                    and abs(m.y - last_target.y) < LOCK_TOLERANCE_PX]
+            if near:
+                last_target = min(near, key=lambda m: (m.x - last_target.x) ** 2
+                                  + (m.y - last_target.y) ** 2)
+            show_debug_window(img, mobs, last_target)
+
+            # Caminar SOLO si está lejos. Apenas se acerca, parar y atacar parado.
+            dY = abs(last_target.y - PLAYER_Y)
+            if dY > APPROACH_CLOSE_Y:
+                if not walking:
+                    pyautogui.keyDown('w')
+                    walking = True
+            else:
+                if walking:
+                    human_key_up('w')
+                    walking = False
+
+            if has_damage_visible(img):
+                STATS.damage_frames += 1
+                damage_seen = True
+                if not damage_captured_once:
+                    save_capture(img, mobs, last_target, 'damage_first')
+                    damage_captured_once = True
+
+            if has_target_hp_bar(img):
+                hp_bar_gone_since = None
+            else:
+                now = time.time()
+                if hp_bar_gone_since is None:
+                    hp_bar_gone_since = now
+                elif now - hp_bar_gone_since >= HP_BAR_GONE_SECONDS:
+                    log("    HP bar ausente >1s, mob muerto")
+                    STATS.kills += 1
+                    save_capture(last_img, mobs, last_target, 'engage_end_kill')
+                    return True
+    finally:
+        if walking:
+            human_key_up('w')
+
+    # Salió por timeout sin confirmar muerte
+    save_capture(last_img, [last_target], last_target,
+                 'engage_end_hit' if damage_seen else 'engage_end_miss')
+    return False
+
+
 def wander():
     """
     Buscar mobs en otra dirección. Primero gira fuerte (puede haber mobs
@@ -736,7 +906,13 @@ def main():
                 STATS.engagements += 1
                 log(f"engage → mob en ({target.x}, {target.y}), "
                     f"nameplate {target.name_w}x{target.name_h}")
-                engage(target, scan_img=img, scan_mobs=mobs)
+                if SINGLE_KILL:
+                    killed = kill_target(target, scan_img=img, scan_mobs=mobs)
+                    if killed:
+                        log("kill confirmado, modo --single → fin del run")
+                        break
+                else:
+                    engage(target, scan_img=img, scan_mobs=mobs)
             else:
                 # Capturar scan throttled (solo durante vagabundeo)
                 global _LAST_SCAN_CAPTURE_AT
@@ -772,6 +948,9 @@ if __name__ == "__main__":
             print("Faltan dependencias. Instala:")
             print("  pip3 install pyautogui mss opencv-python numpy")
             sys.exit(1)
+        # Modo single: caza hasta confirmar 1 kill y para
+        if '--single' in sys.argv:
+            SINGLE_KILL = True
         # Flag para mostrar overlay en vivo
         if '--show' in sys.argv:
             SHOW_OVERLAY = True
