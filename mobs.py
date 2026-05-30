@@ -67,9 +67,9 @@ else:
 # Zona donde buscar mobs: excluye UI de arriba (objetivos), abajo (skill bar),
 # izquierda (íconos de menú) y derecha (panel de quests / dailies — gran fuente
 # de falsos positivos por sus textos rojos/naranjas).
-SCAN_TOP = int(SCREEN_H * 0.14)
+SCAN_TOP = int(SCREEN_H * 0.20)
 SCAN_BOTTOM = int(SCREEN_H * 0.77)
-SCAN_LEFT = int(SCREEN_W * 0.05)
+SCAN_LEFT = int(SCREEN_W * 0.12)
 SCAN_RIGHT = int(SCREEN_W * 0.74)
 
 # Posición fija del personaje en pantalla. La cámara está siempre detrás,
@@ -109,7 +109,7 @@ MAX_NAME_H = int(SCREEN_H * 0.032)
 NAMEPLATE_TO_BODY_Y = int(SCREEN_H * 0.04)
 
 # Comportamiento
-ATTACK_SECONDS = 8.0       # tope máximo de un combate (sale antes si pierde al mob)
+ATTACK_SECONDS = 12.0      # tope máximo de un combate (sale antes si pierde al mob)
 WANDER_SECONDS = 1.5       # cuánto vaga si no ve mobs
 SCAN_INTERVAL = 0.14       # pausa entre escaneos del loop principal (~7/s)
 STARTUP_DELAY = 5          # segundos para que cliques Parsec
@@ -148,6 +148,30 @@ def capture_screen_bgr():
     """Captura el monitor configurado como array BGR."""
     img = np.array(_sct.grab(MONITOR))
     return cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+
+
+# Para temporal filtering: guardamos los mobs del scan anterior.
+# Un mob se considera "real" solo si aparece también en el scan anterior.
+_PREV_SCAN_MOBS: list = []
+CONFIRM_TOLERANCE_PX = 50    # cuánto se puede mover un mob entre scans
+
+
+def find_mobs_confirmed(image_bgr):
+    """
+    Encuentra mobs que aparecen en ESTE scan Y en el anterior.
+    Filtra falsos positivos transitorios (1-frame flickers en textura, etc).
+    """
+    global _PREV_SCAN_MOBS
+    current = find_mobs(image_bgr)
+    confirmed = []
+    for mob in current:
+        for prev in _PREV_SCAN_MOBS:
+            if (abs(mob.x - prev.x) < CONFIRM_TOLERANCE_PX
+                    and abs(mob.y - prev.y) < CONFIRM_TOLERANCE_PX):
+                confirmed.append(mob)
+                break
+    _PREV_SCAN_MOBS = current
+    return confirmed
 
 
 def find_mobs(image_bgr):
@@ -375,8 +399,24 @@ def has_damage_visible(image_bgr):
 # ============================================================================
 TURN_LEFT_KEY = 'q'                # bind en GW2: Camera Rotate Left
 TURN_RIGHT_KEY = 'e'               # bind en GW2: Camera Rotate Right
-TURN_SECONDS_PER_PIXEL = 0.0025    # cuánto tiempo de hold por pixel de desfase
-TURN_MAX_SECONDS = 1.0             # tope para no girar más de la cuenta
+TURN_SECONDS_PER_PIXEL = 0.0012    # cuánto tiempo de hold por pixel de desfase
+TURN_MAX_SECONDS = 0.5             # tope para no girar más de la cuenta
+
+
+def click_to_select(mob):
+    """
+    Click izquierdo en el nameplate del mob para seleccionarlo en GW2.
+    Una vez seleccionado, GW2 muestra HP bar, chevron rojo, etc, y el
+    auto-attack/skills van directo a este target.
+    """
+    plate_y = mob.y - NAMEPLATE_TO_BODY_Y
+    # Pequeño jitter para no clickear el pixel exacto siempre
+    click_x = mob.x + random.randint(-4, 4)
+    click_y = plate_y + random.randint(-2, 2)
+    # Coords globales del monitor (importante en multi-monitor)
+    screen_x = OFFSET_X + click_x
+    screen_y = OFFSET_Y + click_y
+    pyautogui.click(screen_x, screen_y)
 
 
 def turn_camera(dx_pixels):
@@ -475,6 +515,13 @@ def engage(initial_mob, scan_img=None, scan_mobs=None):
     """
     LOST_GRACE = 1.5         # segundos sin ver mob antes de rendirse
     OFF_CENTER_PX = 150      # más permisivo: solo gira si está muy descentrado
+    LOCK_TOLERANCE_PX = 100  # cuánto puede moverse el mob entre scans y seguir siendo "el mismo"
+
+    # Click en el mob para seleccionarlo. El click va sobre la posición donde
+    # detectamos el nameplate, ANTES de girar la cámara (porque después de
+    # girar, el mob estará en otra posición de pantalla).
+    click_to_select(initial_mob)
+    time.sleep(0.1)
 
     face_mob(initial_mob)
     human_press('1')         # arranca auto-attack (se repite solo)
@@ -518,12 +565,29 @@ def engage(initial_mob, scan_img=None, scan_mobs=None):
                     break
             else:
                 no_mob_since = None
-                current = pick_target(mobs)
+
+                # Target lock: buscar el mob más cercano a donde estaba el
+                # locked en el scan anterior. Si está cerca → es el mismo.
+                # Si nadie cerca → murió, elegir nuevo target.
+                candidates_near = [
+                    m for m in mobs
+                    if abs(m.x - last_target.x) < LOCK_TOLERANCE_PX
+                    and abs(m.y - last_target.y) < LOCK_TOLERANCE_PX
+                ]
+                if candidates_near:
+                    current = min(
+                        candidates_near,
+                        key=lambda m: (m.x - last_target.x) ** 2 + (m.y - last_target.y) ** 2
+                    )
+                else:
+                    current = pick_target(mobs)
+                    log(f"    target anterior fuera, switch a ({current.x}, {current.y})")
+                    # Clickear el nuevo target para que GW2 lo seleccione
+                    click_to_select(current)
                 last_target = current
                 dx = current.x - SCREEN_W // 2
 
-                # Girar si está muy descentrado, PERO sin parar de caminar
-                # (el right-click drag se puede hacer con W pulsado).
+                # Girar SOLO si el locked target está muy descentrado.
                 if abs(dx) > OFF_CENTER_PX:
                     turn_camera(dx)
                     human_press('1')
@@ -568,7 +632,7 @@ def wander():
     Buscar mobs en otra dirección. Primero gira fuerte (puede haber mobs
     detrás o a los lados), luego camina un poco hacia adelante.
     """
-    turn = random.choice([-1, 1]) * random.randint(400, 800)
+    turn = random.choice([-1, 1]) * random.randint(250, 500)
     turn_camera(turn)
     time.sleep(random.uniform(0.15, 0.35))
     pyautogui.keyDown('w')
@@ -652,7 +716,8 @@ def main():
     clear_stop_file()
     print(f"Kill switch: en otra terminal corre `touch {STOP_FILE}` para detener.\n")
 
-    summon_minions()
+    # summon_minions desactivado por ahora (después se hará detección automática
+    # de si los minions están vivos antes de invocarlos)
     log("Inicio del run, cazando")
 
     try:
