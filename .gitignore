@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# Bot runtime artefacts
+captures/
+STOP
+
+# Versión vieja (assets pesados a 4K, ya no se usan)
+reference_old/
+
+# Imágenes de test/debug en el root (no son parte del código)
+/test*.png
+/debug*.png
+/zoom*.png

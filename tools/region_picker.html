@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Region Picker</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #1e1e1e; color: #e4e4e4; }
+  body { display: grid; grid-template-rows: auto 1fr auto; height: 100vh; }
+
+  /* --- toolbar --- */
+  .toolbar {
+    display: flex; gap: 8px; padding: 8px 12px; background: #252525; border-bottom: 1px solid #333;
+    align-items: center; flex-wrap: wrap;
+  }
+  .toolbar button, .toolbar label.fakebtn {
+    background: #2d2d2d; color: #e4e4e4; border: 1px solid #444;
+    padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px;
+  }
+  .toolbar button:hover, .toolbar label.fakebtn:hover { background: #383838; }
+  .toolbar button.primary { background: #2563eb; border-color: #2563eb; }
+  .toolbar button.primary:hover { background: #1d4ed8; }
+  .toolbar .sep { width: 1px; height: 22px; background: #444; margin: 0 4px; }
+  .toolbar .mode { display: flex; background: #2d2d2d; border: 1px solid #444; border-radius: 4px; overflow: hidden; }
+  .toolbar .mode button { border: none; border-radius: 0; padding: 6px 14px; }
+  .toolbar .mode button.active { background: #2563eb; }
+  .toolbar button.active { background: #2563eb; border-color: #2563eb; color: white; }
+  .toolbar input[type="file"] { display: none; }
+
+  /* --- main area --- */
+  .main { display: grid; grid-template-columns: 1fr 320px; min-height: 0; }
+  .canvas-wrap { position: relative; overflow: hidden; background: #0f0f0f; }
+  canvas { display: block; cursor: crosshair; }
+  canvas.panning { cursor: grabbing; }
+  canvas.hand { cursor: grab; }
+  canvas.over-region { cursor: move; }
+  canvas.over-handle { cursor: nwse-resize; }
+
+  /* --- sidebar --- */
+  .sidebar { background: #1a1a1a; border-left: 1px solid #333; display: flex; flex-direction: column; min-height: 0; }
+  .sidebar-head { padding: 10px 12px; border-bottom: 1px solid #333; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+  .sidebar-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+  .region-row {
+    padding: 8px 12px; cursor: pointer; border-left: 3px solid transparent;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .region-row:hover { background: #232323; }
+  .region-row.selected { background: #1e3a8a33; border-left-color: #2563eb; }
+  .region-row .row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .region-row .name { font-size: 13px; font-weight: 500; }
+  .region-row .meta { font-size: 11px; color: #888; font-family: monospace; }
+  .region-row .row-copy {
+    background: transparent; border: 1px solid #444; color: #aaa;
+    padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;
+    flex-shrink: 0;
+  }
+  .region-row .row-copy:hover { background: #2d2d2d; color: white; border-color: #666; }
+  .region-row .type-badge { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #444; margin-right: 6px; text-transform: uppercase; }
+  .region-row .type-badge.point { background: #7c3aed; }
+  .region-row .type-badge.rect { background: #059669; }
+
+  /* --- editor panel --- */
+  .editor {
+    border-top: 1px solid #333; padding: 12px; display: none; flex-direction: column; gap: 8px;
+  }
+  .editor.visible { display: flex; }
+  .editor input[type="text"], .editor input[type="number"] {
+    background: #0f0f0f; border: 1px solid #444; color: #e4e4e4;
+    padding: 6px 8px; border-radius: 3px; font-size: 13px; font-family: monospace;
+  }
+  .editor label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+  .editor .grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .editor .actions { display: flex; gap: 6px; margin-top: 4px; }
+  .editor button.danger { background: #b91c1c; border-color: #b91c1c; color: white; }
+
+  /* --- status bar --- */
+  .status {
+    display: flex; justify-content: space-between; padding: 6px 12px;
+    background: #252525; border-top: 1px solid #333; font-family: monospace; font-size: 12px; color: #888;
+  }
+
+  /* --- modal --- */
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none;
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  .modal.visible { display: flex; }
+  .modal-box {
+    background: #1e1e1e; border: 1px solid #444; border-radius: 6px;
+    width: 700px; max-width: 90vw; max-height: 80vh; display: flex; flex-direction: column; padding: 14px;
+  }
+  .modal-box h3 { margin: 0 0 10px; font-size: 14px; }
+  .modal-box textarea {
+    flex: 1; min-height: 380px; background: #0f0f0f; border: 1px solid #444; color: #d4d4d4;
+    font-family: monospace; font-size: 12px; padding: 10px; border-radius: 4px; resize: vertical;
+  }
+  .modal-box .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+
+  /* --- empty state --- */
+  .empty-state {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #555; pointer-events: none; font-size: 14px;
+  }
+  .toast {
+    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+    background: #059669; color: white; padding: 10px 18px; border-radius: 4px;
+    font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 200;
+  }
+  .toast.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <label class="fakebtn">Cargar PNG<input type="file" id="file-input" accept="image/png,image/jpeg"></label>
+  <button id="paste-btn" title="Pega una imagen del clipboard (Ctrl+V también funciona)">Pegar del clipboard</button>
+  <div class="sep"></div>
+  <div class="mode">
+    <button id="mode-rect" title="Crear rectángulos (R)">+ Rectángulo</button>
+    <button id="mode-point" title="Crear puntos (P)">+ Punto</button>
+  </div>
+  <div class="sep"></div>
+  <button id="zoom-fit">Reiniciar zoom (F)</button>
+  <div class="sep"></div>
+  <button id="load-json">Cargar JSON</button>
+  <button id="save-json">Guardar JSON</button>
+  <input type="file" id="json-input" accept="application/json">
+  <button id="export-py" class="primary">Exportar Python</button>
+</div>
+
+<div class="main">
+  <div class="canvas-wrap">
+    <canvas id="c"></canvas>
+    <div class="empty-state" id="empty">Carga una imagen para empezar (botón arriba o Ctrl+V)</div>
+  </div>
+  <div class="sidebar">
+    <div class="sidebar-head">Regiones (<span id="count">0</span>)</div>
+    <div class="sidebar-list" id="list"></div>
+    <div class="editor" id="editor">
+      <div>
+        <label>Nombre</label>
+        <input type="text" id="ed-name" autocomplete="off">
+      </div>
+      <div class="grid4">
+        <div><label>X</label><input type="number" id="ed-x"></div>
+        <div><label>Y</label><input type="number" id="ed-y"></div>
+        <div id="ed-w-wrap"><label>W</label><input type="number" id="ed-w"></div>
+        <div id="ed-h-wrap"><label>H</label><input type="number" id="ed-h"></div>
+      </div>
+      <div class="actions">
+        <button class="danger" id="ed-delete">Borrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="status">
+  <span id="status-pos">x=- y=-</span>
+  <span id="status-zoom">zoom: 100%</span>
+  <span id="status-hint">click+drag = mover imagen · click en región = seleccionar/mover · scroll = zoom · R/P = crear · Esc = navegar</span>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3>Código Python para regions.py</h3>
+    <textarea id="modal-text" readonly></textarea>
+    <div class="actions">
+      <button id="modal-copy" class="primary">Copiar al clipboard</button>
+      <button id="modal-close">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================================
+// State
+// ============================================================================
+const state = {
+  image: null,           // HTMLImageElement
+  regions: [],           // {id, type:'rect'|'point', name, x, y, w, h}
+  selectedId: null,
+  mode: 'navigate',      // 'navigate' | 'rect' | 'point'
+  view: { scale: 1, offsetX: 0, offsetY: 0 },
+  drag: null,            // active drag operation
+  nextId: 1,
+  spaceDown: false,
+};
+
+const HANDLE_SIZE = 8;
+const POINT_RADIUS = 6;
+
+// ============================================================================
+// DOM refs
+// ============================================================================
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const empty = document.getElementById('empty');
+const listEl = document.getElementById('list');
+const countEl = document.getElementById('count');
+const editorEl = document.getElementById('editor');
+const edName = document.getElementById('ed-name');
+const edX = document.getElementById('ed-x');
+const edY = document.getElementById('ed-y');
+const edW = document.getElementById('ed-w');
+const edH = document.getElementById('ed-h');
+const edWWrap = document.getElementById('ed-w-wrap');
+const edHWrap = document.getElementById('ed-h-wrap');
+const edDelete = document.getElementById('ed-delete');
+const statusPos = document.getElementById('status-pos');
+const statusZoom = document.getElementById('status-zoom');
+const modal = document.getElementById('modal');
+const modalText = document.getElementById('modal-text');
+const toastEl = document.getElementById('toast');
+
+// ============================================================================
+// Coords conversion
+// ============================================================================
+function screenToImage(sx, sy) {
+  return {
+    x: Math.round((sx - state.view.offsetX) / state.view.scale),
+    y: Math.round((sy - state.view.offsetY) / state.view.scale),
+  };
+}
+function imageToScreen(ix, iy) {
+  return {
+    x: ix * state.view.scale + state.view.offsetX,
+    y: iy * state.view.scale + state.view.offsetY,
+  };
+}
+
+// ============================================================================
+// Hit testing
+// ============================================================================
+function getRegion(id) { return state.regions.find(r => r.id === id); }
+
+function hitTestRegions(ix, iy) {
+  // First check handles of selected region (highest priority)
+  const sel = getRegion(state.selectedId);
+  if (sel && sel.type === 'rect') {
+    const handle = hitTestHandle(sel, ix, iy);
+    if (handle) return { kind: 'handle', region: sel, handle };
+  }
+  // Then check region bodies, last-drawn first
+  for (let i = state.regions.length - 1; i >= 0; i--) {
+    const r = state.regions[i];
+    if (r.type === 'rect') {
+      if (ix >= r.x && ix <= r.x + r.w && iy >= r.y && iy <= r.y + r.h) {
+        return { kind: 'body', region: r };
+      }
+    } else {
+      const distSq = (ix - r.x) ** 2 + (iy - r.y) ** 2;
+      const hitRadius = Math.max(POINT_RADIUS / state.view.scale, 4);
+      if (distSq <= hitRadius ** 2) {
+        return { kind: 'body', region: r };
+      }
+    }
+  }
+  return null;
+}
+
+function hitTestHandle(r, ix, iy) {
+  const hs = HANDLE_SIZE / state.view.scale;
+  const corners = [
+    { name: 'nw', x: r.x, y: r.y },
+    { name: 'ne', x: r.x + r.w, y: r.y },
+    { name: 'sw', x: r.x, y: r.y + r.h },
+    { name: 'se', x: r.x + r.w, y: r.y + r.h },
+  ];
+  for (const c of corners) {
+    if (Math.abs(ix - c.x) <= hs && Math.abs(iy - c.y) <= hs) return c.name;
+  }
+  return null;
+}
+
+// ============================================================================
+// Drawing
+// ============================================================================
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  draw();
+}
+
+function draw() {
+  ctx.fillStyle = '#0f0f0f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (!state.image) return;
+
+  // Image
+  ctx.imageSmoothingEnabled = state.view.scale < 1;
+  ctx.drawImage(
+    state.image,
+    state.view.offsetX, state.view.offsetY,
+    state.image.width * state.view.scale,
+    state.image.height * state.view.scale
+  );
+
+  // Regions
+  for (const r of state.regions) {
+    drawRegion(r, r.id === state.selectedId);
+  }
+
+  // Drag preview (new rect being drawn)
+  if (state.drag && state.drag.kind === 'new-rect') {
+    const { startX, startY, currentX, currentY } = state.drag;
+    const x = Math.min(startX, currentX), y = Math.min(startY, currentY);
+    const w = Math.abs(currentX - startX), h = Math.abs(currentY - startY);
+    drawRect(x, y, w, h, '#60a5fa', '#60a5fa33', '(nuevo)');
+  }
+}
+
+function drawRegion(r, isSelected) {
+  const color = isSelected ? '#3b82f6' : (r.type === 'point' ? '#a78bfa' : '#10b981');
+  if (r.type === 'rect') {
+    drawRect(r.x, r.y, r.w, r.h, color, color + '22', r.name);
+    if (isSelected) drawHandles(r);
+  } else {
+    drawPoint(r.x, r.y, color, r.name);
+  }
+}
+
+function drawRect(ix, iy, iw, ih, stroke, fill, label) {
+  const a = imageToScreen(ix, iy);
+  const sw = iw * state.view.scale, sh = ih * state.view.scale;
+  ctx.fillStyle = fill;
+  ctx.fillRect(a.x, a.y, sw, sh);
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(a.x, a.y, sw, sh);
+  if (label) {
+    ctx.font = '12px system-ui, sans-serif';
+    const w = ctx.measureText(label).width + 8;
+    ctx.fillStyle = stroke;
+    ctx.fillRect(a.x, a.y - 18, w, 18);
+    ctx.fillStyle = '#000';
+    ctx.fillText(label, a.x + 4, a.y - 5);
+  }
+}
+
+function drawHandles(r) {
+  const corners = [
+    { x: r.x, y: r.y },
+    { x: r.x + r.w, y: r.y },
+    { x: r.x, y: r.y + r.h },
+    { x: r.x + r.w, y: r.y + r.h },
+  ];
+  for (const c of corners) {
+    const s = imageToScreen(c.x, c.y);
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillRect(s.x - HANDLE_SIZE / 2, s.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(s.x - HANDLE_SIZE / 2, s.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+  }
+}
+
+function drawPoint(ix, iy, color, label) {
+  const s = imageToScreen(ix, iy);
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, POINT_RADIUS, 0, Math.PI * 2);
+  ctx.fillStyle = color + '44';
+  ctx.fill();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // crosshair
+  ctx.beginPath();
+  ctx.moveTo(s.x - 10, s.y); ctx.lineTo(s.x + 10, s.y);
+  ctx.moveTo(s.x, s.y - 10); ctx.lineTo(s.x, s.y + 10);
+  ctx.stroke();
+  if (label) {
+    ctx.font = '12px system-ui, sans-serif';
+    const w = ctx.measureText(label).width + 8;
+    ctx.fillStyle = color;
+    ctx.fillRect(s.x + 10, s.y - 9, w, 18);
+    ctx.fillStyle = '#000';
+    ctx.fillText(label, s.x + 14, s.y + 4);
+  }
+}
+
+// ============================================================================
+// Sidebar
+// ============================================================================
+function formatRegionPython(r) {
+  return r.type === 'rect'
+    ? `${r.name} = Region(${r.x}, ${r.y}, ${r.w}, ${r.h})`
+    : `${r.name} = (${r.x}, ${r.y})`;
+}
+
+function rowMetaText(r) {
+  return r.type === 'rect' ? `${r.x}, ${r.y}, ${r.w} × ${r.h}` : `${r.x}, ${r.y}`;
+}
+
+function renderList() {
+  countEl.textContent = state.regions.length;
+  listEl.innerHTML = '';
+  for (const r of state.regions) {
+    const row = document.createElement('div');
+    row.className = 'region-row' + (r.id === state.selectedId ? ' selected' : '');
+    row.dataset.regionId = r.id;
+    const badge = `<span class="type-badge ${r.type}">${r.type}</span>`;
+    row.innerHTML = `
+      <div class="row-body">
+        <div class="name">${badge}${escapeHtml(r.name)}</div>
+        <div class="meta">${rowMetaText(r)}</div>
+      </div>
+      <button class="row-copy" title="Copiar Python">Copiar</button>
+    `;
+    row.addEventListener('click', () => selectRegion(r.id));
+    row.querySelector('.row-copy').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const code = formatRegionPython(r);
+      try {
+        await navigator.clipboard.writeText(code);
+        toast('Copiado: ' + r.name);
+      } catch {
+        toast('No se pudo copiar', true);
+      }
+    });
+    listEl.appendChild(row);
+  }
+  renderEditor();
+}
+
+function renderEditor() {
+  const r = getRegion(state.selectedId);
+  if (!r) { editorEl.classList.remove('visible'); return; }
+  editorEl.classList.add('visible');
+  edName.value = r.name;
+  edX.value = r.x; edY.value = r.y;
+  if (r.type === 'rect') {
+    edWWrap.style.display = ''; edHWrap.style.display = '';
+    edW.value = r.w; edH.value = r.h;
+  } else {
+    edWWrap.style.display = 'none'; edHWrap.style.display = 'none';
+  }
+}
+
+function escapeHtml(s) { return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ============================================================================
+// Region ops
+// ============================================================================
+function selectRegion(id) {
+  state.selectedId = id;
+  renderList();
+  draw();
+}
+
+function addRect(x, y, w, h) {
+  if (w < 2 || h < 2) return null;
+  const r = { id: state.nextId++, type: 'rect', name: defaultName('rect'), x, y, w, h };
+  state.regions.push(r);
+  selectRegion(r.id);
+  edName.focus(); edName.select();
+  return r;
+}
+function addPoint(x, y) {
+  const r = { id: state.nextId++, type: 'point', name: defaultName('point'), x, y };
+  state.regions.push(r);
+  selectRegion(r.id);
+  edName.focus(); edName.select();
+  return r;
+}
+function defaultName(type) {
+  const prefix = type === 'rect' ? 'REGION_' : 'POINT_';
+  let n = 1;
+  while (state.regions.some(r => r.name === prefix + n)) n++;
+  return prefix + n;
+}
+function deleteRegion(id) {
+  state.regions = state.regions.filter(r => r.id !== id);
+  if (state.selectedId === id) state.selectedId = null;
+  renderList(); draw();
+}
+
+// ============================================================================
+// Editor inputs
+// ============================================================================
+function bindEditorInput(input, key) {
+  input.addEventListener('input', () => {
+    const r = getRegion(state.selectedId);
+    if (!r) return;
+    if (key === 'name') {
+      r.name = input.value.trim() || defaultName(r.type);
+    } else {
+      r[key] = parseInt(input.value, 10) || 0;
+    }
+    // Re-render only the touched row's text (preserves copy button handler)
+    const row = listEl.querySelector(`[data-region-id="${r.id}"]`);
+    if (row) {
+      const badge = `<span class="type-badge ${r.type}">${r.type}</span>`;
+      row.querySelector('.name').innerHTML = badge + escapeHtml(r.name);
+      row.querySelector('.meta').textContent = rowMetaText(r);
+    }
+    draw();
+  });
+}
+bindEditorInput(edName, 'name');
+bindEditorInput(edX, 'x');
+bindEditorInput(edY, 'y');
+bindEditorInput(edW, 'w');
+bindEditorInput(edH, 'h');
+edDelete.addEventListener('click', () => {
+  if (state.selectedId) deleteRegion(state.selectedId);
+});
+
+// ============================================================================
+// Canvas mouse
+// ============================================================================
+canvas.addEventListener('mousedown', (e) => {
+  if (!state.image) return;
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+  const img = screenToImage(sx, sy);
+
+  // Pan with right button, middle button, or space+left
+  if (e.button === 2 || e.button === 1 || (e.button === 0 && state.spaceDown)) {
+    state.drag = { kind: 'pan', startScreenX: sx, startScreenY: sy, startOffsetX: state.view.offsetX, startOffsetY: state.view.offsetY };
+    canvas.classList.add('panning');
+    e.preventDefault();
+    return;
+  }
+  if (e.button !== 0) return;
+
+  const hit = hitTestRegions(img.x, img.y);
+  if (hit) {
+    selectRegion(hit.region.id);
+    if (hit.kind === 'handle') {
+      state.drag = {
+        kind: 'resize', region: hit.region, handle: hit.handle,
+        origX: hit.region.x, origY: hit.region.y, origW: hit.region.w, origH: hit.region.h,
+        startImgX: img.x, startImgY: img.y,
+      };
+    } else {
+      state.drag = {
+        kind: 'move', region: hit.region,
+        origX: hit.region.x, origY: hit.region.y,
+        startImgX: img.x, startImgY: img.y,
+      };
+    }
+    return;
+  }
+
+  // Empty area: depends on mode
+  if (state.mode === 'rect') {
+    state.drag = { kind: 'new-rect', startX: img.x, startY: img.y, currentX: img.x, currentY: img.y };
+  } else if (state.mode === 'point') {
+    addPoint(img.x, img.y);
+  } else {
+    // navigate mode: pan
+    state.drag = { kind: 'pan', startScreenX: sx, startScreenY: sy, startOffsetX: state.view.offsetX, startOffsetY: state.view.offsetY };
+    canvas.classList.add('panning');
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (!state.image) return;
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+  const img = screenToImage(sx, sy);
+  statusPos.textContent = `x=${img.x} y=${img.y}`;
+
+  if (!state.drag) {
+    // Cursor feedback
+    canvas.className = '';
+    const hit = hitTestRegions(img.x, img.y);
+    if (hit) {
+      if (hit.kind === 'handle') canvas.classList.add('over-handle');
+      else canvas.classList.add('over-region');
+    } else if (state.mode === 'navigate') {
+      canvas.classList.add('hand');
+    }
+    return;
+  }
+
+  const d = state.drag;
+  if (d.kind === 'pan') {
+    state.view.offsetX = d.startOffsetX + (sx - d.startScreenX);
+    state.view.offsetY = d.startOffsetY + (sy - d.startScreenY);
+    draw();
+  } else if (d.kind === 'new-rect') {
+    d.currentX = img.x; d.currentY = img.y;
+    draw();
+  } else if (d.kind === 'move') {
+    d.region.x = d.origX + (img.x - d.startImgX);
+    d.region.y = d.origY + (img.y - d.startImgY);
+    renderEditor(); draw();
+  } else if (d.kind === 'resize') {
+    const dx = img.x - d.startImgX, dy = img.y - d.startImgY;
+    const r = d.region;
+    if (d.handle === 'nw') { r.x = d.origX + dx; r.y = d.origY + dy; r.w = d.origW - dx; r.h = d.origH - dy; }
+    if (d.handle === 'ne') { r.y = d.origY + dy; r.w = d.origW + dx; r.h = d.origH - dy; }
+    if (d.handle === 'sw') { r.x = d.origX + dx; r.w = d.origW - dx; r.h = d.origH + dy; }
+    if (d.handle === 'se') { r.w = d.origW + dx; r.h = d.origH + dy; }
+    // Normalize negative dims
+    if (r.w < 0) { r.x += r.w; r.w = -r.w; }
+    if (r.h < 0) { r.y += r.h; r.h = -r.h; }
+    renderEditor(); draw();
+  }
+});
+
+window.addEventListener('mouseup', (e) => {
+  if (!state.drag) return;
+  if (state.drag.kind === 'new-rect') {
+    const d = state.drag;
+    const x = Math.min(d.startX, d.currentX), y = Math.min(d.startY, d.currentY);
+    const w = Math.abs(d.currentX - d.startX), h = Math.abs(d.currentY - d.startY);
+    addRect(x, y, w, h);
+  }
+  state.drag = null;
+  canvas.classList.remove('panning');
+  if (state.mode === 'navigate') canvas.classList.add('hand');
+  draw();
+});
+
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+canvas.addEventListener('wheel', (e) => {
+  if (!state.image) return;
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+  const before = screenToImage(sx, sy);
+  const factor = e.deltaY < 0 ? 1.04 : 1 / 1.04;
+  state.view.scale = Math.max(getFitScale(), Math.min(20, state.view.scale * factor));
+  // Keep the image point under the cursor stable
+  state.view.offsetX = sx - before.x * state.view.scale;
+  state.view.offsetY = sy - before.y * state.view.scale;
+  statusZoom.textContent = `zoom: ${Math.round(state.view.scale * 100)}%`;
+  draw();
+}, { passive: false });
+
+// ============================================================================
+// Keyboard
+// ============================================================================
+window.addEventListener('keydown', (e) => {
+  // Avoid interfering with form inputs
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  if (e.key === ' ') { state.spaceDown = true; e.preventDefault(); }
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (state.selectedId) { deleteRegion(state.selectedId); e.preventDefault(); }
+  }
+  if (e.key === 'f' || e.key === 'F') fitImage();
+  if (e.key === 'r' || e.key === 'R') setMode(state.mode === 'rect' ? 'navigate' : 'rect');
+  if (e.key === 'p' || e.key === 'P') setMode(state.mode === 'point' ? 'navigate' : 'point');
+  if (e.key === 'Escape') { setMode('navigate'); state.selectedId = null; renderList(); draw(); }
+});
+window.addEventListener('keyup', (e) => {
+  if (e.key === ' ') state.spaceDown = false;
+});
+
+// ============================================================================
+// Mode switch
+// ============================================================================
+function setMode(m) {
+  state.mode = m;
+  document.getElementById('mode-rect').classList.toggle('active', m === 'rect');
+  document.getElementById('mode-point').classList.toggle('active', m === 'point');
+  // Update cursor immediately
+  canvas.className = m === 'navigate' ? 'hand' : '';
+}
+document.getElementById('mode-rect').addEventListener('click', () => {
+  setMode(state.mode === 'rect' ? 'navigate' : 'rect');
+});
+document.getElementById('mode-point').addEventListener('click', () => {
+  setMode(state.mode === 'point' ? 'navigate' : 'point');
+});
+
+// ============================================================================
+// Image loading
+// ============================================================================
+function loadImageFromBlob(blob) {
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    state.image = img;
+    empty.style.display = 'none';
+    fitImage();
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+document.getElementById('file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) loadImageFromBlob(file);
+});
+
+document.getElementById('paste-btn').addEventListener('click', async () => {
+  try {
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      for (const type of item.types) {
+        if (type.startsWith('image/')) {
+          loadImageFromBlob(await item.getType(type));
+          return;
+        }
+      }
+    }
+    toast('No hay imagen en el clipboard', true);
+  } catch (err) {
+    toast('Clipboard bloqueado, usa Ctrl+V o el botón Cargar PNG', true);
+  }
+});
+
+window.addEventListener('paste', (e) => {
+  const items = e.clipboardData?.items || [];
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      loadImageFromBlob(item.getAsFile());
+      return;
+    }
+  }
+});
+
+// ============================================================================
+// Zoom helpers
+// ============================================================================
+function getFitScale() {
+  if (!state.image) return 1;
+  const margin = 20;
+  const scaleX = (canvas.width - margin * 2) / state.image.width;
+  const scaleY = (canvas.height - margin * 2) / state.image.height;
+  return Math.min(scaleX, scaleY, 1);
+}
+function fitImage() {
+  if (!state.image) return;
+  state.view.scale = getFitScale();
+  state.view.offsetX = (canvas.width - state.image.width * state.view.scale) / 2;
+  state.view.offsetY = (canvas.height - state.image.height * state.view.scale) / 2;
+  statusZoom.textContent = `zoom: ${Math.round(state.view.scale * 100)}%`;
+  draw();
+}
+document.getElementById('zoom-fit').addEventListener('click', fitImage);
+
+// ============================================================================
+// Save / Load JSON
+// ============================================================================
+document.getElementById('save-json').addEventListener('click', () => {
+  const data = {
+    version: 1,
+    image: state.image ? { width: state.image.width, height: state.image.height } : null,
+    regions: state.regions.map(({ id, ...rest }) => rest),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'regions.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('JSON descargado');
+});
+
+document.getElementById('load-json').addEventListener('click', () => {
+  document.getElementById('json-input').click();
+});
+document.getElementById('json-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      state.regions = (data.regions || []).map(r => ({ ...r, id: state.nextId++ }));
+      state.selectedId = null;
+      renderList(); draw();
+      toast(`Cargadas ${state.regions.length} regiones`);
+    } catch (err) {
+      toast('JSON inválido', true);
+    }
+  };
+  reader.readAsText(file);
+});
+
+// ============================================================================
+// Export Python
+// ============================================================================
+document.getElementById('export-py').addEventListener('click', () => {
+  const lines = [
+    '# Pegar en bot/regions.py',
+    '# Generado por tools/region_picker.html',
+    '',
+  ];
+  const rects = state.regions.filter(r => r.type === 'rect');
+  const points = state.regions.filter(r => r.type === 'point');
+  if (rects.length) {
+    lines.push('# --- Regiones ---');
+    for (const r of rects) lines.push(formatRegionPython(r));
+    lines.push('');
+  }
+  if (points.length) {
+    lines.push('# --- Puntos ---');
+    for (const r of points) lines.push(formatRegionPython(r));
+  }
+  modalText.value = lines.join('\n');
+  modal.classList.add('visible');
+});
+document.getElementById('modal-close').addEventListener('click', () => modal.classList.remove('visible'));
+modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('visible'); });
+document.getElementById('modal-copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(modalText.value);
+    toast('Copiado al clipboard');
+  } catch {
+    modalText.select(); document.execCommand('copy');
+    toast('Copiado (fallback)');
+  }
+});
+
+// ============================================================================
+// Toast
+// ============================================================================
+let toastTimer = null;
+function toast(msg, isError = false) {
+  toastEl.textContent = msg;
+  toastEl.style.background = isError ? '#b91c1c' : '#059669';
+  toastEl.classList.add('visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('visible'), 1800);
+}
+
+// ============================================================================
+// Init
+// ============================================================================
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+renderList();
+setMode('navigate');
+</script>
+</body>
+</html>
