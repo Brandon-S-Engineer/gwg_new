@@ -816,9 +816,16 @@ function updateZoomLabel() { statusZoom.textContent = `zoom: ${Math.round(state.
 // Keyboard
 // ============================================================================
 window.addEventListener('keydown', (e) => {
+  const mod = e.ctrlKey || e.metaKey;
+  const k = e.key.toLowerCase();
+
+  // Atajos con modificador van primero y hacen return para que no
+  // disparen también los atajos de una sola tecla (p, s...).
+  if (mod && k === 's') { e.preventDefault(); save(); return; }
+  if (mod && k === 'p') { e.preventDefault(); capture(); return; }
+  if (mod && k === 'z') { e.preventDefault(); revert(); return; }
+
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-    if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); }
-    if (e.key === 'p' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); capture(); }
     return;
   }
 
@@ -826,19 +833,16 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Delete' || e.key === 'Backspace') {
     if (state.selectedId) { deleteRegion(state.selectedId); e.preventDefault(); }
   }
-  if (e.key === 'f' || e.key === 'F') fitImage();
-  if (e.key === 'r' || e.key === 'R') setMode(state.mode === 'rect' ? 'navigate' : 'rect');
-  if (e.key === 'p' || e.key === 'P') setMode(state.mode === 'point' ? 'navigate' : 'point');
-  if (e.key === 'i' || e.key === 'I') toggleIsolate();
+  if (k === 'f') fitImage();
+  if (k === 'r') setMode(state.mode === 'rect' ? 'navigate' : 'rect');
+  if (k === 'p') setMode(state.mode === 'point' ? 'navigate' : 'point');
+  if (k === 'i') toggleIsolate();
   if (e.key === 'Escape') {
     if (state.mode === 'crop-item') cancelItemCrop();
     else { setMode('navigate'); selectRegion(null); }
   }
   if (e.key === '+' || e.key === '=') zoomCentered(1.15);
   if (e.key === '-' || e.key === '_') zoomCentered(1 / 1.15);
-  if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); }
-  if (e.key === 'z' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); revert(); }
-  if (e.key === 'p' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); capture(); }
 
   if (e.key.startsWith('Arrow')) {
     const r = getRegion(state.selectedId);
