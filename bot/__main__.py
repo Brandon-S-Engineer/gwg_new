@@ -18,9 +18,15 @@ def main() -> None:
     if cmd == "click_test":
         from . import input as inp
         from .coords_loader import get_point
-        name = sys.argv[2] if len(sys.argv) > 2 else "full_screen"
-        pt = get_point(name)
-        print(f"[test] click x2 en {name} = {pt} en 3s...")
+        args = sys.argv[2:]
+        if len(args) >= 2 and args[0].isdigit() and args[1].isdigit():
+            pt = (int(args[0]), int(args[1]))
+            label = f"({pt[0]}, {pt[1]})"
+        else:
+            name = args[0] if args else "full_screen"
+            pt = get_point(name)
+            label = f"{name} = {pt}"
+        print(f"[test] click x2 en {label} en 3s...")
         inp.sleep(3, jitter=0)
         inp.click(pt)
         inp.sleep(0.4, jitter=0)
