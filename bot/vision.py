@@ -1,33 +1,56 @@
-"""Captura de pantalla y template matching."""
+"""Captura + template matching con OpenCV."""
 
+import time
 from pathlib import Path
 
+import cv2
+import numpy as np
+import pyautogui
+
+from .config import DEFAULT_MATCH_THRESHOLD, DEFAULT_WAIT_TIMEOUT, POLL_INTERVAL
 from .regions import Region
 
 
-def capture_screen(region: Region | None = None):
-    """Devuelve la pantalla (o región) en escala de grises."""
-    raise NotImplementedError("Pendiente fase 2")
+def capture_screen(region: Region | None = None) -> np.ndarray:
+    """Screenshot en gris (np.uint8). region=None = pantalla completa."""
+    if region:
+        shot = pyautogui.screenshot(region=region.as_pyautogui_region())
+    else:
+        shot = pyautogui.screenshot()
+    return cv2.cvtColor(np.array(shot), cv2.COLOR_BGR2GRAY)
 
 
 def find(template_path: Path, region: Region | None = None,
          threshold: float | None = None) -> tuple[int, int] | None:
-    """Centro del primer match, o None."""
-    raise NotImplementedError("Pendiente fase 2")
+    """Devuelve centro absoluto del primer match (>= threshold), o None."""
+    th = threshold if threshold is not None else DEFAULT_MATCH_THRESHOLD
+    screen = capture_screen(region)
+    tpl = cv2.imread(str(template_path), 0)
+    if tpl is None:
+        raise FileNotFoundError(template_path)
+    res = cv2.matchTemplate(screen, tpl, cv2.TM_CCOEFF_NORMED)
+    _, max_val, _, max_loc = cv2.minMaxLoc(res)
+    if max_val < th:
+        return None
+    h, w = tpl.shape[:2]
+    ox = region.x if region else 0
+    oy = region.y if region else 0
+    return (ox + max_loc[0] + w // 2, oy + max_loc[1] + h // 2)
 
 
-def find_all(template_path: Path, region: Region | None = None,
-             threshold: float | None = None) -> list[tuple[int, int]]:
-    raise NotImplementedError("Pendiente fase 2")
+def is_present(template_path: Path, region: Region | None = None,
+               threshold: float | None = None) -> bool:
+    return find(template_path, region, threshold) is not None
 
 
 def wait_for(template_path: Path, region: Region | None = None,
              timeout: float | None = None,
              threshold: float | None = None) -> tuple[int, int] | None:
-    """Poll hasta encontrar el template o agotar timeout."""
-    raise NotImplementedError("Pendiente fase 2")
-
-
-def is_present(template_path: Path, region: Region | None = None,
-               threshold: float | None = None) -> bool:
-    raise NotImplementedError("Pendiente fase 2")
+    """Poll cada POLL_INTERVAL hasta timeout."""
+    deadline = time.time() + (timeout if timeout is not None else DEFAULT_WAIT_TIMEOUT)
+    while time.time() < deadline:
+        pt = find(template_path, region, threshold)
+        if pt:
+            return pt
+        time.sleep(POLL_INTERVAL)
+    return None

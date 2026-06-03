@@ -1,15 +1,26 @@
-"""Entry point: `python -m bot`."""
+"""Entry: `python -m bot` o `python -m bot phase1`."""
+
+import sys
 
 from . import config
 
 
 def main() -> None:
-    print("gwg bot — scaffolding OK")
-    print(f"  resolution    : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
-    print(f"  inventory     : {config.INVENTORY_ROWS}x{config.INVENTORY_COLS}")
-    print(f"  bank          : {config.BANK_ROWS}x{config.BANK_COLS}")
-    print(f"  assets dir    : {config.ASSETS_DIR}")
-    print(f"  wait timeout  : {config.DEFAULT_WAIT_TIMEOUT}s")
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "info"
+
+    if cmd == "info":
+        print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
+        print(f"coords     : {config.COORDS_PATH}")
+        print(f"items dir  : {config.ITEMS_DIR}")
+        print("comandos: info | phase1")
+        return
+
+    if cmd == "phase1":
+        from .routines import phase1_salvage_greens
+        phase1_salvage_greens.run()
+        return
+
+    print(f"comando desconocido: {cmd}")
 
 
 if __name__ == "__main__":
