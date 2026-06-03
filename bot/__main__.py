@@ -16,14 +16,16 @@ def main() -> None:
         return
 
     if cmd == "click_test":
-        from . import boot, input as inp
+        from . import input as inp
         from .coords_loader import get_point
         name = sys.argv[2] if len(sys.argv) > 2 else "full_screen"
         pt = get_point(name)
-        print(f"[test] click en {name} = {pt} en 3s...")
+        print(f"[test] click x2 en {name} = {pt} en 3s...")
         inp.sleep(3, jitter=0)
         inp.click(pt)
-        print("[test] listo. ¿se registró el click?")
+        inp.sleep(0.4, jitter=0)
+        inp.click(pt)
+        print("[test] listo. ¿se registró?")
         return
 
     if cmd == "phase1":
