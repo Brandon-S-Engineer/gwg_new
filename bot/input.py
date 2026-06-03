@@ -1,30 +1,19 @@
-"""Mouse/keyboard con movimiento suave y randomizado.
-
-Move suave usa pyautogui (con `duration` y easing). Click usa pynput
-porque en Windows/VM resulta más confiable que pyautogui para emitir
-eventos. Se añade pequeña jitter a la posición y a los sleeps para
-parecer humano.
-"""
+"""Mouse/keyboard con movimiento suave + jitter, clicks como el bot viejo."""
 
 import random
 import time
 
 import pyautogui
-from pynput.mouse import Button, Controller
 
 pyautogui.FAILSAFE = False
-pyautogui.PAUSE = 0  # gestionamos nuestras propias pausas
-
-_mouse = Controller()
+pyautogui.PAUSE = 0  # nosotros manejamos los sleeps
 
 # Tunables
 MOVE_DURATION_MIN = 0.18
 MOVE_DURATION_MAX = 0.32
 POS_JITTER = 2          # ± pixeles sobre el destino
-PRE_CLICK_MIN = 0.06    # sleep antes de press
-PRE_CLICK_MAX = 0.14
-HOLD_MIN = 0.05         # tiempo entre press y release
-HOLD_MAX = 0.11
+PRE_CLICK_MIN = 0.05
+PRE_CLICK_MAX = 0.12
 POST_CLICK_MIN = 0.05
 POST_CLICK_MAX = 0.12
 
@@ -54,33 +43,34 @@ def move_rel(dx: int, dy: int) -> None:
                    tween=pyautogui.easeInOutQuad)
 
 
-def _press(button: Button) -> None:
+def click(point: tuple[int, int]) -> None:
+    target = _jitter(point)
+    move_to(target)
     time.sleep(_rand(PRE_CLICK_MIN, PRE_CLICK_MAX))
-    _mouse.press(button)
-    time.sleep(_rand(HOLD_MIN, HOLD_MAX))
-    _mouse.release(button)
+    pyautogui.click(target[0], target[1])
     time.sleep(_rand(POST_CLICK_MIN, POST_CLICK_MAX))
 
 
-def click(point: tuple[int, int]) -> None:
-    move_to(point)
-    _press(Button.left)
-
-
 def click_here() -> None:
-    _press(Button.left)
+    time.sleep(_rand(PRE_CLICK_MIN, PRE_CLICK_MAX))
+    pyautogui.click()
+    time.sleep(_rand(POST_CLICK_MIN, POST_CLICK_MAX))
 
 
 def right_click(point: tuple[int, int]) -> None:
-    move_to(point)
-    _press(Button.right)
+    target = _jitter(point)
+    move_to(target)
+    time.sleep(_rand(PRE_CLICK_MIN, PRE_CLICK_MAX))
+    pyautogui.rightClick(target[0], target[1])
+    time.sleep(_rand(POST_CLICK_MIN, POST_CLICK_MAX))
 
 
 def double_click(point: tuple[int, int]) -> None:
-    move_to(point)
-    _press(Button.left)
-    time.sleep(_rand(0.05, 0.1))
-    _press(Button.left)
+    target = _jitter(point)
+    move_to(target)
+    time.sleep(_rand(PRE_CLICK_MIN, PRE_CLICK_MAX))
+    pyautogui.doubleClick(target[0], target[1])
+    time.sleep(_rand(POST_CLICK_MIN, POST_CLICK_MAX))
 
 
 def sleep(seconds: float, jitter: float = 0.15) -> None:
