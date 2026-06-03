@@ -543,7 +543,7 @@ def target_alive(image_bgr):
 # ============================================================================
 TURN_LEFT_KEY = 'q'                # bind en GW2: Camera Rotate Left
 TURN_RIGHT_KEY = 'e'               # bind en GW2: Camera Rotate Right
-TURN_SECONDS_PER_PIXEL = 0.0005    # hold por pixel de desfase (bajo, q/e se pasaban)
+TURN_SECONDS_PER_PIXEL = 0.00025   # hold por pixel de desfase (reducido a la mitad)
 TURN_MAX_SECONDS = 0.5             # tope para no girar más de la cuenta
 
 
@@ -573,11 +573,12 @@ def turn_camera(dx_pixels):
     """
     if dx_pixels == 0:
         return
-    # Invertido a propósito: en este setup de GW2/Parsec las teclas giran al
-    # revés. Mob a la derecha (dx>0) → tecla izquierda, y viceversa.
-    key = TURN_LEFT_KEY if dx_pixels > 0 else TURN_RIGHT_KEY
+    # Mob a la derecha (dx>0) → girar a la derecha, y viceversa.
+    key = TURN_RIGHT_KEY if dx_pixels > 0 else TURN_LEFT_KEY
+
     duration = min(abs(dx_pixels) * TURN_SECONDS_PER_PIXEL, TURN_MAX_SECONDS)
     duration = max(duration, 0.06)
+
     pyautogui.keyDown(key)
     time.sleep(duration)
     human_key_up(key)
@@ -687,6 +688,7 @@ def engage(initial_mob, scan_img=None, scan_mobs=None):
     last_target = initial_mob
 
     no_mob_since = None
+    last_turn_time = 0.0
     # Cap por ATTACK_SECONDS pero también por el END_TIME global del run
     end = min(time.time() + ATTACK_SECONDS, END_TIME) if END_TIME else time.time() + ATTACK_SECONDS
 
@@ -733,10 +735,11 @@ def engage(initial_mob, scan_img=None, scan_mobs=None):
                 last_target = current
                 dx = current.x - SCREEN_W // 2
 
-                # Girar SOLO si el locked target está muy descentrado.
-                if abs(dx) > OFF_CENTER_PX:
+                # Girar una vez de forma calculada y darle tiempo a la W para acercarse
+                if abs(dx) > OFF_CENTER_PX and time.time() - last_turn_time > 1.5:
                     turn_camera(dx)
                     human_press('1')
+                    last_turn_time = time.time()
 
             # Damage detection: si hay damage visible → en combate, paramos.
             # Sino → caminamos para acercarnos.
@@ -771,15 +774,6 @@ def engage(initial_mob, scan_img=None, scan_mobs=None):
         # Capture final del engagement: hit (con damage) o miss (al aire)
         end_label = 'engage_end_hit' if damage_seen else 'engage_end_miss'
         save_capture(last_img, last_mobs, last_target, end_label)
-
-
-def _track_mob(mobs, last_target, tol):
-    """Devuelve el mob más cercano a donde estaba last_target. Si no hay, el mismo."""
-    near = [m for m in mobs
-            if abs(m.x - last_target.x) < tol and abs(m.y - last_target.y) < tol]
-    if near:
-        return min(near, key=lambda m: (m.x - last_target.x) ** 2 + (m.y - last_target.y) ** 2)
-    return last_target
 
 
 def kill_target(mob, scan_img=None, scan_mobs=None):
@@ -821,7 +815,13 @@ def kill_target(mob, scan_img=None, scan_mobs=None):
     while time.time() < end and not is_kill_requested():
         img = capture_screen_bgr()
         mobs = find_mobs(img)
-        last_target = _track_mob(mobs, last_target, LOCK_TOLERANCE_PX)
+
+        if not mobs:
+            log("    perdí visual del mob al acercarme")
+            break
+
+        # Ya no trackeamos coords viejas. Siempre apuntamos al mob físicamente más cercano.
+        last_target = closest_to_player(mobs)
         show_debug_window(img, mobs, last_target)
 
         # En rango = el dY ya está por debajo del umbral. Sí o sí, sin atajos:
@@ -837,25 +837,15 @@ def kill_target(mob, scan_img=None, scan_mobs=None):
             turn_camera(dx)
 
         # Caminar W de frente el tiempo que pide el dY (2s por cada 100px de
-        # más), pero CONTINUO y recapturando cada RECHECK_SECONDS para seguir
-        # trackeando, re-apuntar y frenar apenas entra en rango.
+        # más). Completamos el paso ciegamente ANTES de volver a escanear,
+        # evitando el bucle estúpido de trackear mientras nos movemos.
         walk_dur = min((dY - APPROACH_CLOSE_Y) / 100.0 * WALK_SECONDS_PER_100PX, WALK_STEP_MAX)
         pyautogui.keyDown('w')
         walked = 0.0
         try:
             while walked < walk_dur and not is_kill_requested():
-                time.sleep(RECHECK_SECONDS)
-                walked += RECHECK_SECONDS
-                img = capture_screen_bgr()
-                mobs = find_mobs(img)
-                last_target = _track_mob(mobs, last_target, LOCK_TOLERANCE_PX)
-                show_debug_window(img, mobs, last_target)
-                if abs(last_target.y - PLAYER_Y) <= APPROACH_CLOSE_Y:
-                    break
-                # Corregir rumbo mientras camina si se descentró.
-                dx = last_target.x - SCREEN_W // 2
-                if abs(dx) > APPROACH_FACE_PX:
-                    turn_camera(dx)
+                time.sleep(0.1)
+                walked += 0.1
         finally:
             human_key_up('w')
         save_capture(img, mobs, last_target, 'approach')
@@ -871,15 +861,16 @@ def kill_target(mob, scan_img=None, scan_mobs=None):
 
         img = capture_screen_bgr()
         last_img = img
-        mobs = find_mobs(img)
-        last_target = _track_mob(mobs, last_target, LOCK_TOLERANCE_PX)
-        show_debug_window(img, mobs, last_target)
+        
+        # Ya no escaneamos buscando otros mobs mientras matamos.
+        # GW2 mantiene el target lock, solo dependemos de la HP bar.
+        show_debug_window(img, [last_target], last_target)
 
         if has_damage_visible(img):
             STATS.damage_frames += 1
             damage_seen = True
             if not damage_captured_once:
-                save_capture(img, mobs, last_target, 'damage_first')
+                save_capture(img, [last_target], last_target, 'damage_first')
                 damage_captured_once = True
 
         # Muerte = la cola de la HP bar dejó de estar roja (0% real), sostenido.
@@ -892,7 +883,7 @@ def kill_target(mob, scan_img=None, scan_mobs=None):
             elif now - dead_since >= HP_BAR_GONE_SECONDS:
                 log("    cola de HP bar sin rojo, mob muerto (0%)")
                 STATS.kills += 1
-                save_capture(last_img, mobs, last_target, 'engage_end_kill')
+                save_capture(last_img, [last_target], last_target, 'engage_end_kill')
                 blacklist_spot(last_target.x, last_target.y)
                 return True
 

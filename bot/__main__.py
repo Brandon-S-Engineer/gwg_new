@@ -1,10 +1,4 @@
-"""
-Entry point del bot: `python -m bot [comando]`.
-
-Por ahora solo imprime la configuración detectada para confirmar que
-el andamiaje funciona. Los subcomandos reales (farm, sell-mats, etc.)
-se agregan en la fase 10.
-"""
+"""Entry point: `python -m bot`."""
 
 from . import config
 
@@ -16,8 +10,6 @@ def main() -> None:
     print(f"  bank          : {config.BANK_ROWS}x{config.BANK_COLS}")
     print(f"  assets dir    : {config.ASSETS_DIR}")
     print(f"  wait timeout  : {config.DEFAULT_WAIT_TIMEOUT}s")
-    print()
-    print("Siguiente fase: 2 (capa de visión).")
 
 
 if __name__ == "__main__":

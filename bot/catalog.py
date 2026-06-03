@@ -1,10 +1,4 @@
-"""
-Catálogo/manifiesto de templates.
-
-Cada template tiene: ruta al .png, threshold de matching, y región donde
-buscar (opcional). Centralizar esto evita que cada rutina hardcodee paths
-y thresholds, y permite recalibrar todo desde un solo lugar.
-"""
+"""Manifiesto de templates: path + threshold + región."""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -26,22 +20,15 @@ class Template:
     default_region: Region | None = None
 
 
-# --- Items vendibles --------------------------------------------------------
-# Se rellenan en fase 4 conforme se recapturan los .png a 1080p.
-# Solo se listan aquí cuando el archivo ya existe en disco.
-
-# Ejemplo de cómo se verá:
+# Items
 # LUCENT_MOTES = Template(ITEMS_DIR / "lucent_motes.png", 0.85, INVENTORY_AREA)
 
-
-# --- Estados de juego (errores, pantallas) ----------------------------------
+# Estados
 # ERROR_FATAL = Template(STATES_DIR / "err_fatal.png", 0.8, ERROR_DIALOG_AREA)
 # CHARACTER_SELECT = Template(STATES_DIR / "select_character.png", 0.8)
 # PLAYING_MODE = Template(STATES_DIR / "playing_mode.png", 0.8)
 
-
-# --- Opciones de UI (menús contextuales, botones) ---------------------------
-# Estos son los íconos/textos que buscamos en menús dinámicos.
+# UI
 # MENU_SELL = Template(UI_DIR / "menu_sell.png", 0.9)
 # MENU_SALVAGE = Template(UI_DIR / "menu_salvage.png", 0.9)
 # MENU_USE_ALL = Template(UI_DIR / "menu_use_all.png", 0.9)

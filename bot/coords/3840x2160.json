@@ -1,0 +1,433 @@
+{
+  "reference_resolution": [
+    3840,
+    2160
+  ],
+  "types": {
+    "main_view": {
+      "description": "Vista principal del juego: inventario, banco, TP y barra de kits visibles",
+      "image": "main_view.png",
+      "regions": [
+        {
+          "name": "INVENTORY_AREA",
+          "x": 4,
+          "y": 164,
+          "w": 2493,
+          "h": 1906
+        },
+        {
+          "name": "BANK_AREA",
+          "x": 2940,
+          "y": 1277,
+          "w": 882,
+          "h": 827
+        },
+        {
+          "name": "TP_AREA",
+          "x": 2515,
+          "y": 9,
+          "w": 1327,
+          "h": 1041
+        },
+        {
+          "name": "SELL_SEARCH_AREA",
+          "x": 76,
+          "y": 1227,
+          "w": 2862,
+          "h": 848
+        },
+        {
+          "name": "ITEM_TP_AREA",
+          "x": 2880,
+          "y": 192,
+          "w": 73,
+          "h": 71
+        }
+      ],
+      "points": [
+        {
+          "name": "compact",
+          "x": 2424,
+          "y": 126
+        },
+        {
+          "name": "take_all",
+          "x": 2758,
+          "y": 933
+        },
+        {
+          "name": "inventory_close",
+          "x": 2478,
+          "y": 66
+        },
+        {
+          "name": "sellers_list",
+          "x": 3292,
+          "y": 680
+        },
+        {
+          "name": "maximum_amount",
+          "x": 3357,
+          "y": 330
+        },
+        {
+          "name": "minus_one",
+          "x": 3086,
+          "y": 334
+        },
+        {
+          "name": "minus_one_copper",
+          "x": 3314,
+          "y": 389
+        },
+        {
+          "name": "plus_one_copper",
+          "x": 3314,
+          "y": 374
+        },
+        {
+          "name": "list_item",
+          "x": 3103,
+          "y": 512
+        },
+        {
+          "name": "price",
+          "x": 3714,
+          "y": 236
+        },
+        {
+          "name": "accept_button",
+          "x": 1896,
+          "y": 1156
+        },
+        {
+          "name": "rune_crafter",
+          "x": 53,
+          "y": 231
+        },
+        {
+          "name": "rune_crafter_salvage_green",
+          "x": 106,
+          "y": 282
+        },
+        {
+          "name": "rune_crafter_confirm_button",
+          "x": 1811,
+          "y": 1415
+        },
+        {
+          "name": "rune_crafter_confirm_button_1",
+          "x": 1811,
+          "y": 1221
+        },
+        {
+          "name": "rune_crafter_confirm_button_2",
+          "x": 1811,
+          "y": 1247
+        },
+        {
+          "name": "rune_crafter_confirm_button_3",
+          "x": 1811,
+          "y": 1286
+        },
+        {
+          "name": "rune_crafter_confirm_button_4",
+          "x": 1811,
+          "y": 1326
+        },
+        {
+          "name": "rune_crafter_confirm_button_5",
+          "x": 1811,
+          "y": 1363
+        },
+        {
+          "name": "rune_crafter_confirm_button_6",
+          "x": 1811,
+          "y": 1400
+        },
+        {
+          "name": "silver_fed",
+          "x": -203,
+          "y": 976
+        },
+        {
+          "name": "silver_fed_use",
+          "x": -201,
+          "y": 1048
+        },
+        {
+          "name": "silver_fed_salvage_rare",
+          "x": -197,
+          "y": 1124
+        },
+        {
+          "name": "silver_fed_salvage_stack",
+          "x": -200,
+          "y": 1202
+        },
+        {
+          "name": "silver_fed_salvage_stack_accept",
+          "x": 1900,
+          "y": 1155
+        },
+        {
+          "name": "silver_fed_confirm_button",
+          "x": 1811,
+          "y": 1247
+        },
+        {
+          "name": "silver_fed_confirm_button_1",
+          "x": 1811,
+          "y": 1219
+        },
+        {
+          "name": "silver_fed_confirm_button_2",
+          "x": 1811,
+          "y": 1286
+        },
+        {
+          "name": "silver_fed_confirm_button_3",
+          "x": 1811,
+          "y": 1327
+        },
+        {
+          "name": "silver_fed_confirm_button_4",
+          "x": 1811,
+          "y": 1326
+        },
+        {
+          "name": "silver_fed_confirm_button_5",
+          "x": 1811,
+          "y": 1363
+        },
+        {
+          "name": "silver_fed_confirm_button_6",
+          "x": 1811,
+          "y": 1400
+        },
+        {
+          "name": "copper_fed",
+          "x": -329,
+          "y": 562
+        },
+        {
+          "name": "copper_fed_salvage_common",
+          "x": -270,
+          "y": 649
+        }
+      ],
+      "items": [
+        {
+          "name": "ancient_wood_logs",
+          "image": "ancient_wood_logs.png"
+        },
+        {
+          "name": "blue",
+          "image": "blue.png"
+        },
+        {
+          "name": "blue_luck",
+          "image": "blue_luck.png"
+        },
+        {
+          "name": "charms_of_briliance",
+          "image": "charms_of_briliance.png"
+        },
+        {
+          "name": "charms_of_potence",
+          "image": "charms_of_potence.png"
+        },
+        {
+          "name": "charms_of_skill",
+          "image": "charms_of_skill.png"
+        },
+        {
+          "name": "elder_wood_logs",
+          "image": "elder_wood_logs.png"
+        },
+        {
+          "name": "globs_of_dark_matter",
+          "image": "globs_of_dark_matter.png"
+        },
+        {
+          "name": "globs_of_ectoplasm",
+          "image": "globs_of_ectoplasm.png"
+        },
+        {
+          "name": "gossamer_Scraps",
+          "image": "gossamer_Scraps.png"
+        },
+        {
+          "name": "green",
+          "image": "green.png"
+        },
+        {
+          "name": "green_luck",
+          "image": "green_luck.png"
+        },
+        {
+          "name": "hardened_leather_sections",
+          "image": "hardened_leather_sections.png"
+        },
+        {
+          "name": "little_charms_of_briliance",
+          "image": "little_charms_of_briliance.png"
+        },
+        {
+          "name": "little_charms_of_potence",
+          "image": "little_charms_of_potence.png"
+        },
+        {
+          "name": "little_charms_of_skill",
+          "image": "little_charms_of_skill.png"
+        },
+        {
+          "name": "little_symbols_of_control",
+          "image": "little_symbols_of_control.png"
+        },
+        {
+          "name": "little_symbols_of_enhancement",
+          "image": "little_symbols_of_enhancement.png"
+        },
+        {
+          "name": "little_symbols_of_pain",
+          "image": "little_symbols_of_pain.png"
+        },
+        {
+          "name": "lucent_motes",
+          "image": "lucent_motes.png"
+        },
+        {
+          "name": "mithril_ore",
+          "image": "mithril_ore.png"
+        },
+        {
+          "name": "orichalcum_ore",
+          "image": "orichalcum_ore.png"
+        },
+        {
+          "name": "pile_of_cristallyne_dust",
+          "image": "pile_of_cristallyne_dust.png"
+        },
+        {
+          "name": "purple_luck",
+          "image": "purple_luck.png"
+        },
+        {
+          "name": "reclaimed_metal_plates",
+          "image": "reclaimed_metal_plates.png"
+        },
+        {
+          "name": "silk_scraps",
+          "image": "silk_scraps.png"
+        },
+        {
+          "name": "silver",
+          "image": "silver.png"
+        },
+        {
+          "name": "symbols_of_control",
+          "image": "symbols_of_control.png"
+        },
+        {
+          "name": "symbols_of_enhancement",
+          "image": "symbols_of_enhancement.png"
+        },
+        {
+          "name": "symbols_of_pain",
+          "image": "symbols_of_pain.png"
+        },
+        {
+          "name": "thick_leather_sections",
+          "image": "thick_leather_sections.png"
+        },
+        {
+          "name": "yellow",
+          "image": "yellow.png"
+        },
+        {
+          "name": "yellow_luck",
+          "image": "yellow_luck.png"
+        }
+      ]
+    },
+    "world_nav": {
+      "description": "Posiciones de NPCs/portales en la ciudad (cambiarán con la nueva zona)",
+      "image": "world_nav.png",
+      "regions": [],
+      "points": [
+        {
+          "name": "mistlock",
+          "x": 744,
+          "y": 1535
+        },
+        {
+          "name": "portal_scroll",
+          "x": 837,
+          "y": 1535
+        },
+        {
+          "name": "volunteer",
+          "x": 78,
+          "y": 1176
+        },
+        {
+          "name": "dragon_fall",
+          "x": 216,
+          "y": 281
+        }
+      ]
+    },
+    "login_flow": {
+      "description": "Pantalla de login del cliente",
+      "image": "login_flow.png",
+      "regions": [],
+      "points": [
+        {
+          "name": "game_icon_coords",
+          "x": 180,
+          "y": 2122
+        },
+        {
+          "name": "login_button_coords",
+          "x": 1203,
+          "y": 1327
+        },
+        {
+          "name": "character_coords",
+          "x": 1600,
+          "y": 2015
+        }
+      ]
+    },
+    "window_drag": {
+      "description": "Posiciones para arrastrar/reposicionar la ventana del cliente",
+      "image": "window_drag.png",
+      "regions": [],
+      "points": [
+        {
+          "name": "start_coords",
+          "x": 1960,
+          "y": 544
+        },
+        {
+          "name": "end_coords",
+          "x": 3141,
+          "y": 1086
+        }
+      ]
+    },
+    "error_dialog": {
+      "description": "Diálogos de error del juego",
+      "image": "error_dialog.png",
+      "regions": [],
+      "points": [
+        {
+          "name": "err_coo",
+          "x": 2367,
+          "y": 885
+        }
+      ]
+    }
+  }
+}
