@@ -817,6 +817,11 @@
       function metaFor(r) {
         return r.kind === 'point' ? `${r.x},${r.y}` : `${r.x},${r.y} ${r.w}×${r.h}`
       }
+      function wireRow(row, r) {
+        row.addEventListener('click', () => selectRegion(r.id))
+        const cell = row.querySelector('.name-cell')
+        if (cell) cell.addEventListener('dblclick', (e) => { e.stopPropagation(); startInlineRename(cell, r) })
+      }
       function renderList() {
         countEl.textContent = state.regions.length
         listEl.innerHTML = ''
@@ -824,8 +829,8 @@
           const row = document.createElement('div')
           row.className = 'region-row' + (r.id === state.selectedId ? ' selected' : '')
           row.dataset.regionId = r.id
-          row.innerHTML = `${badgeFor(r)}<span class="name-cell">${escapeHtml(r.name)}</span><span class="meta">${metaFor(r)}</span>`
-          row.addEventListener('click', () => selectRegion(r.id))
+          row.innerHTML = `${badgeFor(r)}<span class="name-cell" title="doble-click para renombrar">${escapeHtml(r.name)}</span><span class="meta">${metaFor(r)}</span>`
+          wireRow(row, r)
           listEl.appendChild(row)
         }
         renderEditor()
@@ -833,8 +838,37 @@
       function updateListRow(r) {
         const row = listEl.querySelector(`[data-region-id="${r.id}"]`)
         if (!row) return
-        row.innerHTML = `${badgeFor(r)}<span class="name-cell">${escapeHtml(r.name)}</span><span class="meta">${metaFor(r)}</span>`
-        row.addEventListener('click', () => selectRegion(r.id))
+        row.innerHTML = `${badgeFor(r)}<span class="name-cell" title="doble-click para renombrar">${escapeHtml(r.name)}</span><span class="meta">${metaFor(r)}</span>`
+        wireRow(row, r)
+      }
+      function startInlineRename(cell, r) {
+        const original = r.name
+        const input = document.createElement('input')
+        input.type = 'text'
+        input.value = original
+        input.style.cssText = 'width:100%;background:#1a1a1a;color:#e4e4e4;border:1px solid #2563eb;border-radius:3px;padding:2px 4px;font-size:13px;font-family:inherit;'
+        cell.replaceWith(input)
+        input.focus(); input.select()
+        let done = false
+        const commit = () => {
+          if (done) return
+          done = true
+          const v = input.value.trim() || original
+          r.name = v
+          markDirty()
+          updateListRow(r)
+          renderEditor()
+        }
+        const cancel = () => {
+          if (done) return
+          done = true
+          updateListRow(r)
+        }
+        input.addEventListener('blur', commit)
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); input.blur() }
+          if (e.key === 'Escape') { e.preventDefault(); cancel(); input.blur() }
+        })
       }
       function renderEditor() {
         const r = getRegion(state.selectedId)

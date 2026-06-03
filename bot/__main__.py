@@ -16,7 +16,9 @@ def main() -> None:
         return
 
     if cmd == "phase1":
+        from . import boot
         from .routines import phase1_salvage_greens
+        boot.focus_game()
         phase1_salvage_greens.run()
         return
 
