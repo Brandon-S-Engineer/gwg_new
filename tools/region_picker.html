@@ -1080,7 +1080,7 @@ async function capture() {
                 || (state.activeType + '.png');
   capturing = true;
   try {
-    for (let i = 3; i > 0; i--) {
+    for (let i = 6; i > 0; i--) {
       toast(`Capturando en ${i}...  (cambia a la ventana del juego)`);
       await new Promise(r => setTimeout(r, 1000));
     }
