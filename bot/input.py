@@ -1,9 +1,21 @@
 """Mouse/keyboard con movimiento suave + jitter, clicks como el bot viejo."""
 
 import random
+import sys
 import time
 
 import pyautogui
+
+if sys.platform == "win32":
+    import ctypes
+    try:
+        # Per-monitor v2: respeta escalado, no más coords lógicas vs físicas
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+    except Exception:
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
 
 pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0  # nosotros manejamos los sleeps
