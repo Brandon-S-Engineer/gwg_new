@@ -12,7 +12,24 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | phase1 | click_test [<point_name>]")
+        print("comandos: info | loop | phase1 | click_test [<point_name>]")
+        return
+
+    if cmd == "loop":
+        from . import boot, schedule
+        boot.focus_game()
+        max_iters = schedule.MAX_ITERATIONS
+        i = 1
+        while max_iters == -1 or i <= max_iters:
+            print(f"\n=== iter {i} ===")
+            for every, task in schedule.TASKS:
+                if i % every == 0:
+                    print(f"[loop] run {task.__module__}.{task.__name__} (every {every})")
+                    try:
+                        task()
+                    except Exception as e:
+                        print(f"[loop] task {task.__name__} falló: {e}")
+            i += 1
         return
 
     if cmd == "click_test":
