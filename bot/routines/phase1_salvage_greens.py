@@ -25,7 +25,12 @@ SLEEP_AFTER_IDENTIFY = 4.0
 SLEEP_AFTER_SALVAGE = 6.0
 SLEEP_AFTER_BANK_DOUBLECLICK = 1.0
 
-USE_ALL_OFFSET = (85, 205)
+# Posición absoluta del "Use All" tras right-click sobre un green en 4K.
+# Puede variar +/- pocos px según en qué slot esté el green.
+USE_ALL_ABS = (337, 222)
+SLEEP_AFTER_RIGHT_CLICK = 0.8  # que el tooltip del item se quite
+SLEEP_HOVER_USE_ALL = 0.3  # asentar cursor sobre "Use All" antes de clickear
+
 SALVAGE_OFFSET = (20, 90)
 
 CONFIRM_POINTS = [
@@ -53,9 +58,9 @@ def use_all_at(point: tuple[int, int]) -> None:
     inp.move_to(point)
     time.sleep(0.25)
     inp.right_click(point)
-    time.sleep(0.45)
-    inp.move_rel(*USE_ALL_OFFSET)
-    time.sleep(0.25)
+    time.sleep(SLEEP_AFTER_RIGHT_CLICK)
+    inp.move_to(USE_ALL_ABS)
+    time.sleep(SLEEP_HOVER_USE_ALL)
     inp.click_here()
 
 
