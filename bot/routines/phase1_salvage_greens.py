@@ -25,9 +25,6 @@ SLEEP_AFTER_IDENTIFY = 4.0
 SLEEP_AFTER_SALVAGE = 6.0
 SLEEP_AFTER_BANK_DOUBLECLICK = 1.0
 
-# Offset relativo desde el right-click hasta "Use All" del menú en 4K.
-# X=85 cae dentro del ancho del menú; Y=185 según calibración del usuario.
-USE_ALL_OFFSET = (85, 185)
 SLEEP_AFTER_RIGHT_CLICK = 0.8  # que el tooltip del item se quite
 SLEEP_HOVER_USE_ALL = 0.3  # asentar cursor sobre "Use All" antes de clickear
 
@@ -59,7 +56,7 @@ def use_all_at(point: tuple[int, int]) -> None:
     time.sleep(0.25)
     inp.right_click(point)
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
-    inp.move_rel(*USE_ALL_OFFSET)
+    inp.move_to(get_point("use_all"))
     time.sleep(SLEEP_HOVER_USE_ALL)
     inp.click_here()
 
