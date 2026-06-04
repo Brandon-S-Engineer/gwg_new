@@ -113,15 +113,14 @@ def move_to(point):
 
 
 def move_rel(dx, dy):
-    try:
-        cur = pyautogui.position()
-        target = (cur[0] + dx, cur[1] + dy)
-    except Exception:
-        target = (dx, dy)
-    pyautogui.move(dx + random.randint(-POS_JITTER, POS_JITTER),
-                   dy + random.randint(-POS_JITTER, POS_JITTER),
-                   duration=_human_duration(target),
-                   tween=pyautogui.easeInOutQuad)
+    """Calcula target absoluto = pos_actual + (dx, dy) y usa move_to.
+
+    Evita pyautogui.move (relativo) que puede aplicar DPI scaling
+    inconsistente con nuestro _abs_move (mouse_event ABSOLUTE).
+    """
+    cur = pyautogui.position()
+    target = (cur[0] + dx, cur[1] + dy)
+    move_to(target)
 
 
 def click(point):
