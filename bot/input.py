@@ -27,10 +27,12 @@ else:
 pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0
 
-# Tunables
-MOVE_DURATION_MIN = 0.18
-MOVE_DURATION_MAX = 0.32
-POS_JITTER = 2
+# Tunables (ver docs/disimulo.md)
+POS_JITTER = 3  # ±3px sobre el target; suficiente random sin fallar templates
+# Duración del move escalada con distancia. Mano humana: cerca rápido, lejos lento.
+MOVE_DUR_SHORT = 0.12   # distancia ~50px
+MOVE_DUR_LONG = 0.60    # distancia ~1500px+
+MOVE_DUR_JITTER = 0.10  # ±10% sobre la duración calculada
 PRE_CLICK_MIN = 0.05
 PRE_CLICK_MAX = 0.12
 HOLD_MIN = 0.05
@@ -56,6 +58,22 @@ def _jitter(point):
 
 def _rand(lo, hi):
     return random.uniform(lo, hi)
+
+
+def _human_duration(target):
+    """Duración del move según distancia desde la posición actual."""
+    try:
+        cur_x, cur_y = pyautogui.position()
+    except Exception:
+        cur_x, cur_y = target
+    dx = target[0] - cur_x
+    dy = target[1] - cur_y
+    dist = (dx * dx + dy * dy) ** 0.5
+    # interpolación lineal entre SHORT (50px) y LONG (1500px)
+    t = max(0.0, min(1.0, (dist - 50) / 1450))
+    base = MOVE_DUR_SHORT + (MOVE_DUR_LONG - MOVE_DUR_SHORT) * t
+    delta = base * MOVE_DUR_JITTER
+    return random.uniform(base - delta, base + delta)
 
 
 def _abs_move(x, y):
@@ -86,19 +104,23 @@ def _abs_press(button="left"):
 
 def move_to(point):
     target = _jitter(point)
-    # Move suave (visual) — pyautogui con easing
     pyautogui.moveTo(target[0], target[1],
-                     duration=_rand(MOVE_DURATION_MIN, MOVE_DURATION_MAX),
+                     duration=_human_duration(target),
                      tween=pyautogui.easeInOutQuad)
-    # Y reafirmamos la posición con mouse_event absoluto antes del click,
-    # por si pyautogui dejó el cursor en logical-coord
+    # Reafirmamos posición con mouse_event absoluto (por si pyautogui
+    # dejó el cursor en logical-coord con DPI scaling)
     _abs_move(target[0], target[1])
 
 
 def move_rel(dx, dy):
+    try:
+        cur = pyautogui.position()
+        target = (cur[0] + dx, cur[1] + dy)
+    except Exception:
+        target = (dx, dy)
     pyautogui.move(dx + random.randint(-POS_JITTER, POS_JITTER),
                    dy + random.randint(-POS_JITTER, POS_JITTER),
-                   duration=_rand(MOVE_DURATION_MIN, MOVE_DURATION_MAX),
+                   duration=_human_duration(target),
                    tween=pyautogui.easeInOutQuad)
 
 
