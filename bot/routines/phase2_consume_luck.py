@@ -55,9 +55,9 @@ MENU_REGION_H = 280
 # si un consume falla y el stack se queda.
 MAX_PASSES_PER_TIER = 3
 
-SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú
-SLEEP_AFTER_DISMISS = 0.3       # que el tooltip de hover se desvanezca
-SLEEP_AFTER_CONSUME = 1.5       # que el stack desaparezca antes del siguiente
+SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú (NO tocar: es el right-click + bajar que quita el hover)
+SLEEP_AFTER_DISMISS = 0.1       # tooltip ya se fue al bajar; clickear cuanto antes
+SLEEP_AFTER_CONSUME = 0.4       # mínimo para que el stack desaparezca, y siguiente
 
 
 def find_luck(template) -> tuple[int, int] | None:
@@ -77,7 +77,7 @@ def _menu_region(point: tuple[int, int]) -> Region:
 
 def consume_all_at(point: tuple[int, int]) -> None:
     inp.move_to(point)
-    time.sleep(0.25)
+    time.sleep(0.08)
     inp.right_click(point)
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
 
@@ -86,7 +86,7 @@ def consume_all_at(point: tuple[int, int]) -> None:
     time.sleep(SLEEP_AFTER_DISMISS)
 
     btn = vision.wait_for(CONSUME_ALL, region=_menu_region(point),
-                          timeout=2.0, threshold=CONSUME_ALL_THRESHOLD)
+                          timeout=1.0, threshold=CONSUME_ALL_THRESHOLD)
     if btn:
         inp.click(btn)
         return
