@@ -10,10 +10,10 @@
       "regions": [
         {
           "name": "INVENTORY_AREA",
-          "x": 4,
-          "y": 164,
-          "w": 2493,
-          "h": 1906
+          "x": 61,
+          "y": 149,
+          "w": 2425,
+          "h": 1929
         },
         {
           "name": "BANK_AREA",
@@ -31,10 +31,10 @@
         },
         {
           "name": "SELL_SEARCH_AREA",
-          "x": 76,
-          "y": 1227,
-          "w": 2862,
-          "h": 848
+          "x": 2580,
+          "y": 1314,
+          "w": 333,
+          "h": 806
         },
         {
           "name": "ITEM_TP_AREA",
@@ -47,18 +47,18 @@
       "points": [
         {
           "name": "compact",
-          "x": 2424,
-          "y": 126
+          "x": 2407,
+          "y": 123
         },
         {
           "name": "take_all",
           "x": 2758,
-          "y": 933
+          "y": 932
         },
         {
           "name": "inventory_close",
-          "x": 2478,
-          "y": 66
+          "x": 2461,
+          "y": 64
         },
         {
           "name": "sellers_list",
@@ -102,13 +102,13 @@
         },
         {
           "name": "rune_crafter",
-          "x": 53,
-          "y": 231
+          "x": 115,
+          "y": 222
         },
         {
           "name": "rune_crafter_salvage_green",
-          "x": 106,
-          "y": 282
+          "x": 156,
+          "y": 303
         },
         {
           "name": "rune_crafter_confirm_button",
@@ -147,23 +147,23 @@
         },
         {
           "name": "silver_fed",
-          "x": -203,
-          "y": 976
+          "x": 196,
+          "y": 221
         },
         {
           "name": "silver_fed_use",
-          "x": -201,
-          "y": 1048
+          "x": 255,
+          "y": 235
         },
         {
           "name": "silver_fed_salvage_rare",
-          "x": -197,
-          "y": 1124
+          "x": 254,
+          "y": 337
         },
         {
           "name": "silver_fed_salvage_stack",
-          "x": -200,
-          "y": 1202
+          "x": 255,
+          "y": 369
         },
         {
           "name": "silver_fed_salvage_stack_accept",
@@ -207,13 +207,18 @@
         },
         {
           "name": "copper_fed",
-          "x": -329,
-          "y": 562
+          "x": 271,
+          "y": 221
         },
         {
           "name": "copper_fed_salvage_common",
-          "x": -270,
-          "y": 649
+          "x": 393,
+          "y": 270
+        },
+        {
+          "name": "full_screen",
+          "x": 702,
+          "y": 61
         }
       ],
       "items": [
