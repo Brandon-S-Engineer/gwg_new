@@ -17,6 +17,10 @@ from ..coords_loader import get_point, get_region
 GREEN = ITEMS_DIR / "green.png"
 RUNE_CRAFTER = ITEMS_DIR / "rune_crafter.png"
 
+# Threshold permisivo para greens — el bot viejo usaba 0.70 y funcionaba.
+# Si captura/gamma del VM difiere ligeramente, 0.80 default es demasiado estricto.
+GREEN_THRESHOLD = 0.70
+
 SLEEP_AFTER_IDENTIFY = 4.0
 SLEEP_AFTER_SALVAGE = 6.0
 SLEEP_AFTER_BANK_DOUBLECLICK = 1.0
@@ -36,11 +40,13 @@ CONFIRM_POINTS = [
 
 
 def find_green_in_inventory() -> tuple[int, int] | None:
-    return vision.find(GREEN, region=get_region("INVENTORY_AREA"))
+    return vision.find(GREEN, region=get_region("INVENTORY_AREA"),
+                       threshold=GREEN_THRESHOLD)
 
 
 def find_green_in_bank() -> tuple[int, int] | None:
-    return vision.find(GREEN, region=get_region("BANK_AREA"))
+    return vision.find(GREEN, region=get_region("BANK_AREA"),
+                       threshold=GREEN_THRESHOLD)
 
 
 def use_all_at(point: tuple[int, int]) -> None:

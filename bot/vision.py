@@ -31,7 +31,9 @@ def find(template_path: Path, region: Region | None = None,
     res = cv2.matchTemplate(screen, tpl, cv2.TM_CCOEFF_NORMED)
     _, max_val, _, max_loc = cv2.minMaxLoc(res)
     if max_val < th:
+        print(f"[vision] {template_path.name}: max_val={max_val:.3f} < th={th:.2f}")
         return None
+    print(f"[vision] {template_path.name}: max_val={max_val:.3f} ok")
     h, w = tpl.shape[:2]
     ox = region.x if region else 0
     oy = region.y if region else 0
