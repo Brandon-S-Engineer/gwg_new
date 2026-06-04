@@ -8,7 +8,7 @@ Editá `TASKS` para agregar/quitar rutinas. `every=N` = corre cuando `i % N == 0
 
 from .routines import phase1_salvage_greens
 
-MAX_ITERATIONS = 2  # -1 = infinito
+MAX_ITERATIONS = 3  # -1 = infinito
 
 
 TASKS = [
