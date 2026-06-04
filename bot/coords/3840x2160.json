@@ -10,10 +10,10 @@
       "regions": [
         {
           "name": "INVENTORY_AREA",
-          "x": 61,
-          "y": 149,
-          "w": 2425,
-          "h": 1929
+          "x": 4,
+          "y": 164,
+          "w": 2493,
+          "h": 1906
         },
         {
           "name": "BANK_AREA",
@@ -31,10 +31,10 @@
         },
         {
           "name": "SELL_SEARCH_AREA",
-          "x": 2580,
-          "y": 1314,
-          "w": 333,
-          "h": 806
+          "x": 76,
+          "y": 1227,
+          "w": 2862,
+          "h": 848
         },
         {
           "name": "ITEM_TP_AREA",
@@ -53,11 +53,11 @@
         {
           "name": "take_all",
           "x": 2758,
-          "y": 932
+          "y": 933
         },
         {
           "name": "inventory_close",
-          "x": 2461,
+          "x": 2460,
           "y": 64
         },
         {
@@ -102,13 +102,13 @@
         },
         {
           "name": "rune_crafter",
-          "x": 115,
-          "y": 222
+          "x": 118,
+          "y": 220
         },
         {
           "name": "rune_crafter_salvage_green",
-          "x": 156,
-          "y": 303
+          "x": 167,
+          "y": 302
         },
         {
           "name": "rune_crafter_confirm_button",
@@ -147,23 +147,23 @@
         },
         {
           "name": "silver_fed",
-          "x": 196,
-          "y": 221
+          "x": -203,
+          "y": 976
         },
         {
           "name": "silver_fed_use",
-          "x": 255,
-          "y": 235
+          "x": -201,
+          "y": 1048
         },
         {
           "name": "silver_fed_salvage_rare",
-          "x": 254,
-          "y": 337
+          "x": -197,
+          "y": 1124
         },
         {
           "name": "silver_fed_salvage_stack",
-          "x": 255,
-          "y": 369
+          "x": -200,
+          "y": 1202
         },
         {
           "name": "silver_fed_salvage_stack_accept",
@@ -207,18 +207,13 @@
         },
         {
           "name": "copper_fed",
-          "x": 271,
-          "y": 221
+          "x": -329,
+          "y": 562
         },
         {
           "name": "copper_fed_salvage_common",
-          "x": 393,
-          "y": 270
-        },
-        {
-          "name": "full_screen",
-          "x": 702,
-          "y": 61
+          "x": -270,
+          "y": 649
         }
       ],
       "items": [
