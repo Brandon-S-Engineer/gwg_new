@@ -11,21 +11,31 @@ from .config import DEFAULT_MATCH_THRESHOLD, DEFAULT_WAIT_TIMEOUT, POLL_INTERVAL
 from .regions import Region
 
 
-def capture_screen(region: Region | None = None) -> np.ndarray:
-    """Screenshot en gris (np.uint8). region=None = pantalla completa."""
+def capture_screen(region: Region | None = None,
+                   color: bool = False) -> np.ndarray:
+    """Screenshot (np.uint8). region=None = pantalla completa.
+
+    color=False → gris (default, lo que usa fase 1).
+    color=True  → BGR, para distinguir items que solo cambian de color
+                  (ej: las 4 tiers de esencia de suerte, mismo dibujo).
+    """
     if region:
         shot = pyautogui.screenshot(region=region.as_pyautogui_region())
     else:
         shot = pyautogui.screenshot()
-    return cv2.cvtColor(np.array(shot), cv2.COLOR_BGR2GRAY)
+    arr = np.array(shot)  # RGB (PIL)
+    if color:
+        return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)  # alinear con cv2.imread
+    return cv2.cvtColor(arr, cv2.COLOR_BGR2GRAY)
 
 
 def find(template_path: Path, region: Region | None = None,
-         threshold: float | None = None) -> tuple[int, int] | None:
+         threshold: float | None = None,
+         color: bool = False) -> tuple[int, int] | None:
     """Devuelve centro absoluto del primer match (>= threshold), o None."""
     th = threshold if threshold is not None else DEFAULT_MATCH_THRESHOLD
-    screen = capture_screen(region)
-    tpl = cv2.imread(str(template_path), 0)
+    screen = capture_screen(region, color=color)
+    tpl = cv2.imread(str(template_path), cv2.IMREAD_COLOR if color else 0)
     if tpl is None:
         raise FileNotFoundError(template_path)
     res = cv2.matchTemplate(screen, tpl, cv2.TM_CCOEFF_NORMED)
@@ -41,17 +51,18 @@ def find(template_path: Path, region: Region | None = None,
 
 
 def is_present(template_path: Path, region: Region | None = None,
-               threshold: float | None = None) -> bool:
-    return find(template_path, region, threshold) is not None
+               threshold: float | None = None, color: bool = False) -> bool:
+    return find(template_path, region, threshold, color) is not None
 
 
 def wait_for(template_path: Path, region: Region | None = None,
              timeout: float | None = None,
-             threshold: float | None = None) -> tuple[int, int] | None:
+             threshold: float | None = None,
+             color: bool = False) -> tuple[int, int] | None:
     """Poll cada POLL_INTERVAL hasta timeout."""
     deadline = time.time() + (timeout if timeout is not None else DEFAULT_WAIT_TIMEOUT)
     while time.time() < deadline:
-        pt = find(template_path, region, threshold)
+        pt = find(template_path, region, threshold, color)
         if pt:
             return pt
         time.sleep(POLL_INTERVAL)
