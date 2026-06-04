@@ -22,13 +22,13 @@ Poné un número chico para probar.
 
 from .routines import phase1_salvage_greens, phase2_consume_luck
 
-MAX_ITERATIONS = -1  # -1 = infinito; ej. 3 para probar
+MAX_ITERATIONS = 3  # -1 = infinito; ej. 3 para probar
 
 
 TASKS = [
     # (every, callable)
     (1, phase1_salvage_greens.run),   # greens: cada iteración
-    (5, phase2_consume_luck.run),     # suerte: cada 5  <-- cambiá el 5 a tu gusto
+    (3, phase2_consume_luck.run),     # suerte: cada 5  <-- cambiá el 5 a tu gusto
     # (2,  lambda: sell_item("mithril_ore")),   # cada 2
     # (3,  lambda: sell_item("silk_scraps")),   # cada 3
     # (10, sell_ectos.run),                      # cada 10
