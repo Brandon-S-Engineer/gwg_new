@@ -36,12 +36,12 @@ CONSUME_ALL = ITEMS_DIR / "consume_all.png"
 # diferenciador entre las 4 tiers) sí los distingue. Escala distinta a gris;
 # afinar con el max_val que imprime vision.
 LUCK_THRESHOLD = 0.70
-# El botón es texto fijo; estricto para no matchear otro UI.
-CONSUME_ALL_THRESHOLD = 0.90
+# El botón es la CONFIRMACIÓN de que hay suerte real: en suerte marca ~0.89,
+# en un falso positivo (sin menú) ~0.30. 0.82 separa limpio.
+CONSUME_ALL_THRESHOLD = 0.82
 
-# Movimiento desde el right-click hacia el menú. Cumple doble función:
-#   - saca el cursor del item → quita el tooltip de hover antes del matching;
-#   - si el template no matchea, es el offset ciego (cae sobre "Consume All").
+# Movimiento desde el right-click hacia el menú: saca el cursor del item y
+# quita el tooltip de hover antes de buscar el botón.
 # Del bot viejo (misma res 4K): main_old.py -> pyautogui.move(20, 125).
 CONSUME_ALL_OFFSET = (20, 125)
 
@@ -75,7 +75,8 @@ def _menu_region(point: tuple[int, int]) -> Region:
     return Region(x, y, w, h)
 
 
-def consume_all_at(point: tuple[int, int]) -> None:
+def consume_all_at(point: tuple[int, int]) -> bool:
+    """True si consumió (apareció el botón); False si fue falso positivo."""
     inp.move_to(point)
     time.sleep(0.08)
     inp.right_click(point)
@@ -89,11 +90,11 @@ def consume_all_at(point: tuple[int, int]) -> None:
                           timeout=1.0, threshold=CONSUME_ALL_THRESHOLD)
     if btn:
         inp.click(btn)
-        return
+        return True
 
-    # Sin match: el cursor ya está sobre el offset, click acá.
-    print("[fase2] botón Consume All no encontrado, click en offset fijo")
-    inp.click_here()
+    # Sin botón = no se abrió menú = el find fue falso positivo. No clickear.
+    print("[fase2] sin botón Consume All: falso positivo, no clickeo")
+    return False
 
 
 def run() -> bool:
@@ -104,7 +105,8 @@ def run() -> bool:
             if not spot:
                 break
             print(f"[fase2] {tpl.name} en {spot}, Consume All...")
-            consume_all_at(spot)
+            if not consume_all_at(spot):
+                break  # falso positivo persistente: no reintentar este tier
             time.sleep(SLEEP_AFTER_CONSUME)
             consumed = True
 
