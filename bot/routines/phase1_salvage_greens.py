@@ -28,8 +28,9 @@ SLEEP_AFTER_BANK_DOUBLECLICK = 1.0
 SLEEP_AFTER_RIGHT_CLICK = 0.8  # que el tooltip del item se quite
 SLEEP_HOVER_USE_ALL = 0.3  # asentar cursor sobre "Use All" antes de clickear
 
-# Offset relativo desde el right-click hasta "Use All". Tweak aquí.
-USE_ALL_OFFSET = (85, 185)
+# Offset relativo desde el right-click hasta "Use All", medido por el usuario
+# con el picker (puntos 673,226 → 718,407 → diff 45,181).
+USE_ALL_OFFSET = (45, 181)
 SALVAGE_OFFSET = (20, 90)
 
 CONFIRM_POINTS = [
@@ -63,7 +64,9 @@ def use_all_at(point: tuple[int, int]) -> None:
                 pos_after_rc[1] + USE_ALL_OFFSET[1])
     print(f"[fase1] use_all target esperado: {expected} (offset {USE_ALL_OFFSET})")
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
+    inp.DEBUG_ABS_MOVE = True
     inp.move_rel(*USE_ALL_OFFSET)
+    inp.DEBUG_ABS_MOVE = False
     pos_after_move = inp._cursor_pos()
     print(f"[fase1] cursor tras move_rel: {pos_after_move}")
     time.sleep(SLEEP_HOVER_USE_ALL)

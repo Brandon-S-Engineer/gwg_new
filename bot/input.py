@@ -88,6 +88,9 @@ def _human_duration(target):
     return random.uniform(base - delta, base + delta)
 
 
+DEBUG_ABS_MOVE = False  # Activa los prints internos para diagnosticar DPI
+
+
 def _abs_move(x, y):
     """Manda evento MOVE absoluto via mouse_event (bypasea pyautogui)."""
     if _user32 is None:
@@ -97,7 +100,14 @@ def _abs_move(x, y):
     sh = _user32.GetSystemMetrics(1)
     nx = int(x * 65535 / max(sw - 1, 1))
     ny = int(y * 65535 / max(sh - 1, 1))
-    _user32.mouse_event(_MOUSEEVENTF_MOVE | _MOUSEEVENTF_ABSOLUTE, nx, ny, 0, 0)
+    if DEBUG_ABS_MOVE:
+        before = _cursor_pos()
+        _user32.mouse_event(_MOUSEEVENTF_MOVE | _MOUSEEVENTF_ABSOLUTE, nx, ny, 0, 0)
+        after = _cursor_pos()
+        print(f"[abs_move] target=({x},{y}) sw,sh=({sw},{sh}) "
+              f"norm=({nx},{ny}) before={before} after={after}")
+    else:
+        _user32.mouse_event(_MOUSEEVENTF_MOVE | _MOUSEEVENTF_ABSOLUTE, nx, ny, 0, 0)
 
 
 def _abs_press(button="left"):
