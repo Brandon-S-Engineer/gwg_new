@@ -13,6 +13,7 @@ import pyautogui
 
 if sys.platform == "win32":
     import ctypes
+    import ctypes.wintypes
     try:
         ctypes.windll.shcore.SetProcessDpiAwareness(2)
     except Exception:
@@ -23,6 +24,20 @@ if sys.platform == "win32":
     _user32 = ctypes.windll.user32
 else:
     _user32 = None
+
+
+def _cursor_pos():
+    """Posición actual del cursor en píxeles físicos.
+
+    Usa GetCursorPos directo en Win32 (no pyautogui.position), porque
+    pyautogui puede devolver coords escaladas por DPI en algunas
+    configuraciones de VMware.
+    """
+    if _user32 is None:
+        return pyautogui.position()
+    pt = ctypes.wintypes.POINT()
+    _user32.GetCursorPos(ctypes.byref(pt))
+    return (pt.x, pt.y)
 
 pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0
@@ -62,10 +77,7 @@ def _rand(lo, hi):
 
 def _human_duration(target):
     """Duración del move según distancia desde la posición actual."""
-    try:
-        cur_x, cur_y = pyautogui.position()
-    except Exception:
-        cur_x, cur_y = target
+    cur_x, cur_y = _cursor_pos()
     dx = target[0] - cur_x
     dy = target[1] - cur_y
     dist = (dx * dx + dy * dy) ** 0.5
@@ -115,10 +127,10 @@ def move_to(point):
 def move_rel(dx, dy):
     """Calcula target absoluto = pos_actual + (dx, dy) y usa move_to.
 
-    Evita pyautogui.move (relativo) que puede aplicar DPI scaling
-    inconsistente con nuestro _abs_move (mouse_event ABSOLUTE).
+    Lee posición con GetCursorPos (Win32) para evitar el escalado DPI
+    que puede meter pyautogui.position() en VMware.
     """
-    cur = pyautogui.position()
+    cur = _cursor_pos()
     target = (cur[0] + dx, cur[1] + dy)
     move_to(target)
 

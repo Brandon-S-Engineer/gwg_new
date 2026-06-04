@@ -9,8 +9,6 @@ Flujo:
 
 import time
 
-import pyautogui
-
 from .. import input as inp
 from .. import vision
 from ..config import ITEMS_DIR
@@ -59,14 +57,14 @@ def use_all_at(point: tuple[int, int]) -> None:
     inp.move_to(point)
     time.sleep(0.25)
     inp.right_click(point)
-    pos_after_rc = pyautogui.position()
+    pos_after_rc = inp._cursor_pos()
     print(f"[fase1] right-click en green {point}; cursor real: {pos_after_rc}")
     expected = (pos_after_rc[0] + USE_ALL_OFFSET[0],
                 pos_after_rc[1] + USE_ALL_OFFSET[1])
     print(f"[fase1] use_all target esperado: {expected} (offset {USE_ALL_OFFSET})")
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
     inp.move_rel(*USE_ALL_OFFSET)
-    pos_after_move = pyautogui.position()
+    pos_after_move = inp._cursor_pos()
     print(f"[fase1] cursor tras move_rel: {pos_after_move}")
     time.sleep(SLEEP_HOVER_USE_ALL)
     inp.click_here()
