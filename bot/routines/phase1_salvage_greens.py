@@ -9,6 +9,8 @@ Flujo:
 
 import time
 
+import pyautogui
+
 from .. import input as inp
 from .. import vision
 from ..config import ITEMS_DIR
@@ -28,6 +30,8 @@ SLEEP_AFTER_BANK_DOUBLECLICK = 1.0
 SLEEP_AFTER_RIGHT_CLICK = 0.8  # que el tooltip del item se quite
 SLEEP_HOVER_USE_ALL = 0.3  # asentar cursor sobre "Use All" antes de clickear
 
+# Offset relativo desde el right-click hasta "Use All". Tweak aquí.
+USE_ALL_OFFSET = (85, 185)
 SALVAGE_OFFSET = (20, 90)
 
 CONFIRM_POINTS = [
@@ -55,8 +59,15 @@ def use_all_at(point: tuple[int, int]) -> None:
     inp.move_to(point)
     time.sleep(0.25)
     inp.right_click(point)
+    pos_after_rc = pyautogui.position()
+    print(f"[fase1] right-click en green {point}; cursor real: {pos_after_rc}")
+    expected = (pos_after_rc[0] + USE_ALL_OFFSET[0],
+                pos_after_rc[1] + USE_ALL_OFFSET[1])
+    print(f"[fase1] use_all target esperado: {expected} (offset {USE_ALL_OFFSET})")
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
-    inp.move_to(get_point("use_all"))
+    inp.move_rel(*USE_ALL_OFFSET)
+    pos_after_move = pyautogui.position()
+    print(f"[fase1] cursor tras move_rel: {pos_after_move}")
     time.sleep(SLEEP_HOVER_USE_ALL)
     inp.click_here()
 
