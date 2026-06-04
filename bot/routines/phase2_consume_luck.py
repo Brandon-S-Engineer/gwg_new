@@ -31,9 +31,11 @@ LUCK_TEMPLATES = [
 
 CONSUME_ALL = ITEMS_DIR / "consume_all.png"
 
-# El bot viejo apuntaba a 0.9 (gris): solo actúa sobre matches fuertes.
-# Con menos, matchea basura y dispara clicks sueltos.
-LUCK_THRESHOLD = 0.9
+# Match en COLOR. En gris no se separa: en este VM (gamma) un elemento de UI
+# que no es suerte matchea ~0.85, igual que la suerte real. El color (único
+# diferenciador entre las 4 tiers) sí los distingue. Escala distinta a gris;
+# afinar con el max_val que imprime vision.
+LUCK_THRESHOLD = 0.70
 # El botón es texto fijo; estricto para no matchear otro UI.
 CONSUME_ALL_THRESHOLD = 0.90
 
@@ -59,10 +61,9 @@ SLEEP_AFTER_CONSUME = 1.5       # que el stack desaparezca antes del siguiente
 
 
 def find_luck(template) -> tuple[int, int] | None:
-    # Gris como el bot viejo. Da igual si un tier matchea a otro: son todas
-    # suerte y se consumen todas. El 0.9 evita actuar sobre no-suerte.
+    # color=True: en gris la basura matchea tan alto como la suerte real.
     return vision.find(template, region=get_region("INVENTORY_AREA"),
-                       threshold=LUCK_THRESHOLD)
+                       threshold=LUCK_THRESHOLD, color=True)
 
 
 def _menu_region(point: tuple[int, int]) -> Region:
