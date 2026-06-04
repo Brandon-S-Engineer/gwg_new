@@ -15,7 +15,6 @@ from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
 
 GREEN = ITEMS_DIR / "green.png"
-RUNE_CRAFTER = ITEMS_DIR / "rune_crafter.png"
 
 # Threshold permisivo para greens — el bot viejo usaba 0.70 y funcionaba.
 # Si captura/gamma del VM difiere ligeramente, 0.80 default es demasiado estricto.
@@ -31,7 +30,6 @@ SLEEP_HOVER_USE_ALL = 0.3  # asentar cursor sobre "Use All" antes de clickear
 # Offset relativo desde el right-click hasta "Use All", medido por el usuario
 # con el picker (puntos 673,226 → 718,407 → diff 45,181).
 USE_ALL_OFFSET = (45, 181)
-SALVAGE_OFFSET = (20, 90)
 
 CONFIRM_POINTS = [
     "rune_crafter_confirm_button",
@@ -74,16 +72,9 @@ def use_all_at(point: tuple[int, int]) -> None:
 
 
 def salvage_with_rune_crafter() -> bool:
-    kit = vision.find(RUNE_CRAFTER, region=get_region("INVENTORY_AREA"))
-    if not kit:
-        print("[fase1] no se encontró rune_crafter en el inventario")
-        return False
-
-    inp.move_to(kit)
-    inp.right_click(kit)
-    time.sleep(0.5)
-    inp.move_rel(*SALVAGE_OFFSET)
-    inp.click_here()
+    inp.right_click(get_point("rune_crafter"))
+    time.sleep(SLEEP_AFTER_RIGHT_CLICK)
+    inp.click(get_point("rune_crafter_salvage_green"))
     time.sleep(0.5)
 
     for name in CONFIRM_POINTS:
