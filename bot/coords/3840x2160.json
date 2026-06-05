@@ -147,23 +147,23 @@
         },
         {
           "name": "silver_fed",
-          "x": -203,
-          "y": 976
+          "x": 190,
+          "y": 222
         },
         {
           "name": "silver_fed_use",
-          "x": -201,
-          "y": 1048
+          "x": 253,
+          "y": 238
         },
         {
           "name": "silver_fed_salvage_rare",
-          "x": -197,
-          "y": 1124
+          "x": 257,
+          "y": 338
         },
         {
           "name": "silver_fed_salvage_stack",
-          "x": -200,
-          "y": 1202
+          "x": 257,
+          "y": 372
         },
         {
           "name": "silver_fed_salvage_stack_accept",
@@ -348,6 +348,10 @@
         {
           "name": "yellow_luck",
           "image": "yellow_luck.png"
+        },
+        {
+          "name": "accept",
+          "image": "accept.png"
         }
       ]
     },
