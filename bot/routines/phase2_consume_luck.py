@@ -57,7 +57,7 @@ MAX_PASSES_PER_TIER = 3
 
 SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú (NO tocar: es el right-click + bajar que quita el hover)
 SLEEP_AFTER_DISMISS = 0.1       # tooltip ya se fue al bajar; clickear cuanto antes
-SLEEP_AFTER_CONSUME = 0.4       # mínimo para que el stack desaparezca, y siguiente
+SLEEP_AFTER_CONSUME = 0.2       # mínimo para que el stack desaparezca, y a la siguiente
 
 
 def find_luck(template) -> tuple[int, int] | None:
