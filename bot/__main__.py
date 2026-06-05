@@ -12,7 +12,7 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop | phase1 | phase2 | click_test [<point_name>]")
+        print("comandos: info | loop | phase1 | phase2 | phase3 | click_test [<point_name>]")
         return
 
     if cmd == "loop":
@@ -63,6 +63,13 @@ def main() -> None:
         from .routines import phase2_consume_luck
         boot.focus_game()
         phase2_consume_luck.run()
+        return
+
+    if cmd == "phase3":
+        from . import boot
+        from .routines import phase3_salvage_rares
+        boot.focus_game()
+        phase3_salvage_rares.run()
         return
 
     print(f"comando desconocido: {cmd}")

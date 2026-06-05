@@ -20,7 +20,11 @@ MAX_ITERATIONS = -1 corre infinito (como el `for i in range(1, 20001)` viejo).
 Poné un número chico para probar.
 """
 
-from .routines import phase1_salvage_greens, phase2_consume_luck
+from .routines import (
+    phase1_salvage_greens,
+    phase2_consume_luck,
+    phase3_salvage_rares,
+)
 
 MAX_ITERATIONS = 3  # -1 = infinito; ej. 3 para probar
 
@@ -29,6 +33,7 @@ TASKS = [
     # (every, callable)
     (1, phase1_salvage_greens.run),   # greens: cada iteración
     (3, phase2_consume_luck.run),     # suerte: cada 5  <-- cambiá el 5 a tu gusto
+    # (1, phase3_salvage_rares.run),  # rares silver_fed: descomentar tras recalibrar coords
     # (2,  lambda: sell_item("mithril_ore")),   # cada 2
     # (3,  lambda: sell_item("silk_scraps")),   # cada 3
     # (10, sell_ectos.run),                      # cada 10
