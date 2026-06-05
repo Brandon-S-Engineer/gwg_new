@@ -4,12 +4,13 @@ Flujo:
   1. Buscar green.png en INVENTORY_AREA. Si hay → "Use All".
   2. Si no, buscar en BANK_AREA → doble-click stack → recheck inventario.
   3. Salvage con Rune Crafter (template match del kit en el inv).
-  4. Clicks de confirm (con fallbacks).
+  4. Click en "Accept" por template (salvage.click_accept).
 """
 
 import time
 
 from .. import input as inp
+from .. import salvage
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
@@ -30,16 +31,6 @@ SLEEP_HOVER_USE_ALL = 0.3  # asentar cursor sobre "Use All" antes de clickear
 # Offset relativo desde el right-click hasta "Use All", medido por el usuario
 # con el picker (puntos 673,226 → 718,407 → diff 45,181).
 USE_ALL_OFFSET = (45, 181)
-
-CONFIRM_POINTS = [
-    "rune_crafter_confirm_button",
-    "rune_crafter_confirm_button_1",
-    "rune_crafter_confirm_button_2",
-    "rune_crafter_confirm_button_3",
-    "rune_crafter_confirm_button_4",
-    "rune_crafter_confirm_button_5",
-    "rune_crafter_confirm_button_6",
-]
 
 
 def find_green_in_inventory() -> tuple[int, int] | None:
@@ -77,10 +68,7 @@ def salvage_with_rune_crafter() -> bool:
     inp.click(get_point("rune_crafter_salvage_green"))
     time.sleep(0.5)
 
-    for name in CONFIRM_POINTS:
-        inp.click(get_point(name))
-        time.sleep(0.05)
-    return True
+    return salvage.click_accept()
 
 
 def run() -> bool:
