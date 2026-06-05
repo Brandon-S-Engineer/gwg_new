@@ -88,6 +88,14 @@ def _human_duration(target):
     return random.uniform(base - delta, base + delta)
 
 
+def _ease_in_out_quad(t):
+    """Arranque y final suaves, pico de velocidad al medio (no lineal)."""
+    return 2 * t * t if t < 0.5 else 1 - ((-2 * t + 2) ** 2) / 2
+
+
+STEP_DT = 0.012  # ~12ms por paso del move
+
+
 DEBUG_ABS_MOVE = False  # Activa los prints internos para diagnosticar DPI
 
 
@@ -125,13 +133,28 @@ def _abs_press(button="left"):
 
 
 def move_to(point):
+    """Move suave hasta el target, TODO en coords físicas vía _abs_move.
+
+    No usamos pyautogui.moveTo: en el VM con escalado DPI aterriza en la
+    posición equivocada y obligaba a un _abs_move final que se veía como
+    teletransporte. Interpolando con _abs_move el camino es suave y exacto.
+    """
     target = _jitter(point)
-    pyautogui.moveTo(target[0], target[1],
-                     duration=_human_duration(target),
-                     tween=pyautogui.easeInOutQuad)
-    # Reafirmamos posición con mouse_event absoluto (por si pyautogui
-    # dejó el cursor en logical-coord con DPI scaling)
-    _abs_move(target[0], target[1])
+    start = _cursor_pos()
+    dx = target[0] - start[0]
+    dy = target[1] - start[1]
+    dist = (dx * dx + dy * dy) ** 0.5
+    if dist < 2:
+        _abs_move(target[0], target[1])
+        return
+    dur = _human_duration(target)
+    steps = max(2, int(dur / STEP_DT))
+    for s in range(1, steps + 1):
+        e = _ease_in_out_quad(s / steps)
+        _abs_move(int(round(start[0] + dx * e)),
+                  int(round(start[1] + dy * e)))
+        time.sleep(dur / steps)
+    _abs_move(target[0], target[1])  # asegurar el píxel exacto
 
 
 def move_rel(dx, dy):
