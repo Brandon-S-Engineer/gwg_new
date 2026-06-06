@@ -356,6 +356,10 @@
         {
           "name": "sell_at_tp",
           "image": "sell_at_tp.png"
+        },
+        {
+          "name": "tp_ready",
+          "image": "tp_ready.png"
         }
       ]
     },
