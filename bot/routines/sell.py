@@ -18,9 +18,11 @@ from ..regions import Region
 
 SELL_AT_TP = ITEMS_DIR / "sell_at_tp.png"
 SELL_AT_TP_THRESHOLD = 0.85
-# Threshold del item. Como en fase 1, el gamma del VM puede pedir bajarlo;
-# mirá el max_val que imprime vision.
-ITEM_THRESHOLD = 0.80
+# TEMPORAL: bajo por gamma del VM + el número de stack en el icono 80x80
+# (silk del bot viejo matchea ~0.67-0.70). Recapturar el template recortado
+# sin el número sube el match a ~0.85 y volvemos a 0.80. OJO a 0.65: puede
+# confundir telas parecidas (gossamer). Solo para test supervisado.
+ITEM_THRESHOLD = 0.65
 
 # Offset para sacar el hover y acercarse al menú. Del bot viejo: move(16, 88)
 # (cae sobre "Sell at Trading Post", el 3er spot). El template ajusta el click.
