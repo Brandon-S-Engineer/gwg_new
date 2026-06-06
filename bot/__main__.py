@@ -16,7 +16,11 @@ def main() -> None:
         return
 
     if cmd == "loop":
+        import time
+
         from . import boot, schedule
+        print(f"[loop] arranca en {schedule.STARTUP_DELAY}s (sacá el mouse de Parsec)...")
+        time.sleep(schedule.STARTUP_DELAY)
         boot.focus_game()
         max_iters = schedule.MAX_ITERATIONS
         i = 1

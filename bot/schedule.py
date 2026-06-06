@@ -26,7 +26,9 @@ from .routines import (
     phase3_salvage_rares,
 )
 
-MAX_ITERATIONS = 3  # -1 = infinito; ej. 3 para probar
+MAX_ITERATIONS = 5  # -1 = infinito; ej. 3 para probar
+
+STARTUP_DELAY = 5  # seg antes de arrancar: tiempo para sacar el mouse de Parsec
 
 
 TASKS = [
