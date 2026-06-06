@@ -31,14 +31,13 @@ LUCK_TEMPLATES = [
 
 CONSUME_ALL = ITEMS_DIR / "consume_all.png"
 
-# Match en COLOR. En gris no se separa: en este VM (gamma) un elemento de UI
-# que no es suerte matchea ~0.85, igual que la suerte real. El color (único
-# diferenciador entre las 4 tiers) sí los distingue. Escala distinta a gris;
-# afinar con el max_val que imprime vision.
-LUCK_THRESHOLD = 0.70
-# El botón es la CONFIRMACIÓN de que hay suerte real: en suerte marca ~0.89,
-# en un falso positivo (sin menú) ~0.30. 0.82 separa limpio.
-CONSUME_ALL_THRESHOLD = 0.82
+# Match en COLOR (único diferenciador entre las 4 tiers; en gris se confunden).
+# Templates recapturados: suerte real ≥0.85 (blue/yellow ~1.0); un falso
+# positivo de purple dio 0.777. 0.80 lo descarta sin perder suerte real.
+LUCK_THRESHOLD = 0.80
+# El botón confirma que hay suerte real: menú real ~0.84-0.89, falso positivo
+# (sin menú) ~0.56. 0.78 deja margen sobre el real sin tocar el FP.
+CONSUME_ALL_THRESHOLD = 0.78
 
 # Movimiento desde el right-click hacia el menú: saca el cursor del item y
 # quita el tooltip de hover antes de buscar el botón.

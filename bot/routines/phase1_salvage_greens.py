@@ -17,9 +17,9 @@ from ..coords_loader import get_point, get_region
 
 GREEN = ITEMS_DIR / "green.png"
 
-# Threshold permisivo para greens — el bot viejo usaba 0.70 y funcionaba.
-# Si captura/gamma del VM difiere ligeramente, 0.80 default es demasiado estricto.
-GREEN_THRESHOLD = 0.70
+# Template recapturado en el VM: green real matchea ~0.99, ruido sin greens
+# ~0.62. 0.85 separa con margen de sobra.
+GREEN_THRESHOLD = 0.85
 
 SLEEP_AFTER_IDENTIFY = 4.0
 SLEEP_AFTER_SALVAGE = 6.0
