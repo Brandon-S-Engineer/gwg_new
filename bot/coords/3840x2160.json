@@ -92,8 +92,8 @@
         },
         {
           "name": "price",
-          "x": 3714,
-          "y": 236
+          "x": 3619,
+          "y": 175
         },
         {
           "name": "accept_button",
@@ -352,6 +352,10 @@
         {
           "name": "accept",
           "image": "accept.png"
+        },
+        {
+          "name": "sell_at_tp",
+          "image": "sell_at_tp.png"
         }
       ]
     },
