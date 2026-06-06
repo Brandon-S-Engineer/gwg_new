@@ -21,14 +21,22 @@ MATERIALS = [
     # cuero
     "thick_leather_sections",
     "hardened_leather_sections",
-    # "lucent_motes",           # flujo aparte
+    # otros
+    "lucent_motes",
     # "reclaimed_metal_plates", # opcional, byproduct de salvage
 ]
+
+# Suelen pasar de 250 (más de un stack): venderlos hasta 2 veces.
+MULTI_STACK = {"lucent_motes", "mithril_ore", "silk_scraps"}
+MAX_PASSES = 2
 
 
 def run() -> bool:
     done = False
     for name in MATERIALS:
-        if sell.sell_item(name):
+        passes = MAX_PASSES if name in MULTI_STACK else 1
+        for _ in range(passes):
+            if not sell.sell_item(name):
+                break  # no hay (más) de este → siguiente material
             done = True
     return done
