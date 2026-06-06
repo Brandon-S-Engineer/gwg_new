@@ -27,7 +27,7 @@ from .routines import (
     sell_materials,
 )
 
-MAX_ITERATIONS = 5  # -1 = infinito
+MAX_ITERATIONS = 10  # -1 = infinito
 
 STARTUP_DELAY = 5  # 
 
