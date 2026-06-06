@@ -36,7 +36,7 @@ TASKS = [
     (1, phase1_salvage_greens.run),
     (5, phase3_salvage_rares.run),
     # (5, phase2_consume_luck.run),   
-    (3, sell_materials.run),          # vender materiales en TP
+    (5, sell_materials.run),          # vender materiales en TP
     # (10, sell_ectos.run),                      # cada 10
     # (25, restart_or_not.run),                  # cada 25
 ]
