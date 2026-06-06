@@ -24,7 +24,7 @@ from .routines import (
     phase1_salvage_greens,
     phase2_consume_luck,
     phase3_salvage_rares,
-    phase4_sell_materials,
+    sell_materials,
 )
 
 MAX_ITERATIONS = 5  # -1 = infinito
@@ -35,8 +35,8 @@ TASKS = [
     # (every, callable)
     (1, phase1_salvage_greens.run),
     (5, phase3_salvage_rares.run),
-    (5, phase2_consume_luck.run),     # suerte: sube magic find; cambiá el every si querés
-    # (3, phase4_sell_materials.run),  # silk: tras capturar sell_at_tp.png y verificar coords TP
+    # (5, phase2_consume_luck.run),   
+    (3, sell_materials.run),          # vender materiales en TP
     # (10, sell_ectos.run),                      # cada 10
     # (25, restart_or_not.run),                  # cada 25
 ]
