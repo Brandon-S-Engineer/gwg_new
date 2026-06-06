@@ -18,11 +18,10 @@ from ..regions import Region
 
 SELL_AT_TP = ITEMS_DIR / "sell_at_tp.png"
 SELL_AT_TP_THRESHOLD = 0.85
-# TEMPORAL: bajo por gamma del VM + el número de stack en el icono 80x80
-# (silk del bot viejo matchea ~0.67-0.70). Recapturar el template recortado
-# sin el número sube el match a ~0.85 y volvemos a 0.80. OJO a 0.65: puede
-# confundir telas parecidas (gossamer). Solo para test supervisado.
-ITEM_THRESHOLD = 0.65
+# Umbral alto y seguro: vale si los templates se recapturan EN ESTE VM y
+# recortados a la parte distintiva del icono (matchean ~0.90+). No bajar:
+# para items tercos usar color=True o un override en sell_item().
+ITEM_THRESHOLD = 0.85
 
 # Offset para sacar el hover y acercarse al menú. Del bot viejo: move(16, 88)
 # (cae sobre "Sell at Trading Post", el 3er spot). El template ajusta el click.
@@ -65,11 +64,15 @@ def _click_sell_at_tp(point: tuple[int, int]) -> bool:
     return True
 
 
-def sell_item(name: str) -> bool:
-    """Vende un stack de `name` (instantáneo al mejor comprador). True si lo hizo."""
+def sell_item(name: str, threshold: float = ITEM_THRESHOLD,
+              color: bool = False) -> bool:
+    """Vende un stack de `name` (instantáneo al mejor comprador). True si lo hizo.
+
+    threshold/color: overrides por item terco (ej. telas parecidas → color=True).
+    """
     tpl = ITEMS_DIR / f"{name}.png"
     spot = vision.find(tpl, region=get_region("INVENTORY_AREA"),
-                       threshold=ITEM_THRESHOLD)
+                       threshold=threshold, color=color)
     if not spot:
         print(f"[sell] no hay {name} en inventario")
         return False
