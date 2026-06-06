@@ -26,16 +26,15 @@ from .routines import (
     phase3_salvage_rares,
 )
 
-MAX_ITERATIONS = 5  # -1 = infinito; ej. 3 para probar
+MAX_ITERATIONS = 5  # -1 = infinito
 
-STARTUP_DELAY = 5  # seg antes de arrancar: tiempo para sacar el mouse de Parsec
-
+STARTUP_DELAY = 5  # 
 
 TASKS = [
     # (every, callable)
     (1, phase1_salvage_greens.run),
     (5, phase3_salvage_rares.run),
-    (5, phase2_consume_luck.run),
+    # (5, phase2_consume_luck.run),
     # (2,  lambda: sell_item("mithril_ore")),   # cada 2
     # (3,  lambda: sell_item("silk_scraps")),   # cada 3
     # (10, sell_ectos.run),                      # cada 10
