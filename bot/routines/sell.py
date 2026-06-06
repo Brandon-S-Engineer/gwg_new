@@ -11,6 +11,7 @@ import time
 
 from .. import config
 from .. import input as inp
+from .. import tp
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
@@ -35,7 +36,7 @@ MENU_REGION_H = 360
 
 SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú
 SLEEP_AFTER_DISMISS = 0.1       # tooltip ya se fue al bajar
-SLEEP_PANEL = 1.5               # que abra el panel de venta del TP
+SLEEP_AFTER_READY = 0.3         # asentar tras cargar el TP
 SLEEP_STEP = 0.25               # entre clicks del panel
 SLEEP_AFTER_LIST = 1.5          # que se procese el listado
 
@@ -81,7 +82,13 @@ def sell_item(name: str, threshold: float = ITEM_THRESHOLD,
     if not _click_sell_at_tp(spot):
         return False
 
-    time.sleep(SLEEP_PANEL)
+    # Esperar a que el TP termine de cargar (tarda variable). Sin esto, los
+    # clicks del panel caen en el vacío.
+    if not tp.wait_ready():
+        print(f"[sell] el TP no cargó, abortando {name}")
+        return False
+    time.sleep(SLEEP_AFTER_READY)
+
     inp.click(get_point("sellers_list"))      # seleccionar venta al comprador
     time.sleep(SLEEP_STEP)
     inp.click(get_point("maximum_amount"))    # cantidad máxima

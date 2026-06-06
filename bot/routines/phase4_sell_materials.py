@@ -10,7 +10,7 @@ from . import sell
 
 MATERIALS = [
     "silk_scraps",
-    # "mithril_ore",
+    "mithril_ore",
     # "elder_wood_logs",
     # "thick_leather_sections",
 ]
