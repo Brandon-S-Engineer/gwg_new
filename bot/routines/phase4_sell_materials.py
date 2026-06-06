@@ -9,10 +9,20 @@ Ectos y lucent motes NO van acá (otro flujo).
 from . import sell
 
 MATERIALS = [
-    "silk_scraps",
+    # mineral
     "mithril_ore",
-    # "elder_wood_logs",
-    # "thick_leather_sections",
+    "orichalcum_ore",
+    # madera
+    "elder_wood_logs",
+    "ancient_wood_logs",
+    # tela
+    "silk_scraps",
+    "gossamer_Scraps",          # ojo: S mayúscula (nombre del archivo)
+    # cuero
+    "thick_leather_sections",
+    "hardened_leather_sections",
+    # "lucent_motes",           # flujo aparte
+    # "reclaimed_metal_plates", # opcional, byproduct de salvage
 ]
 
 
