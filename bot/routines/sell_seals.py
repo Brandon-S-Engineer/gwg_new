@@ -6,16 +6,14 @@ Grupos por ritmo de acumulación; la frecuencia (every) va en schedule.
 
 from . import sell
 
-# Se acumulan rápido (vienen de gear común).
-FAST = [
+# Dan poquitos de todos: un solo grupo.
+SEALS = [
     "little_symbols_of_control",
     "little_symbols_of_enhancement",
     "little_symbols_of_pain",
     "little_charms_of_potence",
     "little_charms_of_briliance",   # ojo: 1 sola l (nombre del archivo)
     "little_charms_of_skill",
-]
-SLOW = [
     "symbols_of_control",
     "symbols_of_enhancement",
     "symbols_of_pain",
@@ -24,8 +22,6 @@ SLOW = [
     "charms_of_skill",
     "rune_crafter",
 ]
-
-SEALS = FAST + SLOW
 
 MULTI_STACK: set[str] = set()
 MAX_PASSES = 2

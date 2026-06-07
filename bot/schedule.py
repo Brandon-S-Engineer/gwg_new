@@ -41,9 +41,7 @@ TASKS = [
     (5, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
     (7, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
     (14, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
-    # vender sellos en TP, por ritmo de acumulación
-    (7, lambda: sell_seals.run(sell_seals.FAST)),            # little symbols/charms
-    (14, lambda: sell_seals.run(sell_seals.SLOW)),           # symbols/charms enteros + rune
+    (14, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     # (10, sell_ectos.run),                      # cada 10
     # (25, restart_or_not.run),                  # cada 25
 ]
