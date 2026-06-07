@@ -25,6 +25,7 @@ from .routines import (
     phase2_consume_luck,
     phase3_salvage_rares,
     sell_materials,
+    sell_seals,
 )
 
 MAX_ITERATIONS = 14  # -1 = infinito
@@ -40,6 +41,9 @@ TASKS = [
     (5, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
     (7, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
     (14, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
+    # vender sellos en TP, por ritmo de acumulación
+    (7, lambda: sell_seals.run(sell_seals.FAST)),            # little symbols/charms
+    (14, lambda: sell_seals.run(sell_seals.SLOW)),           # symbols/charms enteros + rune
     # (10, sell_ectos.run),                      # cada 10
     # (25, restart_or_not.run),                  # cada 25
 ]
