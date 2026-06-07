@@ -8,32 +8,32 @@ Ectos y lucent motes NO van acá (otro flujo).
 
 from . import sell
 
-MATERIALS = [
-    # mineral
+# Grupos por ritmo de acumulación. La frecuencia (every) va en schedule.
+LUCENT = ["lucent_motes"]            # te dan muchísimas
+FAST = [                             # se acumulan rápido
     "mithril_ore",
-    "orichalcum_ore",
-    # madera
     "elder_wood_logs",
-    "ancient_wood_logs",
-    # tela
     "silk_scraps",
-    "gossamer_Scraps",          # ojo: S mayúscula (nombre del archivo)
-    # cuero
+]
+SLOW = [                            # te dan menos
+    "orichalcum_ore",
+    "ancient_wood_logs",
+    "gossamer_Scraps",              # ojo: S mayúscula (nombre del archivo)
     "thick_leather_sections",
     "hardened_leather_sections",
-    # otros
-    "lucent_motes",
-    # "reclaimed_metal_plates", # opcional, byproduct de salvage
+    # "reclaimed_metal_plates",    # opcional, byproduct de salvage
 ]
+
+MATERIALS = LUCENT + FAST + SLOW
 
 # Suelen pasar de 250 (más de un stack): venderlos hasta 2 veces.
 MULTI_STACK = {"lucent_motes", "mithril_ore", "silk_scraps"}
 MAX_PASSES = 2
 
 
-def run() -> bool:
+def run(materials=None) -> bool:
     done = False
-    for name in MATERIALS:
+    for name in materials if materials is not None else MATERIALS:
         passes = MAX_PASSES if name in MULTI_STACK else 1
         for _ in range(passes):
             if not sell.sell_item(name):
