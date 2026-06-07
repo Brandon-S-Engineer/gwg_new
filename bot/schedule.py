@@ -27,19 +27,19 @@ from .routines import (
     sell_materials,
 )
 
-MAX_ITERATIONS = 10  # -1 = infinito
+MAX_ITERATIONS = 14  # -1 = infinito
 
 STARTUP_DELAY = 5  # 
 
 TASKS = [
     # (every, callable)
     (1, phase1_salvage_greens.run),
-    (5, phase3_salvage_rares.run),
+    (4, phase3_salvage_rares.run),
     # (5, phase2_consume_luck.run),
     # vender mats en TP, por ritmo de acumulación
-    (4, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
+    (5, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
     (7, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
-    (10, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
+    (14, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
     # (10, sell_ectos.run),                      # cada 10
     # (25, restart_or_not.run),                  # cada 25
 ]
