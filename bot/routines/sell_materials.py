@@ -14,12 +14,12 @@ FAST = [                             # se acumulan rápido
     "mithril_ore",
     "elder_wood_logs",
     "silk_scraps",
+    "thick_leather_sections",
 ]
 SLOW = [                            # te dan menos
     "orichalcum_ore",
     "ancient_wood_logs",
     "gossamer_Scraps",              # ojo: S mayúscula (nombre del archivo)
-    "thick_leather_sections",
     "hardened_leather_sections",
     # "reclaimed_metal_plates",    # opcional, byproduct de salvage
 ]
