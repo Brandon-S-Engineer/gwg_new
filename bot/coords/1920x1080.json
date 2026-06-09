@@ -91,6 +91,11 @@
           "y": 0
         },
         {
+          "name": "sell_close",
+          "x": 0,
+          "y": 0
+        },
+        {
           "name": "price",
           "x": 0,
           "y": 0
