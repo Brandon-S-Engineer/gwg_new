@@ -4,9 +4,8 @@ Sirve para grabar una secuencia tediosa (ej: partir stacks de 250 en stacks
 de ~63 y acomodarlos en el banco) una sola vez, y repetirla con un comando.
 
     py -m pip install pynput
-    py tools/acomodador.py grabar partir_stacks
-    py tools/acomodador.py correr partir_stacks
-    py tools/acomodador.py listar
+    py tools/acomodador.py g    # grabar
+    py tools/acomodador.py c    # correr
 
 Grabar: Ctrl+P para EMPEZAR, Ctrl+P de nuevo para PARAR y guardar (igual que
 el gesto de region_picker). Graba todo: movimiento del mouse, clicks, scroll y
@@ -15,7 +14,7 @@ teclas, con sus tiempos.
 Correr: cuenta regresiva y repite. Cada punto sale ligeramente impreciso
 (~5px) y los tiempos varían un poco, así nunca es 100% idéntico. Ctrl+P aborta.
 
-Las grabaciones quedan en tools/macros/<nombre>.json.
+La grabación queda en tools/macros/macro.json.
 """
 
 from __future__ import annotations
@@ -33,7 +32,7 @@ except ImportError:
     print("falta pynput. Instalalo con:  py -m pip install pynput")
     sys.exit(1)
 
-MACROS_DIR = Path(__file__).resolve().parent / "macros"
+MACRO_PATH = Path(__file__).resolve().parent / "macros" / "macro.json"
 
 JITTER_PX = 5        # impresición espacial al repetir (±px)
 TIME_JITTER = 0.10   # variación de tiempos al repetir (±10%)
@@ -68,7 +67,7 @@ def _is_p(key) -> bool:
 
 
 # ------------------------------------------------------------------- grabar
-def grabar(nombre: str) -> None:
+def grabar() -> None:
     state = {"on": False, "stop": False, "ctrl": False, "events": [], "t0": 0.0}
 
     def stamp() -> float:
@@ -115,7 +114,7 @@ def grabar(nombre: str) -> None:
             state["events"].append({"t": stamp(), "kind": "key",
                                     "action": "release", **_key_to_dict(key)})
 
-    print(f"Listo para grabar '{nombre}'. Poné el foco en el juego y Ctrl+P para empezar.")
+    print("Listo para grabar. Poné el foco en el juego y Ctrl+P para empezar.")
     ml = mouse.Listener(on_move=on_move, on_click=on_click, on_scroll=on_scroll)
     kl = keyboard.Listener(on_press=on_press, on_release=on_release)
     ml.start()
@@ -134,14 +133,12 @@ def grabar(nombre: str) -> None:
         print("no se grabó nada.")
         return
 
-    MACROS_DIR.mkdir(parents=True, exist_ok=True)
-    out = MACROS_DIR / f"{nombre}.json"
-    out.write_text(json.dumps({
-        "name": nombre,
+    MACRO_PATH.parent.mkdir(parents=True, exist_ok=True)
+    MACRO_PATH.write_text(json.dumps({
         "created": datetime.now().isoformat(timespec="seconds"),
         "events": state["events"],
     }, indent=2), encoding="utf-8")
-    print(f"guardado {out}  ({len(state['events'])} eventos)")
+    print(f"guardado {MACRO_PATH}  ({len(state['events'])} eventos)")
 
 
 # ------------------------------------------------------------------- correr
@@ -149,14 +146,12 @@ def _jit(v: int) -> int:
     return int(round(v + random.uniform(-JITTER_PX, JITTER_PX)))
 
 
-def correr(nombre: str) -> None:
-    path = MACROS_DIR / f"{nombre}.json"
-    if not path.exists():
-        print(f"no existe {path}")
+def correr() -> None:
+    if not MACRO_PATH.exists():
+        print(f"no hay grabación ({MACRO_PATH}). Grabá con: py tools/acomodador.py g")
         return
-    data = json.loads(path.read_text(encoding="utf-8"))
-    events = data["events"]
-    print(f"'{nombre}': {len(events)} eventos. Empieza en {START_DELAY}s (Ctrl+P aborta)...")
+    events = json.loads(MACRO_PATH.read_text(encoding="utf-8"))["events"]
+    print(f"{len(events)} eventos. Empieza en {START_DELAY}s (Ctrl+P aborta)...")
 
     abort = {"stop": False, "ctrl": False}
 
@@ -211,35 +206,18 @@ def correr(nombre: str) -> None:
         print("listo.")
 
 
-# ------------------------------------------------------------------- listar
-def listar() -> None:
-    if not MACROS_DIR.exists() or not any(MACROS_DIR.glob("*.json")):
-        print("no hay grabaciones todavía.")
-        return
-    for f in sorted(MACROS_DIR.glob("*.json")):
-        try:
-            d = json.loads(f.read_text(encoding="utf-8"))
-            print(f"  {f.stem:24} {len(d.get('events', [])):>5} eventos  {d.get('created', '')}")
-        except Exception:
-            print(f"  {f.stem:24} (ilegible)")
-
-
 # --------------------------------------------------------------------- main
 def main() -> None:
-    args = sys.argv[1:]
-    cmd = args[0] if args else "ayuda"
+    cmd = sys.argv[1] if len(sys.argv) > 1 else ""
 
-    if cmd == "grabar" and len(args) >= 2:
-        return grabar(args[1])
-    if cmd == "correr" and len(args) >= 2:
-        return correr(args[1])
-    if cmd == "listar":
-        return listar()
+    if cmd == "g":
+        return grabar()
+    if cmd == "c":
+        return correr()
 
     print("uso:")
-    print("  py tools/acomodador.py grabar <nombre>")
-    print("  py tools/acomodador.py correr <nombre>")
-    print("  py tools/acomodador.py listar")
+    print("  py tools/acomodador.py g    # grabar")
+    print("  py tools/acomodador.py c    # correr")
 
 
 if __name__ == "__main__":
