@@ -91,16 +91,6 @@
           "y": 512
         },
         {
-          "name": "sell_close",
-          "x": 0,
-          "y": 0
-        },
-        {
-          "name": "price",
-          "x": 3619,
-          "y": 175
-        },
-        {
           "name": "accept_button",
           "x": 1896,
           "y": 1156
@@ -219,6 +209,11 @@
           "name": "copper_fed_salvage_common",
           "x": -270,
           "y": 649
+        },
+        {
+          "name": "sell_close",
+          "x": 3562,
+          "y": 175
         }
       ],
       "items": [
