@@ -18,6 +18,9 @@ DEFAULT_WAIT_TIMEOUT = 9.0
 POLL_INTERVAL = 0.25
 DEFAULT_MATCH_THRESHOLD = 0.8
 
+# Una tarea que devuelve esto corta el loop (ej: fase 1 sin greens).
+NO_GREENS = "no_greens"
+
 RES_KEY = f"{SCREEN_WIDTH}x{SCREEN_HEIGHT}"
 
 PROJECT_ROOT = Path(__file__).parent.parent

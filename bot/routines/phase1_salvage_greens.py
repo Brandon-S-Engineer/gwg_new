@@ -12,7 +12,7 @@ import time
 from .. import input as inp
 from .. import salvage
 from .. import vision
-from ..config import ITEMS_DIR
+from ..config import ITEMS_DIR, NO_GREENS
 from ..coords_loader import get_point, get_region
 
 GREEN = ITEMS_DIR / "green.png"
@@ -80,7 +80,7 @@ def run() -> bool:
         bank_spot = find_green_in_bank()
         if not bank_spot:
             print("[fase1] no hay greens ni en inv ni en banco. Nada que hacer.")
-            return False
+            return NO_GREENS
         print(f"[fase1] green en banco {bank_spot}, doble-click...")
         inp.double_click(bank_spot)
         time.sleep(SLEEP_AFTER_BANK_DOUBLECLICK)

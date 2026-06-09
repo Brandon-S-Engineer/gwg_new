@@ -24,13 +24,17 @@ def main() -> None:
         boot.focus_game()
         max_iters = schedule.MAX_ITERATIONS
         i = 1
-        while max_iters == -1 or i <= max_iters:
+        stop = False
+        while (max_iters == -1 or i <= max_iters) and not stop:
             print(f"\n=== iter {i} ===")
             for every, task in schedule.TASKS:
                 if i % every == 0:
                     print(f"[loop] run {task.__module__}.{task.__name__} (every {every})")
                     try:
-                        task()
+                        if task() == config.NO_GREENS:
+                            print("[loop] no quedan greens, fin.")
+                            stop = True
+                            break
                     except Exception as e:
                         print(f"[loop] task {task.__name__} falló: {e}")
             i += 1
