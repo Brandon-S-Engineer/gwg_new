@@ -202,9 +202,9 @@ def correr() -> None:
 
         kind = ev["kind"]
         if kind == "move":
-            m.position = (_jit(ev["x"]), _jit(ev["y"]))
+            m.position = (ev["x"], ev["y"])          # path tal cual (ya es humano)
         elif kind == "click":
-            m.position = (_jit(ev["x"]), _jit(ev["y"]))
+            m.position = (_jit(ev["x"]), _jit(ev["y"]))  # solo el destino varía
             btn = getattr(mouse.Button, ev["button"])
             m.press(btn) if ev["pressed"] else m.release(btn)
         elif kind == "scroll":
