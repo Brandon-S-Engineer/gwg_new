@@ -85,7 +85,13 @@ def sell_item(name: str, threshold: float = ITEM_THRESHOLD,
     # Esperar a que el TP termine de cargar (tarda variable). Sin esto, los
     # clicks del panel caen en el vacío.
     if not tp.wait_ready():
-        print(f"[sell] el TP no cargó, abortando {name}")
+        # No cargó (no hay botón para listar). Cerrar la ventana para no
+        # insistir con media ventana abierta (eso dispara el error del TP).
+        print(f"[sell] el TP no cargó, cerrando ventana y abortando {name}")
+        try:
+            inp.click(get_point("sell_close"))
+        except KeyError:
+            print("[sell] falta la coordenada 'sell_close' (agregala con el picker)")
         return False
     time.sleep(SLEEP_AFTER_READY)
 
