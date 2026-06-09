@@ -26,6 +26,18 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+# DPI-aware antes de tocar pynput: en 4K con escalado, si no, las coords
+# salen escaladas y los clicks caen corridos (igual que bot/input.py).
+if sys.platform == "win32":
+    import ctypes
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+    except Exception:
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
+
 try:
     from pynput import keyboard, mouse
 except ImportError:
