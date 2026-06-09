@@ -20,7 +20,6 @@ SEALS = [
     "charms_of_potence",
     "charms_of_briliance",
     "charms_of_skill",
-    "rune_crafter",
 ]
 
 MULTI_STACK: set[str] = set()
