@@ -360,6 +360,10 @@
         {
           "name": "tp_ready",
           "image": "tp_ready.png"
+        },
+        {
+          "name": "use_all",
+          "image": "use_all.png"
         }
       ]
     },
