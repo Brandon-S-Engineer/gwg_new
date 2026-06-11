@@ -9,17 +9,25 @@ Flujo:
 
 import time
 
+from .. import config
 from .. import input as inp
 from .. import salvage
 from .. import vision
 from ..config import ITEMS_DIR, NO_GREENS
 from ..coords_loader import get_point, get_region
+from ..regions import Region
 
 GREEN = ITEMS_DIR / "green.png"
 
 # Template recapturado en el VM: green real matchea ~0.99, ruido sin greens
 # ~0.62. 0.85 separa con margen de sobra.
 GREEN_THRESHOLD = 0.85
+
+# "Use All" por imagen, igual que la venta hace "Sell at Trading Post".
+# Capturar el template EN EL VM, recortado al texto. Si no aparece, abortar:
+# NUNCA clickear a ciegas (un offset fijo puede caer en "Destroy").
+USE_ALL = ITEMS_DIR / "use_all.png"
+USE_ALL_THRESHOLD = 0.85
 
 SLEEP_AFTER_IDENTIFY = 4.0
 SLEEP_AFTER_SALVAGE = 6.0
@@ -28,9 +36,14 @@ SLEEP_AFTER_BANK_DOUBLECLICK = 1.0
 SLEEP_AFTER_RIGHT_CLICK = 0.8  # que el tooltip del item se quite
 SLEEP_HOVER_USE_ALL = 0.3  # asentar cursor sobre "Use All" antes de clickear
 
-# Offset relativo desde el right-click hasta "Use All", medido por el usuario
-# con el picker (puntos 673,226 → 718,407 → diff 45,181).
-USE_ALL_OFFSET = (45, 181)
+# Sacar el cursor del item hacia el menú: quita el tooltip de hover.
+MENU_DISMISS_OFFSET = (16, 88)
+
+# Región del menú abajo-derecha del right-click (6 items, texto largo).
+MENU_REGION_DX = -10
+MENU_REGION_DY = 0
+MENU_REGION_W = 500
+MENU_REGION_H = 360
 
 
 def find_green_in_inventory() -> tuple[int, int] | None:
@@ -43,23 +56,35 @@ def find_green_in_bank() -> tuple[int, int] | None:
                        threshold=GREEN_THRESHOLD)
 
 
-def use_all_at(point: tuple[int, int]) -> None:
+def _menu_region(point: tuple[int, int]) -> Region:
+    x = max(0, point[0] + MENU_REGION_DX)
+    y = max(0, point[1] + MENU_REGION_DY)
+    w = min(MENU_REGION_W, config.SCREEN_WIDTH - x)
+    h = min(MENU_REGION_H, config.SCREEN_HEIGHT - y)
+    return Region(x, y, w, h)
+
+
+def use_all_at(point: tuple[int, int]) -> bool:
+    """Right-click sobre el green y clickea 'Use All' por imagen. True si lo hizo.
+
+    Si 'Use All' no aparece (menú distinto, item movido), aborta sin clickear:
+    nunca a ciegas, para no pegarle a 'Destroy'.
+    """
     inp.move_to(point)
     time.sleep(0.25)
     inp.right_click(point)
-    pos_after_rc = inp._cursor_pos()
-    print(f"[fase1] right-click en green {point}; cursor real: {pos_after_rc}")
-    expected = (pos_after_rc[0] + USE_ALL_OFFSET[0],
-                pos_after_rc[1] + USE_ALL_OFFSET[1])
-    print(f"[fase1] use_all target esperado: {expected} (offset {USE_ALL_OFFSET})")
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
-    inp.DEBUG_ABS_MOVE = True
-    inp.move_rel(*USE_ALL_OFFSET)
-    inp.DEBUG_ABS_MOVE = False
-    pos_after_move = inp._cursor_pos()
-    print(f"[fase1] cursor tras move_rel: {pos_after_move}")
+    # Sacar el cursor del item hacia el menú: quita el tooltip de hover.
+    inp.move_rel(*MENU_DISMISS_OFFSET)
     time.sleep(SLEEP_HOVER_USE_ALL)
-    inp.click_here()
+
+    btn = vision.wait_for(USE_ALL, region=_menu_region(point),
+                          timeout=1.5, threshold=USE_ALL_THRESHOLD)
+    if not btn:
+        print("[fase1] no apareció 'Use All', abortando (no clickeo a ciegas)")
+        return False
+    inp.click(btn)
+    return True
 
 
 def salvage_with_rune_crafter() -> bool:
@@ -90,7 +115,8 @@ def run() -> bool:
             return False
 
     print(f"[fase1] green en inv {spot}, Use All...")
-    use_all_at(spot)
+    if not use_all_at(spot):
+        return False
     time.sleep(SLEEP_AFTER_IDENTIFY)
 
     print("[fase1] salvage con rune_crafter...")
