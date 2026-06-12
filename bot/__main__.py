@@ -12,7 +12,7 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | click_test [<point_name>]")
+        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | click_test [<point_name>]")
         return
 
     if cmd == "loop":
@@ -38,6 +38,14 @@ def main() -> None:
                     except Exception as e:
                         print(f"[loop] task {task.__name__} falló: {e}")
             i += 1
+
+        # Al terminar el loop: tareas finales (1 vez). Ej: salvage ectos + dust.
+        for task in schedule.FINAL_TASKS:
+            print(f"\n[loop] tarea final {task.__module__}.{task.__name__}")
+            try:
+                task()
+            except Exception as e:
+                print(f"[loop] tarea final {task.__name__} falló: {e}")
         return
 
     if cmd == "click_test":
@@ -85,6 +93,13 @@ def main() -> None:
         from .routines import sell_materials
         boot.focus_game()
         sell_materials.run()
+        return
+
+    if cmd == "ectos":
+        from . import boot
+        from .routines import ectos
+        boot.focus_game()
+        ectos.run()
         return
 
     print(f"comando desconocido: {cmd}")

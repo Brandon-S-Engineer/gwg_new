@@ -21,6 +21,7 @@ Poné un número chico para probar.
 """
 
 from .routines import (
+    ectos,
     phase1_salvage_greens,
     phase2_consume_luck,
     phase3_salvage_rares,
@@ -42,6 +43,10 @@ TASKS = [
     (10, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
     (30, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
-    # (10, sell_ectos.run),                      # cada 10
     # (25, restart_or_not.run),                  # cada 25
+]
+
+# Corren 1 vez al terminar el loop (no por iteración).
+FINAL_TASKS = [
+    ectos.run,   # salvage de ectos + vender el crystalline dust
 ]

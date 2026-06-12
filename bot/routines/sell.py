@@ -66,10 +66,12 @@ def _click_sell_at_tp(point: tuple[int, int]) -> bool:
 
 
 def sell_item(name: str, threshold: float = ITEM_THRESHOLD,
-              color: bool = False) -> bool:
+              color: bool = False, undercut: bool = False) -> bool:
     """Vende un stack de `name` (instantáneo al mejor comprador). True si lo hizo.
 
     threshold/color: overrides por item terco (ej. telas parecidas → color=True).
+    undercut: clickea minus_one_copper antes de listar (1 copper bajo el menor,
+              para vender primero; ej. el 1er stack de crystalline dust).
     """
     tpl = ITEMS_DIR / f"{name}.png"
     spot = vision.find(tpl, region=get_region("INVENTORY_AREA"),
@@ -99,6 +101,9 @@ def sell_item(name: str, threshold: float = ITEM_THRESHOLD,
     time.sleep(SLEEP_STEP)
     inp.click(get_point("maximum_amount"))    # cantidad máxima
     time.sleep(SLEEP_STEP)
+    if undercut:
+        inp.click(get_point("minus_one_copper"))  # 1 copper bajo el menor
+        time.sleep(SLEEP_STEP)
     inp.click(get_point("list_item"))         # listar / vender
     time.sleep(SLEEP_AFTER_LIST)
     print(f"[sell] {name} listado")

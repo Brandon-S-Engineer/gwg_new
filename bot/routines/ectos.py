@@ -1,0 +1,81 @@
+"""Ectos: salvage de globs of ectoplasm y venta del crystalline dust.
+
+Salvage rinde más oro que vender los ectos directo. Cada ecto suelta pile of
+crystalline dust, que después vendemos en el TP.
+
+Corre 1 vez al terminar el loop (schedule.FINAL_TASKS):
+  1. Salvage de TODOS los stacks de ectos (con silver_fed, infinito).
+  2. Vender TODOS los stacks de dust. Al primero -1 copper para vender
+     primero; del segundo en adelante NO, para no taparme a mí mismo.
+
+Coords del kit (silver_fed*) y minus_one_copper ya calibradas en el json.
+"""
+
+import time
+
+from . import sell
+from .. import input as inp
+from .. import vision
+from ..config import ITEMS_DIR
+from ..coords_loader import get_point, get_region
+
+ECTO = ITEMS_DIR / "globs_of_ectoplasm.png"
+DUST = "pile_of_cristallyne_dust"   # nombre del item (sell.sell_item arma el .png)
+
+ECTO_THRESHOLD = 0.85
+DUST_THRESHOLD = 0.85
+
+MAX_STACKS = 12   # tope de seguridad, no loop infinito
+
+SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú del kit
+SLEEP_AFTER_OPTION = 0.5        # que aparezca el diálogo
+SLEEP_AFTER_SALVAGE = 9.0       # que termine el salvage del stack
+
+
+def _salvage_one(spot: tuple[int, int]) -> None:
+    inp.right_click(get_point("silver_fed"))
+    time.sleep(SLEEP_AFTER_RIGHT_CLICK)
+    inp.click(get_point("silver_fed_salvage_stack"))
+    time.sleep(SLEEP_AFTER_OPTION)
+    inp.click(spot)                                   # elegir el stack de ectos
+    time.sleep(SLEEP_AFTER_OPTION)
+    inp.click(get_point("silver_fed_salvage_stack_accept"))
+    time.sleep(SLEEP_AFTER_SALVAGE)
+
+
+def salvage_all_ectos() -> bool:
+    """Salvagea cada stack de ectos del inventario. Re-escanea tras cada uno."""
+    done = False
+    for _ in range(MAX_STACKS):
+        spot = vision.find(ECTO, region=get_region("INVENTORY_AREA"),
+                           threshold=ECTO_THRESHOLD)
+        if not spot:
+            break
+        print(f"[ectos] ecto en {spot}, salvage...")
+        _salvage_one(spot)
+        done = True
+    if not done:
+        print("[ectos] no hay ectos para salvage")
+    return done
+
+
+def sell_all_dust() -> bool:
+    """Vende cada stack de dust. -1 copper solo al primero."""
+    done = False
+    first = True
+    for _ in range(MAX_STACKS):
+        if not sell.sell_item(DUST, threshold=DUST_THRESHOLD, undercut=first):
+            break
+        done = True
+        first = False
+    if not done:
+        print("[ectos] no hay crystalline dust para vender")
+    return done
+
+
+def run() -> bool:
+    print("[ectos] salvage de ectos + venta de dust...")
+    salvage_all_ectos()
+    sold = sell_all_dust()
+    print("[ectos] OK")
+    return sold
