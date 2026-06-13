@@ -25,7 +25,7 @@ from .routines import (
     phase1_salvage_greens,
     phase2_consume_luck,
     phase3_salvage_rares,
-    sell_all,
+    sell_all_clean,
     sell_materials,
     sell_seals,
 )
@@ -44,11 +44,11 @@ TASKS = [
     (10, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
     (30, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
+    (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
     # (25, restart_or_not.run),                  # cada 25
 ]
 
 # Corren 1 vez al terminar el loop (no por iteración).
 FINAL_TASKS = [
     ectos.run,      # salvage de ectos + vender el crystalline dust
-    sell_all.run,   # limpiar inventario: vender todos los materiales restantes
 ]

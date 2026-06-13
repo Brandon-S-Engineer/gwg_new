@@ -1,12 +1,12 @@
-"""Limpieza final: vender TODOS los materiales hasta acabarlos.
+"""Limpieza: vender TODOS los materiales hasta acabarlos.
 
-Igual que sell_materials pero sin frecuencias: barre cada material hasta que
-no quede ninguno, para dejar el inventario limpio al terminar.
+Igual que sell_materials pero sin grupos por frecuencia: barre cada material
+hasta que no quede ninguno, para dejar el inventario limpio.
 
 NO toca ectos/crystalline dust (tienen su propia lógica en ectos.py) ni
-sellos (no hace falta). Solo materiales.
+sellos (no hace falta, igual ni quedan). Solo materiales.
 
-Corre 1 vez al terminar el loop (schedule.FINAL_TASKS).
+Va último en el schedule, cada 30 iteraciones.
 """
 
 from . import sell
