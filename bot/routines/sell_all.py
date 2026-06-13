@@ -15,7 +15,7 @@ from . import sell_materials
 # Mismos materiales que sell_materials, todos juntos.
 MATERIALS = sell_materials.MATERIALS
 
-MAX_PASSES = 12   # tope de seguridad por material, no loop infinito
+MAX_PASSES = 4   # tope de seguridad por material, no loop infinito
 
 
 def run() -> bool:
