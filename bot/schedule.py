@@ -25,6 +25,7 @@ from .routines import (
     phase1_salvage_greens,
     phase2_consume_luck,
     phase3_salvage_rares,
+    sell_all,
     sell_materials,
     sell_seals,
 )
@@ -48,5 +49,6 @@ TASKS = [
 
 # Corren 1 vez al terminar el loop (no por iteración).
 FINAL_TASKS = [
-    ectos.run,   # salvage de ectos + vender el crystalline dust
+    ectos.run,      # salvage de ectos + vender el crystalline dust
+    sell_all.run,   # limpiar inventario: vender todos los materiales restantes
 ]

@@ -12,7 +12,7 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | click_test [<point_name>]")
+        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all | click_test [<point_name>]")
         return
 
     if cmd == "loop":
@@ -100,6 +100,13 @@ def main() -> None:
         from .routines import ectos
         boot.focus_game()
         ectos.run()
+        return
+
+    if cmd == "sell_all":
+        from . import boot
+        from .routines import sell_all
+        boot.focus_game()
+        sell_all.run()
         return
 
     print(f"comando desconocido: {cmd}")
