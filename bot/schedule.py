@@ -52,5 +52,6 @@ TASKS = [
 # acá para limpiar el inventario aunque el loop corte antes del múltiplo de 30.
 FINAL_TASKS = [
     ectos.run,            # salvage de ectos + vender el crystalline dust
-    sell_all_clean.run,   # limpieza final del inventario
+    sell_seals.run,       # vender los sellos que queden
+    sell_all_clean.run,   # limpieza final del inventario (materiales)
 ]
