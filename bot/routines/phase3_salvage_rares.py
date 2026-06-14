@@ -17,7 +17,7 @@ from ..coords_loader import get_point
 
 SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú del kit
 SLEEP_AFTER_OPTION = 0.5        # que aparezca el diálogo Accept
-SLEEP_AFTER_SALVAGE = 8.0       # que termine el salvage (al silver-fed le faltaban ~5 items con 6s)
+SLEEP_AFTER_SALVAGE = 4.0       # que termine el salvage
 
 
 def salvage_with_silver_fed() -> bool:
