@@ -31,7 +31,7 @@ USE_ALL_THRESHOLD = 0.85
 
 SLEEP_AFTER_IDENTIFY = 4.0
 SLEEP_AFTER_SALVAGE = 6.0
-SLEEP_AFTER_BANK_DOUBLECLICK = 1.0
+SLEEP_AFTER_BANK_DOUBLECLICK = 3.0  # que la verde aparezca en el inv antes de re-escanear
 
 SLEEP_AFTER_RIGHT_CLICK = 0.8  # que el tooltip del item se quite
 SLEEP_HOVER_USE_ALL = 0.3  # asentar cursor sobre "Use All" antes de clickear

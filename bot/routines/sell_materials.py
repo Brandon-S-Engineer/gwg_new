@@ -6,7 +6,13 @@ Por ahora solo silk scraps. Para sumar más mats que se venden igual
 Ectos y lucent motes NO van acá (otro flujo).
 """
 
+import time
+
 from . import sell
+
+# Espera extra antes de vender (por item). Lucent motes: el salvage aún corre
+# y la ventana del TP no abre si clickeamos enseguida.
+PRE_DELAY = {"lucent_motes": 2.0}
 
 # Grupos por ritmo de acumulación. La frecuencia (every) va en schedule.
 LUCENT = ["lucent_motes"]            # te dan muchísimas
@@ -34,6 +40,8 @@ MAX_PASSES = 2
 def run(materials=None) -> bool:
     done = False
     for name in materials if materials is not None else MATERIALS:
+        if name in PRE_DELAY:
+            time.sleep(PRE_DELAY[name])
         passes = MAX_PASSES if name in MULTI_STACK else 1
         for _ in range(passes):
             if not sell.sell_item(name):
