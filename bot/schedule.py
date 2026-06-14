@@ -41,8 +41,8 @@ TASKS = [
     # (5, phase2_consume_luck.run),
     # vender mats en TP, por ritmo de acumulación
     (2, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
-    (10, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
-    (30, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
+    (5, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
+    (15, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
     # (25, restart_or_not.run),                  # cada 25
