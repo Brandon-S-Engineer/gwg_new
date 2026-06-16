@@ -29,7 +29,7 @@ GREEN_THRESHOLD = 0.85
 USE_ALL = ITEMS_DIR / "use_all.png"
 USE_ALL_THRESHOLD = 0.85
 
-SLEEP_AFTER_IDENTIFY = 6.0  # esperar a que abra/procese el unidentified green gear
+SLEEP_AFTER_IDENTIFY = 8.0  # esperar a que abra/procese el unidentified green gear
 SLEEP_AFTER_SALVAGE = 6.0
 SLEEP_AFTER_BANK_DOUBLECLICK = 3.0  # que la verde aparezca en el inv antes de re-escanear
 
