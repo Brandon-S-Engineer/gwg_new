@@ -25,7 +25,12 @@ def main() -> None:
         max_iters = schedule.MAX_ITERATIONS
         i = 1
         stop = False
+        from . import dialogs
         while (max_iters == -1 or i <= max_iters) and not stop:
+            if dialogs.check_conn_error():
+                print("[loop] conn error dismisseado, reiniciando iteración...")
+                import time as _t; _t.sleep(1)
+                continue
             print(f"\n=== iter {i} ===")
             for every, task in schedule.TASKS:
                 if i % every == 0:
