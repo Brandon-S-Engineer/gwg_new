@@ -364,6 +364,18 @@
         {
           "name": "use_all",
           "image": "use_all.png"
+        },
+        {
+          "name": "conn_error.png",
+          "image": "conn_error.png.png"
+        },
+        {
+          "name": "con_error_ok",
+          "image": "con_error_ok.png"
+        },
+        {
+          "name": "silver_fed",
+          "image": "silver_fed.png"
         }
       ]
     },
