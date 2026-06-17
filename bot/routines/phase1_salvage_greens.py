@@ -101,10 +101,7 @@ def run() -> bool:
     spot = find_green_in_inventory()
 
     if not spot:
-        print("[fase1] no hay green en inv, salvage previo con rune_crafter (recovery)...")
-        salvage_with_rune_crafter()
-        time.sleep(SLEEP_AFTER_SALVAGE)
-        print("[fase1] buscando en banco...")
+        print("[fase1] no hay en inv, buscando en banco...")
         bank_spot = find_green_in_bank()
         if not bank_spot:
             print("[fase1] no hay greens ni en inv ni en banco. Nada que hacer.")
