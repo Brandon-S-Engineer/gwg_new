@@ -56,6 +56,7 @@ TASKS = [
 # Corren 1 vez al terminar el loop (no por iteración). sell_all_clean va también
 # acá para limpiar el inventario aunque el loop corte antes del múltiplo de 30.
 FINAL_TASKS = [
+    phase3_salvage_rares.run,  # limpiar rares que sueltan más ectos
     ectos.run,            # salvage de ectos + vender el crystalline dust
     sell_seals.run,       # vender los sellos que queden
     sell_all_clean.run,   # limpieza final del inventario (materiales)
