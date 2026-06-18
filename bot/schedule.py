@@ -28,6 +28,7 @@ from .routines import (
     sell_all_clean,
     sell_materials,
     sell_seals,
+    store_luck,
 )
 
 MAX_ITERATIONS = 30  # -1 = infinito
@@ -39,6 +40,10 @@ TASKS = [
     (1, phase1_salvage_greens.run),
     (5, phase3_salvage_rares.run),
     # (5, phase2_consume_luck.run),
+    # guardar esencia de suerte al banco (doble-click)
+    (1,  lambda: store_luck.run(store_luck.BLUE)),
+    (6,  lambda: store_luck.run(store_luck.GREEN)),
+    (30, lambda: store_luck.run(store_luck.YELLOW)),
     # vender mats en TP, por ritmo de acumulación
     (2, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
     (5, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
