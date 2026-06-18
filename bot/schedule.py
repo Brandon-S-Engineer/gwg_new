@@ -38,7 +38,7 @@ TASKS = [
     # (every, callable)
     (1, phase1_salvage_greens.run),
     (5, phase3_salvage_rares.run),
-    (5, phase2_consume_luck.run),
+    # (5, phase2_consume_luck.run),
     # vender mats en TP, por ritmo de acumulación
     (2, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
     (5, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
