@@ -22,8 +22,13 @@ from ..coords_loader import get_point, get_region
 from ..regions import Region
 
 GREEN = ITEMS_DIR / "green.png"
-GREEN_LUCK = ITEMS_DIR / "green_luck.png"
-GREEN_LUCK_THRESHOLD = 0.80
+LUCK_TEMPLATES = [
+    ITEMS_DIR / "blue_luck.png",
+    ITEMS_DIR / "green_luck.png",
+    ITEMS_DIR / "yellow_luck.png",
+    ITEMS_DIR / "purple_luck.png",
+]
+LUCK_THRESHOLD = 0.80
 
 # Template recapturado en el VM: green real matchea ~0.99, ruido sin greens
 # ~0.62. 0.85 separa con margen de sobra.
@@ -75,10 +80,12 @@ def find_green_in_bank() -> tuple[int, int] | None:
         abs_x = region.x + max_loc[0] + tw // 2
         abs_y = region.y + max_loc[1] + th // 2
 
-        # Verificar que no sea luck en esa posición exacta
+        # Verificar que no sea ningún tipo de luck en esa posición
         slot = Region(abs_x - 25, abs_y - 25, 50, 50)
-        if vision.is_present(GREEN_LUCK, region=slot,
-                             threshold=GREEN_LUCK_THRESHOLD, color=True):
+        is_luck = any(vision.is_present(lk, region=slot,
+                                        threshold=LUCK_THRESHOLD, color=True)
+                      for lk in LUCK_TEMPLATES)
+        if is_luck:
             print(f"[fase1] bank: spot ({abs_x},{abs_y}) es luck, saltando")
             # Enmascarar ese slot y buscar de nuevo
             x0 = max(0, max_loc[0] - tw // 2)
