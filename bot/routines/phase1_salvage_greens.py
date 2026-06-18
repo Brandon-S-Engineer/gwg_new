@@ -9,6 +9,9 @@ Flujo:
 
 import time
 
+import cv2
+import numpy as np
+
 from .. import config
 from .. import dialogs
 from .. import input as inp
@@ -19,6 +22,8 @@ from ..coords_loader import get_point, get_region
 from ..regions import Region
 
 GREEN = ITEMS_DIR / "green.png"
+GREEN_LUCK = ITEMS_DIR / "green_luck.png"
+GREEN_LUCK_THRESHOLD = 0.80
 
 # Template recapturado en el VM: green real matchea ~0.99, ruido sin greens
 # ~0.62. 0.85 separa con margen de sobra.
@@ -53,8 +58,40 @@ def find_green_in_inventory() -> tuple[int, int] | None:
 
 
 def find_green_in_bank() -> tuple[int, int] | None:
-    return vision.find(GREEN, region=get_region("BANK_AREA"),
-                       threshold=GREEN_THRESHOLD)
+    """Busca green gear en banco, saltando posiciones que sean green luck."""
+    region = get_region("BANK_AREA")
+    screen = vision.capture_screen(region)
+    tpl = cv2.imread(str(GREEN), 0)
+    if tpl is None:
+        raise FileNotFoundError(GREEN)
+    th, tw = tpl.shape[:2]
+    result = cv2.matchTemplate(screen, tpl, cv2.TM_CCOEFF_NORMED)
+
+    for _ in range(15):
+        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+        if max_val < GREEN_THRESHOLD:
+            return None
+
+        abs_x = region.x + max_loc[0] + tw // 2
+        abs_y = region.y + max_loc[1] + th // 2
+
+        # Verificar que no sea luck en esa posición exacta
+        slot = Region(abs_x - 25, abs_y - 25, 50, 50)
+        if vision.is_present(GREEN_LUCK, region=slot,
+                             threshold=GREEN_LUCK_THRESHOLD, color=True):
+            print(f"[fase1] bank: spot ({abs_x},{abs_y}) es luck, saltando")
+            # Enmascarar ese slot y buscar de nuevo
+            x0 = max(0, max_loc[0] - tw // 2)
+            y0 = max(0, max_loc[1] - th // 2)
+            x1 = min(result.shape[1], max_loc[0] + tw // 2 + 1)
+            y1 = min(result.shape[0], max_loc[1] + th // 2 + 1)
+            result[y0:y1, x0:x1] = 0
+            continue
+
+        print(f"[vision] {GREEN.name}: max_val={max_val:.3f} ok (banco)")
+        return (abs_x, abs_y)
+
+    return None
 
 
 def _menu_region(point: tuple[int, int]) -> Region:
