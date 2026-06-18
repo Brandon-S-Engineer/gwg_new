@@ -10,6 +10,7 @@ Flujo:
 import time
 
 from .. import config
+from .. import dialogs
 from .. import input as inp
 from .. import salvage
 from .. import vision
@@ -117,12 +118,12 @@ def run() -> bool:
     print(f"[fase1] green en inv {spot}, Use All...")
     if not use_all_at(spot):
         return False
-    time.sleep(SLEEP_AFTER_IDENTIFY)
+    dialogs.sleep_safe(SLEEP_AFTER_IDENTIFY)
 
     print("[fase1] salvage con rune_crafter...")
     if not salvage_with_rune_crafter():
         return False
-    time.sleep(SLEEP_AFTER_SALVAGE)
+    dialogs.sleep_safe(SLEEP_AFTER_SALVAGE)
 
     print("[fase1] OK")
     return True

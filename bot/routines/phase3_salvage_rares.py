@@ -11,6 +11,7 @@ con el picker antes de usar esto.
 
 import time
 
+from .. import dialogs
 from .. import input as inp
 from .. import salvage
 from ..coords_loader import get_point
@@ -31,6 +32,6 @@ def salvage_with_silver_fed() -> bool:
 def run() -> bool:
     print("[fase3] salvage de rares con silver_fed...")
     ok = salvage_with_silver_fed()
-    time.sleep(SLEEP_AFTER_SALVAGE)
+    dialogs.sleep_safe(SLEEP_AFTER_SALVAGE)
     print("[fase3] OK" if ok else "[fase3] no apareció Accept (¿coords silver_fed?)")
     return ok

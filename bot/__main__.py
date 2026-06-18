@@ -39,6 +39,7 @@ def main() -> None:
                 print("[loop] reiniciando iteración...")
                 continue
             print(f"\n=== iter {i} ===")
+            restart_iter = False
             for every, task in schedule.TASKS:
                 if i % every == 0:
                     print(f"[loop] run {task.__module__}.{task.__name__} (every {every})")
@@ -47,9 +48,17 @@ def main() -> None:
                             print("[loop] no quedan greens, fin.")
                             stop = True
                             break
+                    except dialogs.ConnErrorDetected:
+                        print("[loop] conn error mid-task, salvage recovery...")
+                        _recovery_salvage()
+                        _t.sleep(_RECOVERY_SLEEP)
+                        print("[loop] reiniciando iteración...")
+                        restart_iter = True
+                        break
                     except Exception as e:
                         print(f"[loop] task {task.__name__} falló: {e}")
-            i += 1
+            if not restart_iter:
+                i += 1
 
         # Al terminar el loop: tareas finales (1 vez). Ej: salvage ectos + dust.
         for task in schedule.FINAL_TASKS:
