@@ -65,6 +65,14 @@ def find_green_in_inventory() -> tuple[int, int] | None:
 def find_green_in_bank() -> tuple[int, int] | None:
     """Busca green gear en banco, saltando posiciones que sean green luck."""
     region = get_region("BANK_AREA")
+
+    # Caso normal: encontró gear directamente
+    spot = vision.find(GREEN, region=region, threshold=GREEN_THRESHOLD)
+    if spot:
+        return spot
+
+    # Fallback: puede haber luck tapando; busca iterando y excluyendo luck
+    print("[fase1] bank: find normal falló, buscando con exclusión de luck...")
     screen = vision.capture_screen(region)
     tpl = cv2.imread(str(GREEN), 0)
     if tpl is None:
