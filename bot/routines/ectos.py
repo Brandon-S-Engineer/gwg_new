@@ -29,7 +29,7 @@ MAX_STACKS = 12   # tope de seguridad, no loop infinito
 
 SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú del kit
 SLEEP_AFTER_OPTION = 0.5        # que aparezca el diálogo
-SLEEP_AFTER_SALVAGE = 9.0       # que termine el salvage del stack
+SLEEP_AFTER_SALVAGE = 12.0      # que termine el salvage del stack
 
 
 def _salvage_one(spot: tuple[int, int]) -> None:
