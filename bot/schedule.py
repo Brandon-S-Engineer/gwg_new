@@ -35,7 +35,7 @@ PHASE1_BEFORE_RIGHT_CLICK = 0.25     # asentar cursor sobre el green antes del r
 PHASE1_AFTER_RIGHT_CLICK = 0.8       # que abra el menú contextual
 PHASE1_HOVER_USE_ALL = 0.3           # asentar cursor sobre "Use All" antes de clickear
 PHASE1_AFTER_SALVAGE_OPTION = 0.5    # tras clickear la opción "salvage green" del rune_crafter
-PHASE1_AFTER_IDENTIFY = 8.0          # esperar a que procese el unidentified green gear
+PHASE1_AFTER_IDENTIFY = 4.0          # esperar a que procese el unidentified green gear
 PHASE1_AFTER_SALVAGE = 4.0           # que termine el salvage con rune_crafter
 PHASE1_AFTER_BANK_DOUBLECLICK = 0.5  # que la verde aparezca en inv antes de re-escanear
 
