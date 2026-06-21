@@ -53,7 +53,7 @@ PHASE3_AFTER_SALVAGE = 4.0           # que termine el salvage
 # --- ectos (salvage de stacks + venta de dust) ---
 ECTOS_AFTER_RIGHT_CLICK = 0.8        # que abra el menú del kit
 ECTOS_AFTER_OPTION = 0.5             # que aparezca el diálogo
-ECTOS_AFTER_SALVAGE = 12.0           # que termine el salvage del stack
+ECTOS_AFTER_SALVAGE = 15.0           # que termine el salvage del stack
 
 # --- sell (genérico TP: sell_materials/sell_seals/sell_all_clean) ---
 SELL_AFTER_RIGHT_CLICK = 0.8         # que abra el menú
