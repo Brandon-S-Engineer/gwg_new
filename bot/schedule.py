@@ -63,8 +63,8 @@ SELL_STEP = 0.25                     # entre clicks del panel
 SELL_AFTER_LIST = 1.5                # que se procese el listado
 
 # --- store_luck (guardar luck al banco con doble-click) ---
-STORE_LUCK_AFTER_COMPACT = 0.5
-STORE_LUCK_AFTER_DOUBLECLICK = 0.5
+STORE_LUCK_AFTER_COMPACT = 0.3
+STORE_LUCK_AFTER_DOUBLECLICK = 0.2
 
 from .routines import (
     ectos,
