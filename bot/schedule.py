@@ -20,6 +20,52 @@ MAX_ITERATIONS = -1 corre infinito (como el `for i in range(1, 20001)` viejo).
 Poné un número chico para probar.
 """
 
+# ============================================================
+# TIMING: todos los tiempos de espera (time.sleep) del bot, en un
+# solo lugar para calibrarlos. Van ANTES del import de rutinas
+# (más abajo) para que cada módulo pueda hacer `from .. import
+# schedule` y leer estas constantes sin import circular.
+#
+# Bajalos con cuidado: la mayoría es el mínimo para que el juego
+# procese la acción anterior antes del siguiente click/screenshot.
+# ============================================================
+
+# --- phase1_salvage_greens (identificar + salvage con rune_crafter) ---
+PHASE1_BEFORE_RIGHT_CLICK = 0.25     # asentar cursor sobre el green antes del right-click
+PHASE1_AFTER_RIGHT_CLICK = 0.8       # que abra el menú contextual
+PHASE1_HOVER_USE_ALL = 0.3           # asentar cursor sobre "Use All" antes de clickear
+PHASE1_AFTER_SALVAGE_OPTION = 0.5    # tras clickear la opción "salvage green" del rune_crafter
+PHASE1_AFTER_IDENTIFY = 8.0          # esperar a que procese el unidentified green gear
+PHASE1_AFTER_SALVAGE = 9.0           # que termine el salvage con rune_crafter
+PHASE1_AFTER_BANK_DOUBLECLICK = 3.0  # que la verde aparezca en inv antes de re-escanear
+
+# --- phase2_consume_luck ---
+PHASE2_BEFORE_RIGHT_CLICK = 0.08     # asentar cursor antes del right-click
+PHASE2_AFTER_RIGHT_CLICK = 0.8       # que abra el menú (NO tocar: right-click + bajar quita el hover)
+PHASE2_AFTER_DISMISS = 0.1           # tooltip ya se fue al bajar; clickear cuanto antes
+PHASE2_AFTER_CONSUME = 0.2           # mínimo para que el stack desaparezca, y a la siguiente
+
+# --- phase3_salvage_rares (silver_fed) ---
+PHASE3_AFTER_RIGHT_CLICK = 0.8       # que abra el menú del kit
+PHASE3_AFTER_OPTION = 0.5            # que aparezca el diálogo Accept
+PHASE3_AFTER_SALVAGE = 4.0           # que termine el salvage
+
+# --- ectos (salvage de stacks + venta de dust) ---
+ECTOS_AFTER_RIGHT_CLICK = 0.8        # que abra el menú del kit
+ECTOS_AFTER_OPTION = 0.5             # que aparezca el diálogo
+ECTOS_AFTER_SALVAGE = 12.0           # que termine el salvage del stack
+
+# --- sell (genérico TP: sell_materials/sell_seals/sell_all_clean) ---
+SELL_AFTER_RIGHT_CLICK = 0.8         # que abra el menú
+SELL_AFTER_DISMISS = 0.1             # tooltip ya se fue al bajar
+SELL_AFTER_READY = 0.3               # asentar tras cargar el TP
+SELL_STEP = 0.25                     # entre clicks del panel
+SELL_AFTER_LIST = 1.5                # que se procese el listado
+
+# --- store_luck (guardar luck al banco con doble-click) ---
+STORE_LUCK_AFTER_COMPACT = 0.5
+STORE_LUCK_AFTER_DOUBLECLICK = 0.5
+
 from .routines import (
     ectos,
     phase1_salvage_greens,

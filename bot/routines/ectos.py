@@ -15,6 +15,7 @@ import time
 
 from . import sell
 from .. import input as inp
+from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
@@ -27,9 +28,10 @@ DUST_THRESHOLD = 0.85
 
 MAX_STACKS = 12   # tope de seguridad, no loop infinito
 
-SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú del kit
-SLEEP_AFTER_OPTION = 0.5        # que aparezca el diálogo
-SLEEP_AFTER_SALVAGE = 12.0      # que termine el salvage del stack
+# Tiempos centralizados en schedule.py para calibrarlos en un solo lugar.
+SLEEP_AFTER_RIGHT_CLICK = schedule.ECTOS_AFTER_RIGHT_CLICK
+SLEEP_AFTER_OPTION = schedule.ECTOS_AFTER_OPTION
+SLEEP_AFTER_SALVAGE = schedule.ECTOS_AFTER_SALVAGE
 
 
 def _salvage_one(spot: tuple[int, int]) -> None:

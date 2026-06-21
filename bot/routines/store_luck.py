@@ -12,6 +12,7 @@ Usar desde schedule con lambdas por tier:
 import time
 
 from .. import input as inp
+from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
@@ -22,8 +23,9 @@ YELLOW = ITEMS_DIR / "yellow_luck.png"
 
 LUCK_THRESHOLD = 0.80
 
-SLEEP_AFTER_COMPACT    = 0.5
-SLEEP_AFTER_DOUBLECLICK = 0.5
+# Tiempos centralizados en schedule.py para calibrarlos en un solo lugar.
+SLEEP_AFTER_COMPACT = schedule.STORE_LUCK_AFTER_COMPACT
+SLEEP_AFTER_DOUBLECLICK = schedule.STORE_LUCK_AFTER_DOUBLECLICK
 
 
 def run(template) -> bool:

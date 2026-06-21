@@ -16,6 +16,7 @@ from .. import config
 from .. import dialogs
 from .. import input as inp
 from .. import salvage
+from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR, NO_GREENS
 from ..coords_loader import get_point, get_region
@@ -40,12 +41,14 @@ GREEN_THRESHOLD = 0.85
 USE_ALL = ITEMS_DIR / "use_all.png"
 USE_ALL_THRESHOLD = 0.85
 
-SLEEP_AFTER_IDENTIFY = 8.0  # esperar a que abra/procese el unidentified green gear
-SLEEP_AFTER_SALVAGE = 9.0
-SLEEP_AFTER_BANK_DOUBLECLICK = 3.0  # que la verde aparezca en el inv antes de re-escanear
-
-SLEEP_AFTER_RIGHT_CLICK = 0.8  # que el tooltip del item se quite
-SLEEP_HOVER_USE_ALL = 0.3  # asentar cursor sobre "Use All" antes de clickear
+# Tiempos centralizados en schedule.py para calibrarlos en un solo lugar.
+SLEEP_BEFORE_RIGHT_CLICK = schedule.PHASE1_BEFORE_RIGHT_CLICK
+SLEEP_AFTER_RIGHT_CLICK = schedule.PHASE1_AFTER_RIGHT_CLICK
+SLEEP_HOVER_USE_ALL = schedule.PHASE1_HOVER_USE_ALL
+SLEEP_AFTER_SALVAGE_OPTION = schedule.PHASE1_AFTER_SALVAGE_OPTION
+SLEEP_AFTER_IDENTIFY = schedule.PHASE1_AFTER_IDENTIFY
+SLEEP_AFTER_SALVAGE = schedule.PHASE1_AFTER_SALVAGE
+SLEEP_AFTER_BANK_DOUBLECLICK = schedule.PHASE1_AFTER_BANK_DOUBLECLICK
 
 # Sacar el cursor del item hacia el menú: quita el tooltip de hover.
 MENU_DISMISS_OFFSET = (16, 88)
@@ -124,7 +127,7 @@ def use_all_at(point: tuple[int, int]) -> bool:
     nunca a ciegas, para no pegarle a 'Destroy'.
     """
     inp.move_to(point)
-    time.sleep(0.25)
+    time.sleep(SLEEP_BEFORE_RIGHT_CLICK)
     inp.right_click(point)
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
     # Sacar el cursor del item hacia el menú: quita el tooltip de hover.
@@ -144,7 +147,7 @@ def salvage_with_rune_crafter() -> bool:
     inp.right_click(get_point("rune_crafter"))
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
     inp.click(get_point("rune_crafter_salvage_green"))
-    time.sleep(0.5)
+    time.sleep(SLEEP_AFTER_SALVAGE_OPTION)
 
     return salvage.click_accept()
 

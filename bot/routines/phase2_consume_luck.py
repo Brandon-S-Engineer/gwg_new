@@ -17,6 +17,7 @@ import time
 
 from .. import config
 from .. import input as inp
+from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_region
@@ -54,9 +55,11 @@ MENU_REGION_H = 280
 # si un consume falla y el stack se queda.
 MAX_PASSES_PER_TIER = 3
 
-SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú (NO tocar: es el right-click + bajar que quita el hover)
-SLEEP_AFTER_DISMISS = 0.1       # tooltip ya se fue al bajar; clickear cuanto antes
-SLEEP_AFTER_CONSUME = 0.2       # mínimo para que el stack desaparezca, y a la siguiente
+# Tiempos centralizados en schedule.py para calibrarlos en un solo lugar.
+SLEEP_BEFORE_RIGHT_CLICK = schedule.PHASE2_BEFORE_RIGHT_CLICK
+SLEEP_AFTER_RIGHT_CLICK = schedule.PHASE2_AFTER_RIGHT_CLICK
+SLEEP_AFTER_DISMISS = schedule.PHASE2_AFTER_DISMISS
+SLEEP_AFTER_CONSUME = schedule.PHASE2_AFTER_CONSUME
 
 
 def find_luck(template) -> tuple[int, int] | None:
@@ -77,7 +80,7 @@ def _menu_region(point: tuple[int, int]) -> Region:
 def consume_all_at(point: tuple[int, int]) -> bool:
     """True si consumió (apareció el botón); False si fue falso positivo."""
     inp.move_to(point)
-    time.sleep(0.08)
+    time.sleep(SLEEP_BEFORE_RIGHT_CLICK)
     inp.right_click(point)
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
 

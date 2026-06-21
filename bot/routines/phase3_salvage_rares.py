@@ -14,11 +14,13 @@ import time
 from .. import dialogs
 from .. import input as inp
 from .. import salvage
+from .. import schedule
 from ..coords_loader import get_point
 
-SLEEP_AFTER_RIGHT_CLICK = 0.8   # que abra el menú del kit
-SLEEP_AFTER_OPTION = 0.5        # que aparezca el diálogo Accept
-SLEEP_AFTER_SALVAGE = 4.0       # que termine el salvage
+# Tiempos centralizados en schedule.py para calibrarlos en un solo lugar.
+SLEEP_AFTER_RIGHT_CLICK = schedule.PHASE3_AFTER_RIGHT_CLICK
+SLEEP_AFTER_OPTION = schedule.PHASE3_AFTER_OPTION
+SLEEP_AFTER_SALVAGE = schedule.PHASE3_AFTER_SALVAGE
 
 
 def salvage_with_silver_fed() -> bool:
