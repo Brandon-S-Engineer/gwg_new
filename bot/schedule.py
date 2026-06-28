@@ -35,10 +35,9 @@ PHASE1_BEFORE_RIGHT_CLICK = 0.25     # asentar cursor sobre el green antes del r
 PHASE1_AFTER_RIGHT_CLICK = 0.8       # que abra el menú contextual
 PHASE1_HOVER_USE_ALL = 0.3           # asentar cursor sobre "Use All" antes de clickear
 PHASE1_AFTER_SALVAGE_OPTION = 0.5    # tras clickear la opción "salvage green" del rune_crafter
-PHASE1_AFTER_IDENTIFY = 4.0          # esperar a que procese el unidentified green gear
-PHASE1_AFTER_SALVAGE = 10.0           # que termine el salvage con rune_crafter
+PHASE1_AFTER_IDENTIFY = 8.0          # esperar a que procese el unidentified green gear
+PHASE1_AFTER_SALVAGE = 20.0           # que termine el salvage con rune_crafter
 PHASE1_AFTER_BANK_DOUBLECLICK = 0.5  # que la verde aparezca en inv antes de re-escanear
-
 # --- phase2_consume_luck ---
 PHASE2_BEFORE_RIGHT_CLICK = 0.08     # asentar cursor antes del right-click
 PHASE2_AFTER_RIGHT_CLICK = 0.8       # que abra el menú (NO tocar: right-click + bajar quita el hover)
@@ -48,12 +47,12 @@ PHASE2_AFTER_CONSUME = 0.2           # mínimo para que el stack desaparezca, y 
 # --- phase3_salvage_rares (silver_fed) ---
 PHASE3_AFTER_RIGHT_CLICK = 0.8       # que abra el menú del kit
 PHASE3_AFTER_OPTION = 0.5            # que aparezca el diálogo Accept
-PHASE3_AFTER_SALVAGE = 4.0           # que termine el salvage
+PHASE3_AFTER_SALVAGE = 8.0           # que termine el salvage
 
 # --- ectos (salvage de stacks + venta de dust) ---
 ECTOS_AFTER_RIGHT_CLICK = 0.8        # que abra el menú del kit
 ECTOS_AFTER_OPTION = 0.5             # que aparezca el diálogo
-ECTOS_AFTER_SALVAGE = 15.0           # que termine el salvage del stack
+ECTOS_AFTER_SALVAGE = 20.0           # que termine el salvage del stack
 
 # --- sell (genérico TP: sell_materials/sell_seals/sell_all_clean) ---
 SELL_AFTER_RIGHT_CLICK = 0.8         # que abra el menú
@@ -91,9 +90,9 @@ TASKS = [
     (6,  lambda: store_luck.run(store_luck.GREEN)),
     (30, lambda: store_luck.run(store_luck.YELLOW)),
     # vender mats en TP, por ritmo de acumulación
-    (2, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
-    (5, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
-    (15, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
+    (1, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
+    (3, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
+    (7, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
     # (25, restart_or_not.run),                  # cada 25
