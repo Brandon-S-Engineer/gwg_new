@@ -47,7 +47,7 @@ PHASE2_AFTER_CONSUME = 0.2           # mínimo para que el stack desaparezca, y 
 # --- phase3_salvage_rares (silver_fed) ---
 PHASE3_AFTER_RIGHT_CLICK = 0.8       # que abra el menú del kit
 PHASE3_AFTER_OPTION = 0.5            # que aparezca el diálogo Accept
-PHASE3_AFTER_SALVAGE = 6.0           # que termine el salvage
+PHASE3_AFTER_SALVAGE = 2.0           # que termine el salvage
 
 # --- ectos (salvage de stacks + venta de dust) ---
 ECTOS_AFTER_RIGHT_CLICK = 0.8        # que abra el menú del kit
@@ -83,16 +83,17 @@ STARTUP_DELAY = 5  #
 TASKS = [
     # (every, callable)
     (1, phase1_salvage_greens.run),
-    (2, phase3_salvage_rares.run),
+    (1, phase3_salvage_rares.run),
     # (5, phase2_consume_luck.run),
     # guardar esencia de suerte al banco (doble-click)
+    (1,  lambda: store_luck.run(store_luck.BLUE)),
     (1,  lambda: store_luck.run(store_luck.BLUE)),
     (6,  lambda: store_luck.run(store_luck.GREEN)),
     (30, lambda: store_luck.run(store_luck.YELLOW)),
     # vender mats en TP, por ritmo de acumulación
     (2, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
     (2, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
-    (6, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
+    (10, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
     # (25, restart_or_not.run),                  # cada 25
