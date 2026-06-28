@@ -83,14 +83,14 @@ STARTUP_DELAY = 5  #
 TASKS = [
     # (every, callable)
     (1, phase1_salvage_greens.run),
-    (5, phase3_salvage_rares.run),
+    (3, phase3_salvage_rares.run),
     # (5, phase2_consume_luck.run),
     # guardar esencia de suerte al banco (doble-click)
     (1,  lambda: store_luck.run(store_luck.BLUE)),
     (6,  lambda: store_luck.run(store_luck.GREEN)),
     (30, lambda: store_luck.run(store_luck.YELLOW)),
     # vender mats en TP, por ritmo de acumulación
-    (1, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
+    (2, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
     (3, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
     (7, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
