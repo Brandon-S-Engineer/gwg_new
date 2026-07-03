@@ -152,6 +152,8 @@ def main() -> None:
         boot.focus_game()
         if sub == "all":
             setup.run()
+        elif sub == "tab":
+            setup.ensure_bank_tab()
         elif sub == "drag":
             setup.drag_bank()
         elif sub == "windows":

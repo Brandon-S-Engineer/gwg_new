@@ -1,12 +1,14 @@
 """Setup inicial: se ejecuta una vez cuando arranca el loop.
 
 Orden:
-  1. drag_bank()       - arrastra el banco al costado
-  2. open_windows()    - presiona i / o / m para abrir inventario, TP y mapa
-  3. filter_inventory() - escribe 'luck' en el filtro del inventario
-  4. filter_bank()      - escribe 'unidentified' en el filtro del banco
+  1. click en la pestaña banco (por si quedó en artificing; así aseguramos)
+  2. drag_bank()       - arrastra el banco al costado
+  3. open_windows()    - presiona i / o / m para abrir inventario, TP y mapa
+  4. filter_inventory() - escribe 'unidentified' en el filtro del inventario
+  5. filter_bank()      - escribe 'luck' en el filtro del banco
 
 Coordenadas necesarias (agregar con el picker):
+    banco            - pestaña del banco (asegurar al iniciar)
     bank_title       - barra de título del banco (donde aparece, centro)
     bank_target      - destino del drag (costado derecho)
     inventory_filter - campo de texto del filtro del inventario
@@ -42,7 +44,7 @@ def filter_inventory():
     _kb.send("ctrl+a")
     time.sleep(0.05)
     _kb.send("delete")
-    _kb.write("luck")
+    _kb.write("unidentified")
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
@@ -53,11 +55,18 @@ def filter_bank():
     _kb.send("ctrl+a")
     time.sleep(0.05)
     _kb.send("delete")
-    _kb.write("unidentified")
+    _kb.write("luck")
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
+def ensure_bank_tab():
+    # Puede haber quedado en la pestaña artificing: click banco para asegurar.
+    inp.click(get_point("banco"))
+    time.sleep(schedule.SETUP_AFTER_BANK_TAB)
+
+
 def run():
+    ensure_bank_tab()
     drag_bank()
     open_windows()
     filter_inventory()

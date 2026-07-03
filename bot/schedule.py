@@ -62,6 +62,7 @@ SELL_STEP = 0.25                     # entre clicks del panel
 SELL_AFTER_LIST = 1.5                # que se procese el listado
 
 # --- setup (arrastrar banco + filtros de texto) ---
+SETUP_AFTER_BANK_TAB = 0.5   # tras click en la pestaña banco (asegurar al iniciar)
 SETUP_AFTER_DRAG = 0.5       # tras soltar el drag del banco
 SETUP_AFTER_KEYPRESS = 0.5   # entre cada tecla de apertura de ventana (i / o / m)
 SETUP_AFTER_FILTER = 0.3     # tras escribir en el campo de filtro
