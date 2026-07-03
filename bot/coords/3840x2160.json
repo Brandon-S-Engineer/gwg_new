@@ -252,18 +252,18 @@
         },
         {
           "name": "masterwork_essence",
+          "x": 2698,
+          "y": 1354
+        },
+        {
+          "name": "rare_essence",
           "x": 2661,
           "y": 1378
         },
         {
-          "name": "rare_essence",
+          "name": "exotic_essence",
           "x": 2728,
           "y": 1330
-        },
-        {
-          "name": "exotic_essence",
-          "x": 2698,
-          "y": 1354
         },
         {
           "name": "craft_all",
