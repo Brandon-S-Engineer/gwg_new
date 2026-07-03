@@ -1,7 +1,10 @@
-"""Procesar Esencia de Suerte: subir tiers en la artificing station (banco
-incluido) y, durante las esperas del craft, ir vendiendo seals + materiales
-para no gastar tiempo extra después. Al final guarda las exotic al banco,
-consume el remanente y compacta.
+"""Procesar Esencia de Suerte: subir tiers en la pestaña artificing y, durante
+las esperas del craft, ir vendiendo seals + materiales para no gastar tiempo
+extra después. Al final cambia a la pestaña banco, guarda las exotic, consume
+el remanente y compacta.
+
+La ventana tiene dos pestañas que se alternan: artificing_station (crafteo) y
+banco (depositar). Se craftea en la primera y se deposita en la segunda.
 
 Corre 1 vez en FINAL_TASKS, después de ectos.run.
 
@@ -13,16 +16,16 @@ quedó (el generator guarda su posición). Si la venta se acaba antes que la
 espera, se duerme el resto para no cortar el craft.
 
 Flujo:
-  1. abrir banco → Production → buscar "luck"
+  1. pestaña artificing → buscar "luck"
   2. craftear masterwork, rare, exotic (craft_all + espera vendiendo)
   3. terminar la venta pendiente si quedó algo
-  4. abrir banco, guardar las exotic (doble-click, tantos stacks como haya)
+  4. pestaña banco → guardar las exotic (doble-click, tantos stacks como haya)
   5. consumir el remanente que no sea exotic (blue/green/yellow)
   6. compactar
 
 Coordenadas necesarias (agregar con el picker):
-    artificing_station - abre la estación de artificer (trae banco incluido)
-    production        - pestaña Production
+    artificing_station - pestaña de crafteo (herramientas)
+    banco             - pestaña del banco (depositar)
     search_production - campo de búsqueda de recetas
     masterwork_essence, rare_essence, exotic_essence - recetas en la lista
     craft_all         - botón Craft All
@@ -78,11 +81,9 @@ def _craft(recipe: str, wait: float, work):
 def run():
     import keyboard as _kb
 
-    # Abrir artificing station (banco incluido) y buscar recetas de luck.
+    # Pestaña artificing (crafteo) y buscar las recetas de luck.
     inp.click(get_point("artificing_station"))
     time.sleep(schedule.CRAFT_AFTER_OPEN)
-    inp.click(get_point("production"))
-    time.sleep(schedule.CRAFT_AFTER_PRODUCTION)
     inp.click(get_point("search_production"))
     time.sleep(0.15)
     _kb.send("ctrl+a")
@@ -102,8 +103,8 @@ def run():
     for _ in work:
         pass
 
-    # Guardar las exotic al banco (doble-click), tantos stacks como haya.
-    inp.click(get_point("artificing_station"))
+    # Cambiar a la pestaña banco y guardar las exotic (doble-click).
+    inp.click(get_point("banco"))
     time.sleep(schedule.CRAFT_AFTER_OPEN)
     for _ in range(MAX_STORE_PASSES):
         if not store_luck.run(store_luck.EXOTIC):

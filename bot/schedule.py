@@ -68,7 +68,6 @@ SETUP_AFTER_FILTER = 0.3     # tras escribir en el campo de filtro
 
 # --- craft_essence (subir tiers de esencia en la artificing station) ---
 CRAFT_AFTER_OPEN = 1.0           # tras abrir el banco / artificing station
-CRAFT_AFTER_PRODUCTION = 0.5     # tras click en Production
 CRAFT_AFTER_SEARCH = 0.5         # tras escribir "luck" en la búsqueda
 CRAFT_AFTER_SELECT = 0.5         # tras seleccionar una receta
 CRAFT_WAIT_MASTERWORK = 190      # 3m10s: craftear masterwork essence
