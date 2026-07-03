@@ -47,7 +47,7 @@ PHASE2_AFTER_CONSUME = 0.2           # mínimo para que el stack desaparezca, y 
 # --- phase3_salvage_rares (silver_fed) ---
 PHASE3_AFTER_RIGHT_CLICK = 0.8       # que abra el menú del kit
 PHASE3_AFTER_OPTION = 0.5            # que aparezca el diálogo Accept
-PHASE3_AFTER_SALVAGE = 2.0           # que termine el salvage
+PHASE3_AFTER_SALVAGE = 3.0           # que termine el salvage
 
 # --- ectos (salvage de stacks + venta de dust) ---
 ECTOS_AFTER_RIGHT_CLICK = 0.8        # que abra el menú del kit
@@ -61,8 +61,10 @@ SELL_AFTER_READY = 0.3               # asentar tras cargar el TP
 SELL_STEP = 0.25                     # entre clicks del panel
 SELL_AFTER_LIST = 1.5                # que se procese el listado
 
+# --- compact (compactar inventario) ---
+COMPACT_AFTER_CLICK = 0.3
+
 # --- store_luck (guardar luck al banco con doble-click) ---
-STORE_LUCK_AFTER_COMPACT = 0.3
 STORE_LUCK_AFTER_DOUBLECLICK = 0.2
 
 from .routines import (
@@ -83,7 +85,7 @@ STARTUP_DELAY = 5  #
 TASKS = [
     # (every, callable)
     (1, phase1_salvage_greens.run),
-    (1, phase3_salvage_rares.run),
+    (2, phase3_salvage_rares.run),
     # (5, phase2_consume_luck.run),
     # guardar esencia de suerte al banco (doble-click)
     (1,  lambda: store_luck.run(store_luck.BLUE)),
@@ -106,4 +108,5 @@ FINAL_TASKS = [
     ectos.run,            # salvage de ectos + vender el crystalline dust
     sell_seals.run,       # vender los sellos que queden
     sell_all_clean.run,   # limpieza final del inventario (materiales)
+    store_luck.compact,   # compactar al final (ajustar con COMPACT_AFTER_CLICK)
 ]

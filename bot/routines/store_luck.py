@@ -1,7 +1,6 @@
 """Guardar Esencia de Suerte al banco con doble-click.
 
-Busca en SELL_SEARCH_AREA (no en inventario) y compacta antes de buscar
-para que los stacks estén juntos. Purple se ignora (sale muy poco).
+Busca en SELL_SEARCH_AREA (no en inventario). Purple se ignora (sale muy poco).
 
 Usar desde schedule con lambdas por tier:
     (1,  lambda: store_luck.run(store_luck.BLUE))
@@ -23,15 +22,15 @@ YELLOW = ITEMS_DIR / "yellow_luck.png"
 
 LUCK_THRESHOLD = 0.80
 
-# Tiempos centralizados en schedule.py para calibrarlos en un solo lugar.
-SLEEP_AFTER_COMPACT = schedule.STORE_LUCK_AFTER_COMPACT
 SLEEP_AFTER_DOUBLECLICK = schedule.STORE_LUCK_AFTER_DOUBLECLICK
 
 
-def run(template) -> bool:
+def compact():
     inp.click(get_point("compact"))
-    time.sleep(SLEEP_AFTER_COMPACT)
+    time.sleep(schedule.COMPACT_AFTER_CLICK)
 
+
+def run(template) -> bool:
     spot = vision.find(template, region=get_region("SELL_SEARCH_AREA"),
                        threshold=LUCK_THRESHOLD, color=True)
     if not spot:
