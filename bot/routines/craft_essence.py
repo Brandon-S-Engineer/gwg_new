@@ -21,7 +21,7 @@ Flujo:
   6. compactar
 
 Coordenadas necesarias (agregar con el picker):
-    banco             - abre la artificing station (incluye banco)
+    artificing_station - abre la estación de artificer (trae banco incluido)
     production        - pestaña Production
     search_production - campo de búsqueda de recetas
     masterwork_essence, rare_essence, exotic_essence - recetas en la lista
@@ -79,7 +79,7 @@ def run():
     import keyboard as _kb
 
     # Abrir artificing station (banco incluido) y buscar recetas de luck.
-    inp.click(get_point("banco"))
+    inp.click(get_point("artificing_station"))
     time.sleep(schedule.CRAFT_AFTER_OPEN)
     inp.click(get_point("production"))
     time.sleep(schedule.CRAFT_AFTER_PRODUCTION)
@@ -103,7 +103,7 @@ def run():
         pass
 
     # Guardar las exotic al banco (doble-click), tantos stacks como haya.
-    inp.click(get_point("banco"))
+    inp.click(get_point("artificing_station"))
     time.sleep(schedule.CRAFT_AFTER_OPEN)
     for _ in range(MAX_STORE_PASSES):
         if not store_luck.run(store_luck.EXOTIC):
