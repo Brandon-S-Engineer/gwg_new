@@ -222,58 +222,58 @@
         },
         {
           "name": "bank_title",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "bank_target",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "inventory_filter",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "bank_filter",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "banco",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "production",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "search_production",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "masterwork_essence",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "rare_essence",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "exotic_essence",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         },
         {
           "name": "craft_all",
-          "x": 0,
-          "y": 0
+          "x": 4038,
+          "y": 1646
         }
       ],
       "items": [
