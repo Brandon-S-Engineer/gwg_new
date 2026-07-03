@@ -52,7 +52,7 @@ PHASE3_AFTER_SALVAGE = 3.0           # que termine el salvage
 # --- ectos (salvage de stacks + venta de dust) ---
 ECTOS_AFTER_RIGHT_CLICK = 0.8        # que abra el menú del kit
 ECTOS_AFTER_OPTION = 0.5             # que aparezca el diálogo
-ECTOS_AFTER_SALVAGE = 20.0           # que termine el salvage del stack
+ECTOS_AFTER_SALVAGE = 24.0           # que termine el salvage del stack
 
 # --- sell (genérico TP: sell_materials/sell_seals/sell_all_clean) ---
 SELL_AFTER_RIGHT_CLICK = 0.8         # que abra el menú
@@ -66,6 +66,15 @@ SETUP_AFTER_DRAG = 0.5       # tras soltar el drag del banco
 SETUP_AFTER_KEYPRESS = 0.5   # entre cada tecla de apertura de ventana (i / o / m)
 SETUP_AFTER_FILTER = 0.3     # tras escribir en el campo de filtro
 
+# --- craft_essence (subir tiers de esencia en la artificing station) ---
+CRAFT_AFTER_OPEN = 1.0           # tras abrir el banco / artificing station
+CRAFT_AFTER_PRODUCTION = 0.5     # tras click en Production
+CRAFT_AFTER_SEARCH = 0.5         # tras escribir "luck" en la búsqueda
+CRAFT_AFTER_SELECT = 0.5         # tras seleccionar una receta
+CRAFT_WAIT_MASTERWORK = 190      # 3m10s: craftear masterwork essence
+CRAFT_WAIT_RARE = 130            # 2m10s: craftear rare essence
+CRAFT_WAIT_EXOTIC = 70           # 1m10s: craftear exotic essence
+
 # --- compact (compactar inventario) ---
 COMPACT_AFTER_CLICK = 0.3
 
@@ -73,6 +82,7 @@ COMPACT_AFTER_CLICK = 0.3
 STORE_LUCK_AFTER_DOUBLECLICK = 0.2
 
 from .routines import (
+    craft_essence,
     ectos,
     phase1_salvage_greens,
     phase2_consume_luck,
@@ -111,7 +121,7 @@ TASKS = [
 FINAL_TASKS = [
     phase3_salvage_rares.run,  # limpiar rares que sueltan más ectos
     ectos.run,            # salvage de ectos + vender el crystalline dust
+    craft_essence.run,    # subir tiers de esencia, guardar exotic, consumir resto, compactar
     sell_seals.run,       # vender los sellos que queden
     sell_all_clean.run,   # limpieza final del inventario (materiales)
-    store_luck.compact,   # compactar al final (ajustar con COMPACT_AFTER_CLICK)
 ]

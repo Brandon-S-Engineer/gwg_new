@@ -8,6 +8,11 @@ from . import config
 def main() -> None:
     cmd = sys.argv[1] if len(sys.argv) > 1 else "info"
 
+    # schedule define las constantes de timing y luego importa TODAS las
+    # rutinas en orden. Importarlo primero deja cada rutina lista y evita el
+    # import circular si un comando importa una rutina suelta (ver TIMING).
+    from . import schedule  # noqa: F401
+
     if cmd == "info":
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
@@ -131,6 +136,13 @@ def main() -> None:
         from .routines import sell_all_clean
         boot.focus_game()
         sell_all_clean.run()
+        return
+
+    if cmd == "craft_essence":
+        from . import boot
+        from .routines import craft_essence
+        boot.focus_game()
+        craft_essence.run()
         return
 
     if cmd == "setup":

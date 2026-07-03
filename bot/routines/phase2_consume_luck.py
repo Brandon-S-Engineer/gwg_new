@@ -23,12 +23,13 @@ from ..config import ITEMS_DIR
 from ..coords_loader import get_region
 from ..regions import Region
 
-LUCK_TEMPLATES = [
-    ITEMS_DIR / "blue_luck.png",
-    ITEMS_DIR / "green_luck.png",
-    ITEMS_DIR / "yellow_luck.png",
-    ITEMS_DIR / "purple_luck.png",
-]
+BLUE   = ITEMS_DIR / "blue_luck.png"
+GREEN  = ITEMS_DIR / "green_luck.png"
+YELLOW = ITEMS_DIR / "yellow_luck.png"
+PURPLE = ITEMS_DIR / "purple_luck.png"   # exotic
+
+LUCK_TEMPLATES = [BLUE, GREEN, YELLOW, PURPLE]
+NON_EXOTIC = [BLUE, GREEN, YELLOW]        # todo menos la exotic (purple)
 
 CONSUME_ALL = ITEMS_DIR / "consume_all.png"
 
@@ -99,9 +100,11 @@ def consume_all_at(point: tuple[int, int]) -> bool:
     return False
 
 
-def run() -> bool:
+def run(templates=None) -> bool:
+    if templates is None:
+        templates = LUCK_TEMPLATES
     consumed = False
-    for tpl in LUCK_TEMPLATES:
+    for tpl in templates:
         for _ in range(MAX_PASSES_PER_TIER):
             spot = find_luck(tpl)
             if not spot:

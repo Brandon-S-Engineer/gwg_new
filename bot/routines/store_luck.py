@@ -19,6 +19,7 @@ from ..coords_loader import get_point, get_region
 BLUE   = ITEMS_DIR / "blue_luck.png"
 GREEN  = ITEMS_DIR / "green_luck.png"
 YELLOW = ITEMS_DIR / "yellow_luck.png"
+EXOTIC = ITEMS_DIR / "purple_luck.png"
 
 LUCK_THRESHOLD = 0.80
 
