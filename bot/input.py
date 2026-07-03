@@ -54,6 +54,9 @@ HOLD_MIN = 0.05
 HOLD_MAX = 0.12
 POST_CLICK_MIN = 0.05
 POST_CLICK_MAX = 0.12
+# Tipeo humano: delay aleatorio entre teclas.
+TYPE_MIN = 0.09
+TYPE_MAX = 0.22
 
 # Win32 mouse_event flags
 _MOUSEEVENTF_MOVE = 0x0001
@@ -212,6 +215,14 @@ def drag(start, end, hold_before: float = 0.5):
         _user32.mouse_event(_MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
     else:
         pyautogui.mouseUp()
+
+
+def type_text(text):
+    """Teclea letra por letra con delay aleatorio entre teclas (humano)."""
+    import keyboard as _kb
+    for ch in text:
+        _kb.write(ch)
+        time.sleep(_rand(TYPE_MIN, TYPE_MAX))
 
 
 def sleep(seconds, jitter=0.15):

@@ -44,7 +44,7 @@ def filter_inventory():
     _kb.send("ctrl+a")
     time.sleep(0.05)
     _kb.send("delete")
-    _kb.write("unidentified")
+    inp.type_text("unidentified")
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
@@ -55,7 +55,7 @@ def filter_bank():
     _kb.send("ctrl+a")
     time.sleep(0.05)
     _kb.send("delete")
-    _kb.write("luck")
+    inp.type_text("luck")
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 

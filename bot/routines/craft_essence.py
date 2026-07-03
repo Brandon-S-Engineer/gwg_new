@@ -89,7 +89,7 @@ def run():
     _kb.send("ctrl+a")
     time.sleep(0.05)
     _kb.send("delete")
-    _kb.write("luck")
+    inp.type_text("luck")
     time.sleep(schedule.CRAFT_AFTER_SEARCH)
 
     # Subir tiers vendiendo durante las esperas. `work` es el mismo generator
