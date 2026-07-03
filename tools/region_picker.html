@@ -1675,7 +1675,10 @@
             empty.textContent = 'No hay resoluciones. Crea una con "+ Nueva".'
             return
           }
-          await switchResolution(state.resolutions[0])
+          // Default a 4K si existe (si no, la primera alfabética).
+          const preferred = state.resolutions.includes('3840x2160')
+            ? '3840x2160' : state.resolutions[0]
+          await switchResolution(preferred)
         } catch (err) {
           empty.textContent = 'Error: ' + err.message
         }
