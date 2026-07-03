@@ -219,6 +219,61 @@
           "name": "copper_fed_salvage_common",
           "x": 0,
           "y": 0
+        },
+        {
+          "name": "bank_title",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "bank_target",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "inventory_filter",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "bank_filter",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "banco",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "production",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "search_production",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "masterwork_essence",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "rare_essence",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "exotic_essence",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "craft_all",
+          "x": 0,
+          "y": 0
         }
       ],
       "items": [
