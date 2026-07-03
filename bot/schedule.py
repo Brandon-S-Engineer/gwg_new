@@ -121,7 +121,6 @@ TASKS = [
 FINAL_TASKS = [
     phase3_salvage_rares.run,  # limpiar rares que sueltan más ectos
     ectos.run,            # salvage de ectos + vender el crystalline dust
-    craft_essence.run,    # subir tiers de esencia, guardar exotic, consumir resto, compactar
-    sell_seals.run,       # vender los sellos que queden
-    sell_all_clean.run,   # limpieza final del inventario (materiales)
+    craft_essence.run,    # craftea esencia y, durante las esperas, vende seals + materiales
+                          # (luego guarda exotic, consume el resto y compacta)
 ]
