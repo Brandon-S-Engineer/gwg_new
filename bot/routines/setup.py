@@ -1,8 +1,8 @@
 """Setup inicial: se ejecuta una vez cuando arranca el loop.
 
 Orden:
-  1. click en la pestaña banco (por si quedó en artificing; así aseguramos)
-  2. drag_bank()       - arrastra el banco al costado
+  1. drag_bank()       - arrastra el banco al costado (primero: 'banco' asume esa posición)
+  2. click en la pestaña banco (por si quedó en artificing; así aseguramos)
   3. open_windows()    - presiona i / o / m para abrir inventario, TP y mapa
   4. filter_inventory() - escribe 'unidentified' en el filtro del inventario
   5. filter_bank()      - escribe 'luck' en el filtro del banco
@@ -66,8 +66,8 @@ def ensure_bank_tab():
 
 
 def run():
+    drag_bank()        # primero acomodar: el punto 'banco' asume la ventana ya al costado
     ensure_bank_tab()
-    drag_bank()
     open_windows()
     filter_inventory()
     filter_bank()
