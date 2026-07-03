@@ -130,6 +130,22 @@ def main() -> None:
         sell_all_clean.run()
         return
 
+    if cmd == "setup":
+        from . import boot
+        from .routines import setup
+        sub = sys.argv[2] if len(sys.argv) > 2 else "all"
+        boot.focus_game()
+        if sub in ("drag", "all"):
+            print("[setup] arrastrando banco...")
+            setup.drag_bank()
+        if sub in ("inv", "all"):
+            print("[setup] filtrando inventario → luck...")
+            setup.filter_inventory()
+        if sub in ("bank", "all"):
+            print("[setup] filtrando banco → unidentified...")
+            setup.filter_bank()
+        return
+
     print(f"comando desconocido: {cmd}")
 
 

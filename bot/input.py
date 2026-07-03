@@ -197,6 +197,23 @@ def double_click(point):
     time.sleep(_rand(POST_CLICK_MIN, POST_CLICK_MAX))
 
 
+def drag(start, end, hold_before: float = 0.5):
+    """Drag de start a end (para mover ventanas). Mantiene botón durante el move."""
+    move_to(start)
+    time.sleep(_rand(PRE_CLICK_MIN, PRE_CLICK_MAX))
+    if _user32:
+        _user32.mouse_event(_MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+    else:
+        pyautogui.mouseDown()
+    time.sleep(hold_before)
+    move_to(end)
+    time.sleep(_rand(HOLD_MIN, HOLD_MAX))
+    if _user32:
+        _user32.mouse_event(_MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+    else:
+        pyautogui.mouseUp()
+
+
 def sleep(seconds, jitter=0.15):
     delta = seconds * jitter
     time.sleep(_rand(seconds - delta, seconds + delta))
