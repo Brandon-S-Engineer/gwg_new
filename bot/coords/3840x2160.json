@@ -237,13 +237,13 @@
         },
         {
           "name": "artificing_station",
-          "x": 2529,
-          "y": 1395
+          "x": 2530,
+          "y": 1333
         },
         {
           "name": "production",
-          "x": 2530,
-          "y": 1334
+          "x": 2531,
+          "y": 1396
         },
         {
           "name": "search_production",
