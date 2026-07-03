@@ -19,9 +19,12 @@ def main() -> None:
         import time
 
         from . import boot, schedule
+        from .routines import setup as _setup
         print(f"[loop] arranca en {schedule.STARTUP_DELAY}s (sacá el mouse de Parsec)...")
         time.sleep(schedule.STARTUP_DELAY)
         boot.focus_game()
+        print("[loop] setup inicial...")
+        _setup.run()
         max_iters = schedule.MAX_ITERATIONS
         i = 1
         stop = False
@@ -135,14 +138,15 @@ def main() -> None:
         from .routines import setup
         sub = sys.argv[2] if len(sys.argv) > 2 else "all"
         boot.focus_game()
-        if sub in ("drag", "all"):
-            print("[setup] arrastrando banco...")
+        if sub == "all":
+            setup.run()
+        elif sub == "drag":
             setup.drag_bank()
-        if sub in ("inv", "all"):
-            print("[setup] filtrando inventario → luck...")
+        elif sub == "windows":
+            setup.open_windows()
+        elif sub == "inv":
             setup.filter_inventory()
-        if sub in ("bank", "all"):
-            print("[setup] filtrando banco → unidentified...")
+        elif sub == "bank":
             setup.filter_bank()
         return
 
