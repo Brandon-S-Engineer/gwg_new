@@ -19,7 +19,8 @@ Flujo:
   1. pestaña artificing → buscar "luck"
   2. craftear masterwork, rare, exotic (craft_all + espera vendiendo)
   3. terminar la venta pendiente si quedó algo
-  4. pestaña banco → guardar las exotic (doble-click, tantos stacks como haya)
+  4. pestaña banco → filtrar "luck" (si no, no salen todas las exotic) →
+     guardar (doble-click, tantos stacks como haya)
   5. consumir el remanente que no sea exotic (blue/green/yellow)
   6. compactar
 
@@ -36,7 +37,7 @@ import time
 from .. import input as inp
 from .. import schedule
 from ..coords_loader import get_point
-from . import phase2_consume_luck, sell, sell_all_clean, sell_seals, store_luck
+from . import phase2_consume_luck, sell, sell_all_clean, sell_seals, setup, store_luck
 
 # Cuántos stacks de exotic guardar como mucho (corta el loop si el find
 # se queda pegado en un falso positivo).
@@ -112,9 +113,11 @@ def run():
     for _ in work:
         pass
 
-    # Cambiar a la pestaña banco y guardar las exotic (doble-click).
+    # Cambiar a la pestaña banco, filtrar por "luck" (si no, no salen todas
+    # las exotic) y guardar (doble-click).
     inp.click(get_point("banco"))
     time.sleep(schedule.CRAFT_AFTER_OPEN)
+    setup.filter_bank()
     for _ in range(MAX_STORE_PASSES):
         if not store_luck.run(store_luck.EXOTIC):
             break
