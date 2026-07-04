@@ -71,9 +71,9 @@ SETUP_AFTER_FILTER = 0.3     # tras escribir en el campo de filtro
 CRAFT_AFTER_OPEN = 1.0           # tras abrir el banco / artificing station
 CRAFT_AFTER_SEARCH = 0.5         # tras escribir "luck" en la búsqueda
 CRAFT_AFTER_SELECT = 0.5         # tras seleccionar una receta
-CRAFT_WAIT_MASTERWORK = 450      # 3m10s: craftear masterwork essence
-CRAFT_WAIT_RARE = 240            # 2m10s: craftear rare essence
-CRAFT_WAIT_EXOTIC = 120           # 1m10s: craftear exotic essence
+CRAFT_WAIT_MASTERWORK = 360      
+CRAFT_WAIT_RARE = 360            
+CRAFT_WAIT_EXOTIC = 220           
 
 # --- compact (compactar inventario) ---
 COMPACT_AFTER_CLICK = 0.3
