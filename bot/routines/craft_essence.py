@@ -78,8 +78,12 @@ def _craft(recipe: str, wait: float, work):
     _work_during(wait, work)
 
 
-def run():
-    # Pestaña artificing (crafteo) y buscar las recetas de luck.
+def open_and_search_luck():
+    """Pestaña artificing + escribir 'luck' en la búsqueda de recetas.
+
+    Separado de run() para poder probarlo solo (`py -m bot craft_essence
+    search`) sin correr los ~7 min de craft completos.
+    """
     inp.click(get_point("artificing_station"))
     time.sleep(schedule.CRAFT_AFTER_OPEN)
     inp.click(get_point("search_production"))
@@ -87,6 +91,10 @@ def run():
     inp.clear_field()
     inp.type_text("luck")
     time.sleep(schedule.CRAFT_AFTER_SEARCH)
+
+
+def run():
+    open_and_search_luck()
 
     # Subir tiers vendiendo durante las esperas. `work` es el mismo generator
     # en los 3: se pausa y retoma entre esperas.
