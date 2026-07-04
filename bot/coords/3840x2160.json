@@ -431,6 +431,10 @@
         {
           "name": "silver_fed",
           "image": "silver_fed.png"
+        },
+        {
+          "name": "deposit_material",
+          "image": "deposit_material.png"
         }
       ]
     },
