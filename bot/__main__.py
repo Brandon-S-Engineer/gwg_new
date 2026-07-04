@@ -17,7 +17,7 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | click_test [<point_name>]")
+        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | craft_essence | setup | conn_test | click_test [<point_name>]")
         return
 
     if cmd == "loop":
@@ -130,6 +130,21 @@ def main() -> None:
         from .routines import sell_all_clean
         boot.focus_game()
         sell_all_clean.run()
+        return
+
+    if cmd == "conn_test":
+        from . import boot, dialogs
+        from .routines.phase1_salvage_greens import recover
+        boot.focus_game()
+        print("[conn_test] buscando ícono de error de conexión...")
+        found = dialogs.check_conn_error()
+        if not found:
+            print("[conn_test] no se detectó (o se detectó pero no se encontró el OK). "
+                  "Mirá el max_val de arriba contra CONN_ERROR_THRESHOLD.")
+            return
+        print("[conn_test] OK clickeado, corriendo recovery (identificar + rune_crafter)...")
+        recover()
+        print("[conn_test] listo")
         return
 
     if cmd == "craft_essence":
