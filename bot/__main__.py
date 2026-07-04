@@ -33,17 +33,12 @@ def main() -> None:
         max_iters = schedule.MAX_ITERATIONS
         i = 1
         stop = False
-        import time as _t
         from . import dialogs
-        from .routines.phase1_salvage_greens import (
-            salvage_with_rune_crafter as _recovery_salvage,
-            SLEEP_AFTER_SALVAGE as _RECOVERY_SLEEP,
-        )
+        from .routines.phase1_salvage_greens import recover as _recovery_salvage
         while (max_iters == -1 or i <= max_iters) and not stop:
             if dialogs.check_conn_error():
                 print("[loop] conn error dismisseado, salvage recovery...")
                 _recovery_salvage()
-                _t.sleep(_RECOVERY_SLEEP)
                 print("[loop] reiniciando iteración...")
                 continue
             print(f"\n=== iter {i} ===")
@@ -59,7 +54,6 @@ def main() -> None:
                     except dialogs.ConnErrorDetected:
                         print("[loop] conn error mid-task, salvage recovery...")
                         _recovery_salvage()
-                        _t.sleep(_RECOVERY_SLEEP)
                         print("[loop] reiniciando iteración...")
                         restart_iter = True
                         break

@@ -152,6 +152,28 @@ def salvage_with_rune_crafter() -> bool:
     return salvage.click_accept()
 
 
+def recover() -> bool:
+    """Recovery tras el diálogo de conn_error (dialogs.check_conn_error).
+
+    Este error sale seguido cuando el inventario se satura de greens sin
+    identificar. Si hay, los identifica primero (Use All) y espera; si no
+    hay, corre el salvage directo (puede haber verdes ya identificados
+    esperando el rune_crafter).
+    """
+    spot = find_green_in_inventory()
+    if spot:
+        print(f"[fase1] recovery: unidentified gear en inv {spot}, Use All...")
+        if use_all_at(spot):
+            time.sleep(SLEEP_AFTER_IDENTIFY)
+    else:
+        print("[fase1] recovery: nada sin identificar en inv, salvage directo...")
+
+    print("[fase1] recovery: salvage con rune_crafter...")
+    ok = salvage_with_rune_crafter()
+    time.sleep(SLEEP_AFTER_SALVAGE)
+    return ok
+
+
 def run() -> bool:
     print("[fase1] buscando greens en inventario...")
     spot = find_green_in_inventory()
