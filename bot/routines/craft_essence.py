@@ -100,13 +100,8 @@ def run():
     # Subir tiers vendiendo durante las esperas. `work` es el mismo generator
     # en los 3: se pausa y retoma entre esperas.
     work = _sell_steps()
-    # Los nombres de coords "rare_essence"/"masterwork_essence" están
-    # cruzados con el wait a propósito: el picker necesitaba que la
-    # etiqueta visual coincidiera con la receta real en pantalla, y ese
-    # punto ya apuntaba al pixel correcto. No enderezar esto sin revisar
-    # bot/coords/*.json.
-    _craft("rare_essence", schedule.CRAFT_WAIT_MASTERWORK, work)
-    _craft("masterwork_essence", schedule.CRAFT_WAIT_RARE, work)
+    _craft("masterwork_essence", schedule.CRAFT_WAIT_MASTERWORK, work)
+    _craft("rare_essence", schedule.CRAFT_WAIT_RARE, work)
     _craft("exotic_essence", schedule.CRAFT_WAIT_EXOTIC, work)
 
     # Si las esperas no alcanzaron, terminar la venta pendiente.
