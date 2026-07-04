@@ -227,12 +227,18 @@ CLEAR_FIELD_BACKSPACES = 30
 def clear_field():
     """Deja un campo de texto vacío sin depender de que ctrl+a/delete
     hayan funcionado: ctrl+a intenta seleccionar todo, y de todos modos
-    se manda backspace de sobra para borrar cualquier resto."""
+    se manda backspace de sobra para borrar cualquier resto.
+
+    Los backspaces van con un pequeño delay entre cada uno: mandados todos
+    de golpe (sin sleep) se pierden bajo Parsec, y a veces se comían la
+    escritura siguiente (quedaba el campo sin nada tecleado).
+    """
     import keyboard as _kb
     _kb.send("ctrl+a")
     time.sleep(0.05)
     for _ in range(CLEAR_FIELD_BACKSPACES):
         _kb.send("backspace")
+        time.sleep(_rand(0.02, 0.04))
     time.sleep(0.05)
 
 

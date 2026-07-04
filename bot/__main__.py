@@ -150,8 +150,12 @@ def main() -> None:
     if cmd == "craft_essence":
         from . import boot
         from .routines import craft_essence
+        sub = sys.argv[2] if len(sys.argv) > 2 else "all"
         boot.focus_game()
-        craft_essence.run()
+        if sub == "all":
+            craft_essence.run()
+        elif sub == "search":
+            craft_essence.open_and_search_luck()
         return
 
     if cmd == "setup":
