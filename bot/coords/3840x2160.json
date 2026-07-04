@@ -227,8 +227,8 @@
         },
         {
           "name": "inventory_filter",
-          "x": 3124,
-          "y": 1245
+          "x": 3023,
+          "y": 1234
         },
         {
           "name": "bank_filter",
@@ -248,7 +248,7 @@
         {
           "name": "search_production",
           "x": 2624,
-          "y": 1247
+          "y": 1233
         },
         {
           "name": "masterwork_essence",
