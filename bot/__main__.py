@@ -163,6 +163,8 @@ def main() -> None:
             craft_essence.run()
         elif sub == "search":
             craft_essence.open_and_search_luck()
+        elif sub == "find":
+            craft_essence.test_find_recipes()
         return
 
     if cmd == "setup":

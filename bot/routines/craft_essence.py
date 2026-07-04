@@ -111,6 +111,21 @@ def _craft(template, wait: float, work) -> bool:
     return True
 
 
+def test_find_recipes():
+    """Abre artificing, busca 'luck' y solo DETECTA las 3 recetas por
+    imagen (sin clickear ni craftear nada). Para probar que los templates
+    y RECIPE_LIST_AREA están bien calibrados antes de correr run().
+    """
+    open_and_search_luck()
+    for template in (RECIPE_MASTERWORK, RECIPE_RARE, RECIPE_EXOTIC):
+        spot = vision.find(template, region=get_region("RECIPE_LIST_AREA"),
+                           threshold=RECIPE_THRESHOLD)
+        if spot:
+            print(f"[craft_essence] {template.name}: encontrada en {spot}")
+        else:
+            print(f"[craft_essence] {template.name}: NO encontrada")
+
+
 def open_and_search_luck():
     """Pestaña artificing + escribir 'luck' en la búsqueda de recetas.
 
