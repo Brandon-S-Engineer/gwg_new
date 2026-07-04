@@ -251,17 +251,17 @@
           "y": 1249
         },
         {
-          "name": "exotic_essence",
+          "name": "masterwork_essence",
           "x": 2698,
           "y": 1354
         },
         {
-          "name": "masterwork_essence",
+          "name": "rare_essence",
           "x": 2661,
           "y": 1378
         },
         {
-          "name": "rare_essence",
+          "name": "exotic_essence",
           "x": 2728,
           "y": 1330
         },
