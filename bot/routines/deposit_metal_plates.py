@@ -85,7 +85,7 @@ def deposit_at(point: tuple[int, int]) -> bool:
         return True
 
     # Sin botón = no se abrió menú = el find fue falso positivo. No clickear.
-    print("[deposit_material] sin botón Deposit Material: falso positivo, no clickeo")
+    print("[deposit_metal_plates] sin botón Deposit Material: falso positivo, no clickeo")
     return False
 
 
@@ -98,12 +98,12 @@ def run(materials=None) -> bool:
             spot = find_material(tpl)
             if not spot:
                 break
-            print(f"[deposit_material] {tpl.name} en {spot}, Deposit Material...")
+            print(f"[deposit_metal_plates] {tpl.name} en {spot}, Deposit Material...")
             if not deposit_at(spot):
                 break  # falso positivo persistente: no reintentar este material
             time.sleep(SLEEP_AFTER_DEPOSIT)
             deposited = True
 
     if not deposited:
-        print("[deposit_material] nada que depositar.")
+        print("[deposit_metal_plates] nada que depositar.")
     return deposited
