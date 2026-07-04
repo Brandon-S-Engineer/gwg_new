@@ -38,23 +38,17 @@ def open_windows():
 
 
 def filter_inventory():
-    import keyboard as _kb
     inp.click(get_point("inventory_filter"))
     time.sleep(0.15)
-    _kb.send("ctrl+a")
-    time.sleep(0.05)
-    _kb.send("delete")
+    inp.clear_field()
     inp.type_text("unidentified")
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
 def filter_bank():
-    import keyboard as _kb
     inp.click(get_point("bank_filter"))
     time.sleep(0.15)
-    _kb.send("ctrl+a")
-    time.sleep(0.05)
-    _kb.send("delete")
+    inp.clear_field()
     inp.type_text("luck")
     time.sleep(schedule.SETUP_AFTER_FILTER)
 

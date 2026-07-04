@@ -217,6 +217,25 @@ def drag(start, end, hold_before: float = 0.5):
         pyautogui.mouseUp()
 
 
+# Backspaces de sobra para limpiar un campo de búsqueda (nunca escriben más
+# de ~20 chars). Cubre el caso en que ctrl+a/delete no seleccionó nada
+# (foco tardío, hotkey interceptado por el juego) y quedaba texto viejo
+# pegado, rompiendo la búsqueda siguiente.
+CLEAR_FIELD_BACKSPACES = 30
+
+
+def clear_field():
+    """Deja un campo de texto vacío sin depender de que ctrl+a/delete
+    hayan funcionado: ctrl+a intenta seleccionar todo, y de todos modos
+    se manda backspace de sobra para borrar cualquier resto."""
+    import keyboard as _kb
+    _kb.send("ctrl+a")
+    time.sleep(0.05)
+    for _ in range(CLEAR_FIELD_BACKSPACES):
+        _kb.send("backspace")
+    time.sleep(0.05)
+
+
 def type_text(text):
     """Teclea letra por letra con delay aleatorio entre teclas (humano)."""
     import keyboard as _kb
