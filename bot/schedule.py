@@ -44,6 +44,12 @@ PHASE2_AFTER_RIGHT_CLICK = 0.8       # que abra el menú (NO tocar: right-click 
 PHASE2_AFTER_DISMISS = 0.1           # tooltip ya se fue al bajar; clickear cuanto antes
 PHASE2_AFTER_CONSUME = 0.2           # mínimo para que el stack desaparezca, y a la siguiente
 
+# --- deposit_material (depositar directo al depósito de materiales) ---
+DEPOSIT_BEFORE_RIGHT_CLICK = 0.08    # asentar cursor antes del right-click
+DEPOSIT_AFTER_RIGHT_CLICK = 0.8      # que abra el menú
+DEPOSIT_AFTER_DISMISS = 0.1          # tooltip ya se fue al bajar
+DEPOSIT_AFTER_DEPOSIT = 0.2          # mínimo para que el stack desaparezca, y al siguiente
+
 # --- phase3_salvage_rares (silver_fed) ---
 PHASE3_AFTER_RIGHT_CLICK = 0.8       # que abra el menú del kit
 PHASE3_AFTER_OPTION = 0.5            # que aparezca el diálogo Accept
@@ -83,6 +89,7 @@ STORE_LUCK_AFTER_DOUBLECLICK = 0.2
 
 from .routines import (
     craft_essence,
+    deposit_material,
     ectos,
     phase1_salvage_greens,
     phase2_consume_luck,
@@ -111,6 +118,7 @@ TASKS = [
     (2, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
     (2, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
     (10, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
+    (10, deposit_material.run),                               # reclaimed_metal_plates al depósito
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
     # (25, restart_or_not.run),                  # cada 25
