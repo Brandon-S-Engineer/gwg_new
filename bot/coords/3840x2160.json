@@ -42,6 +42,13 @@
           "y": 192,
           "w": 73,
           "h": 71
+        },
+        {
+          "name": "RECIPE_LIST_AREA",
+          "x": 2550,
+          "y": 1300,
+          "w": 420,
+          "h": 120
         }
       ],
       "points": [
@@ -251,21 +258,6 @@
           "y": 1249
         },
         {
-          "name": "masterwork_essence",
-          "x": 2698,
-          "y": 1354
-        },
-        {
-          "name": "rare_essence",
-          "x": 2661,
-          "y": 1378
-        },
-        {
-          "name": "exotic_essence",
-          "x": 2728,
-          "y": 1330
-        },
-        {
           "name": "craft_all",
           "x": 3447,
           "y": 1933
@@ -435,6 +427,18 @@
         {
           "name": "deposit_material",
           "image": "deposit_material.png"
+        },
+        {
+          "name": "recipe_masterwork",
+          "image": "recipe_masterwork.png"
+        },
+        {
+          "name": "recipe_rare",
+          "image": "recipe_rare.png"
+        },
+        {
+          "name": "recipe_exotic",
+          "image": "recipe_exotic.png"
         }
       ]
     },

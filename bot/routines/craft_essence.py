@@ -24,20 +24,43 @@ Flujo:
   5. consumir el remanente que no sea exotic (blue/green/yellow)
   6. compactar
 
+Las 3 recetas se buscan por IMAGEN (no por coordenada fija): la lista de
+resultados de la búsqueda no tiene un orden estable entre sesiones (varía
+qué fila cae arriba/medio/abajo), así que un punto fijo se rompía cada
+vez que el juego reordenaba. Con template matching no importa en qué
+fila caiga cada receta.
+
 Coordenadas necesarias (agregar con el picker):
     artificing_station - pestaña de crafteo (herramientas)
     banco             - pestaña del banco (depositar)
     search_production - campo de búsqueda de recetas
-    masterwork_essence, rare_essence, exotic_essence - recetas en la lista
     craft_all         - botón Craft All
+
+Región necesaria (agregar con el picker):
+    RECIPE_LIST_AREA  - caja que cubre las 3 filas de resultados
+
+Items necesarios (capturar con el picker, pestaña de items):
+    recipe_masterwork, recipe_rare, recipe_exotic - recorte de cada
+    receta en la lista. Recortar el ÍCONO o el texto del NOMBRE, sin
+    incluir el conteo entre paréntesis al final (ese número cambia).
 """
 
 import time
 
 from .. import input as inp
 from .. import schedule
-from ..coords_loader import get_point
+from .. import vision
+from ..config import ITEMS_DIR
+from ..coords_loader import get_point, get_region
 from . import phase2_consume_luck, sell, sell_all_clean, sell_seals, setup, store_luck
+
+RECIPE_MASTERWORK = ITEMS_DIR / "recipe_masterwork.png"
+RECIPE_RARE = ITEMS_DIR / "recipe_rare.png"
+RECIPE_EXOTIC = ITEMS_DIR / "recipe_exotic.png"
+
+# Templates a capturar en el VM (recorte del nombre/ícono, sin el conteo).
+RECIPE_THRESHOLD = 0.85
+RECIPE_FIND_TIMEOUT = 2.0
 
 # Cuántos stacks de exotic guardar como mucho (corta el loop si el find
 # se queda pegado en un falso positivo).
@@ -71,12 +94,21 @@ def _work_during(duration: float, work):
         time.sleep(rest)
 
 
-def _craft(recipe: str, wait: float, work):
-    inp.click(get_point(recipe))
+def _craft(template, wait: float, work) -> bool:
+    """Busca la receta por imagen en la lista (el orden de filas no es
+    estable entre sesiones) y craftea. False si no la encontró."""
+    spot = vision.wait_for(template, region=get_region("RECIPE_LIST_AREA"),
+                           timeout=RECIPE_FIND_TIMEOUT, threshold=RECIPE_THRESHOLD)
+    if not spot:
+        print(f"[craft_essence] no encontré {template.name} en la lista, salto este craft")
+        return False
+
+    inp.click(spot)
     time.sleep(schedule.CRAFT_AFTER_SELECT)
     inp.click(get_point("craft_all"))
-    print(f"[craft_essence] {recipe} → craft_all, {wait:.0f}s (vendiendo mientras)...")
+    print(f"[craft_essence] {template.name} → craft_all, {wait:.0f}s (vendiendo mientras)...")
     _work_during(wait, work)
+    return True
 
 
 def open_and_search_luck():
@@ -100,9 +132,9 @@ def run():
     # Subir tiers vendiendo durante las esperas. `work` es el mismo generator
     # en los 3: se pausa y retoma entre esperas.
     work = _sell_steps()
-    _craft("masterwork_essence", schedule.CRAFT_WAIT_MASTERWORK, work)
-    _craft("rare_essence", schedule.CRAFT_WAIT_RARE, work)
-    _craft("exotic_essence", schedule.CRAFT_WAIT_EXOTIC, work)
+    _craft(RECIPE_MASTERWORK, schedule.CRAFT_WAIT_MASTERWORK, work)
+    _craft(RECIPE_RARE, schedule.CRAFT_WAIT_RARE, work)
+    _craft(RECIPE_EXOTIC, schedule.CRAFT_WAIT_EXOTIC, work)
 
     # Si las esperas no alcanzaron, terminar la venta pendiente.
     for _ in work:

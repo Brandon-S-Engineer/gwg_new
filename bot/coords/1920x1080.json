@@ -42,6 +42,13 @@
           "y": 0,
           "w": 0,
           "h": 0
+        },
+        {
+          "name": "RECIPE_LIST_AREA",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
         }
       ],
       "points": [
@@ -256,21 +263,6 @@
           "y": 1646
         },
         {
-          "name": "exotic_essence",
-          "x": 4038,
-          "y": 1646
-        },
-        {
-          "name": "masterwork_essence",
-          "x": 4038,
-          "y": 1646
-        },
-        {
-          "name": "rare_essence",
-          "x": 4038,
-          "y": 1646
-        },
-        {
           "name": "craft_all",
           "x": 4038,
           "y": 1646
@@ -408,6 +400,18 @@
         {
           "name": "yellow_luck",
           "image": "yellow_luck.png"
+        },
+        {
+          "name": "recipe_masterwork",
+          "image": "recipe_masterwork.png"
+        },
+        {
+          "name": "recipe_rare",
+          "image": "recipe_rare.png"
+        },
+        {
+          "name": "recipe_exotic",
+          "image": "recipe_exotic.png"
         }
       ]
     },
