@@ -35,6 +35,14 @@ LUCK_THRESHOLD = 0.80
 # ~0.62. 0.85 separa con margen de sobra.
 GREEN_THRESHOLD = 0.85
 
+# El template se capturó desde el inventario; en el banco el render del
+# ícono es ligeramente distinto (otra escala/zoom de esa vista) y el score
+# sale sistemáticamente más bajo. La mayoría igual pasa 0.85, pero quedaban
+# 3-5 items pegados justo debajo, sin que ni el fast path ni el fallback
+# anti-luck los rescataran (ambos cortaban en 0.85 antes de llegar ahí).
+# Solo para banco; NO tocar GREEN_THRESHOLD (inventario funciona perfecto).
+BANK_GREEN_THRESHOLD = 0.75
+
 # "Use All" por imagen, igual que la venta hace "Sell at Trading Post".
 # Capturar el template EN EL VM, recortado al texto. Si no aparece, abortar:
 # NUNCA clickear a ciegas (un offset fijo puede caer en "Destroy").
@@ -70,7 +78,7 @@ def find_green_in_bank() -> tuple[int, int] | None:
     region = get_region("BANK_AREA")
 
     # Caso normal: encontró gear directamente
-    spot = vision.find(GREEN, region=region, threshold=GREEN_THRESHOLD)
+    spot = vision.find(GREEN, region=region, threshold=BANK_GREEN_THRESHOLD)
     if spot:
         return spot
 
@@ -85,7 +93,7 @@ def find_green_in_bank() -> tuple[int, int] | None:
 
     for _ in range(15):
         _, max_val, _, max_loc = cv2.minMaxLoc(result)
-        if max_val < GREEN_THRESHOLD:
+        if max_val < BANK_GREEN_THRESHOLD:
             return None
 
         abs_x = region.x + max_loc[0] + tw // 2
