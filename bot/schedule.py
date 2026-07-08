@@ -89,6 +89,7 @@ STORE_LUCK_AFTER_DOUBLECLICK = 0.2
 
 from .routines import (
     craft_essence,
+    debug_green,
     deposit_metal_plates,
     ectos,
     phase1_salvage_greens,
@@ -131,4 +132,5 @@ FINAL_TASKS = [
     craft_essence.run,    # craftea esencia y, durante las esperas, vende seals + materiales
                           # (luego guarda exotic, consume el resto y compacta)
     deposit_metal_plates.run,  # reclaimed_metal_plates al depósito, al final de todo
+    debug_green.run,      # captura + scores de lo que quedó sin tomar (tools/debug_output/)
 ]
