@@ -17,7 +17,7 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | setup | conn_test | click_test [<point_name>]")
+        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | setup | conn_test | debug_green | click_test [<point_name>]")
         return
 
     if cmd == "loop":
@@ -152,6 +152,13 @@ def main() -> None:
         print("[conn_test] OK clickeado, corriendo recovery (identificar + rune_crafter)...")
         recover()
         print("[conn_test] listo")
+        return
+
+    if cmd == "debug_green":
+        from . import boot
+        from .routines import debug_green
+        boot.focus_game()
+        debug_green.run()
         return
 
     if cmd == "craft_essence":
