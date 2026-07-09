@@ -127,6 +127,7 @@ TASKS = [
 # Corren 1 vez al terminar el loop (no por iteración). sell_all_clean va también
 # acá para limpiar el inventario aunque el loop corte antes del múltiplo de 30.
 FINAL_TASKS = [
+    phase1_salvage_greens.drain,  # vaciar el banco de greens: MAX_ITERATIONS puede cortar antes
     phase3_salvage_rares.run,  # limpiar rares que sueltan más ectos
     ectos.run,            # salvage de ectos + vender el crystalline dust
     craft_essence.run,    # craftea esencia y, durante las esperas, vende seals + materiales
