@@ -145,6 +145,7 @@ TASKS = [
     (30, ectos.run),
     (30, craft_essence.run),
     (30, deposit_metal_plates.run),
+    (30, exotics.run),
 ]
 
 # Corren 1 vez al terminar el loop (no por iteración). sell_all_clean va también
