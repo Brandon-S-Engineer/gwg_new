@@ -386,6 +386,11 @@
           "name": "exotic_slot_20",
           "x": 4038,
           "y": 1646
+        },
+        {
+          "name": "tp_section",
+          "x": 4038,
+          "y": 1646
         }
       ],
       "items": [

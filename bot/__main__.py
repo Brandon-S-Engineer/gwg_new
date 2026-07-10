@@ -142,8 +142,12 @@ def main() -> None:
     if cmd == "exotics":
         from . import boot
         from .routines import exotics
+        sub = sys.argv[2] if len(sys.argv) > 2 else "all"
         boot.focus_game()
-        exotics.run()
+        if sub == "all":
+            exotics.run()
+        elif sub == "view":
+            exotics.test_reset_view()
         return
 
     if cmd == "conn_test":

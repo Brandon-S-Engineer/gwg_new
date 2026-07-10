@@ -97,6 +97,7 @@ EXOTICS_AFTER_SELECT = 2.0       # tras clickear el slot top (más caro)
 EXOTICS_AFTER_SUCCESS = 1.5      # tras confirmar la venta, antes de cerrar
 EXOTICS_AFTER_ARM_KIT = 0.5      # tras armar el silver_fed en modo "Use"
 EXOTICS_AFTER_SALVAGE_CLICK = 0.25  # tras clickear un slot armado, antes del Accept
+EXOTICS_AFTER_TP_SECTION = 1.5   # tras el reset de vista (m,o,o,m), click a la sección TP
 
 from .routines import (
     craft_essence,
@@ -155,5 +156,7 @@ FINAL_TASKS = [
     craft_essence.run,    # craftea esencia y, durante las esperas, vende seals + materiales
                           # (luego guarda exotic, consume el resto y compacta)
     deposit_metal_plates.run,  # reclaimed_metal_plates al depósito, al final de todo
+    exotics.run,           # reset vista TP + vender los más caros + salvage del resto
+                           # (va después de todo el procesamiento de luck: ese traba el TP)
     debug_green.run,      # captura + scores de lo que quedó sin tomar (tools/debug_output/)
 ]

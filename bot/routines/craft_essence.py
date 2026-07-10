@@ -52,7 +52,7 @@ from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
-from . import exotics, phase2_consume_luck, sell, sell_all_clean, sell_seals, setup, store_luck
+from . import phase2_consume_luck, sell, sell_all_clean, sell_seals, setup, store_luck
 
 RECIPE_MASTERWORK = ITEMS_DIR / "recipe_masterwork.png"
 RECIPE_RARE = ITEMS_DIR / "recipe_rare.png"
@@ -68,10 +68,12 @@ MAX_STORE_PASSES = 6
 
 
 def _sell_steps():
-    """Un yield por paso hecho: sellos, materiales y al final limpieza de
-    exotics (vender los más caros + salvage del resto). Como es un
+    """Un yield por venta hecha: primero sellos, luego materiales. Como es un
     generator, guarda su posición: el craft lo pausa cuando se acaba el tiempo
-    y lo reanuda en la siguiente espera, sin repetir lo ya hecho."""
+    y lo reanuda en la siguiente espera, sin repetir lo ya vendido.
+
+    La limpieza de exotics NO va acá: el procesamiento de luck traba el TP,
+    así que exotics corre aparte, al final de FINAL_TASKS (ver exotics.py)."""
     for name in sell_seals.SEALS:
         if sell.sell_item(name):
             yield
@@ -80,7 +82,6 @@ def _sell_steps():
             if not sell.sell_item(name):
                 break  # no queda de este → siguiente material
             yield
-    yield from exotics.steps()
 
 
 def _work_during(duration: float, work):
