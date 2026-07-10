@@ -126,6 +126,13 @@ TASKS = [
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
     # (25, restart_or_not.run),                  # cada 25
+
+    # corridas largas (MAX_ITERATIONS grande/-1): estos también van en
+    # FINAL_TASKS, pero ahí solo corren 1 vez al terminar el loop entero.
+    # Acá se repiten cada 30 iteraciones para que no esperen horas.
+    (30, ectos.run),
+    (30, craft_essence.run),
+    (30, deposit_metal_plates.run),
 ]
 
 # Corren 1 vez al terminar el loop (no por iteración). sell_all_clean va también
