@@ -36,8 +36,8 @@ PHASE1_AFTER_RIGHT_CLICK = 0.8       # que abra el menú contextual
 PHASE1_HOVER_USE_ALL = 0.3           # asentar cursor sobre "Use All" antes de clickear
 PHASE1_AFTER_SALVAGE_OPTION = 0.5    # tras clickear la opción "salvage green" del rune_crafter
 PHASE1_AFTER_IDENTIFY = 8.0          # esperar a que procese el unidentified green gear
-PHASE1_AFTER_SALVAGE = 20.0           # que termine el salvage con rune_crafter
-PHASE1_AFTER_BANK_DOUBLECLICK = 0.5  # que la verde aparezca en inv antes de re-escanear
+PHASE1_AFTER_SALVAGE = 19.0           # que termine el salvage con rune_crafter
+PHASE1_BANK_TO_INV_TIMEOUT = 3.0     # espera máx a que el green del banco aparezca en inv
 # --- phase2_consume_luck ---
 PHASE2_BEFORE_RIGHT_CLICK = 0.08     # asentar cursor antes del right-click
 PHASE2_AFTER_RIGHT_CLICK = 0.8       # que abra el menú (NO tocar: right-click + bajar quita el hover)
@@ -58,7 +58,7 @@ PHASE3_AFTER_SALVAGE = 3.0           # que termine el salvage
 # --- ectos (salvage de stacks + venta de dust) ---
 ECTOS_AFTER_RIGHT_CLICK = 0.8        # que abra el menú del kit
 ECTOS_AFTER_OPTION = 0.5             # que aparezca el diálogo
-ECTOS_AFTER_SALVAGE = 24.0           # que termine el salvage del stack
+ECTOS_AFTER_SALVAGE = 27.0           # que termine el salvage del stack
 
 # --- sell (genérico TP: sell_materials/sell_seals/sell_all_clean) ---
 SELL_AFTER_RIGHT_CLICK = 0.8         # que abra el menú
@@ -77,6 +77,7 @@ SETUP_AFTER_FILTER = 0.3     # tras escribir en el campo de filtro
 CRAFT_AFTER_OPEN = 1.0           # tras abrir el banco / artificing station
 CRAFT_AFTER_SEARCH = 0.5         # tras escribir "luck" en la búsqueda
 CRAFT_AFTER_SELECT = 0.5         # tras seleccionar una receta
+
 CRAFT_WAIT_MASTERWORK = 360      
 CRAFT_WAIT_RARE = 360            
 CRAFT_WAIT_EXOTIC = 220           
@@ -110,15 +111,18 @@ TASKS = [
     (1, phase1_salvage_greens.run),
     (2, phase3_salvage_rares.run),
     # (5, phase2_consume_luck.run),
+
     # guardar esencia de suerte al banco (doble-click)
     (1,  lambda: store_luck.run(store_luck.BLUE)),
     (1,  lambda: store_luck.run(store_luck.BLUE)),
     (6,  lambda: store_luck.run(store_luck.GREEN)),
     (30, lambda: store_luck.run(store_luck.YELLOW)),
+
     # vender mats en TP, por ritmo de acumulación
     (2, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
     (2, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
     (10, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
+
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
     # (25, restart_or_not.run),                  # cada 25

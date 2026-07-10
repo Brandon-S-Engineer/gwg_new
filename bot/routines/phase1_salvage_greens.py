@@ -2,7 +2,9 @@
 
 Flujo:
   1. Buscar green.png en INVENTORY_AREA. Si hay → "Use All".
-  2. Si no, buscar en BANK_AREA → doble-click stack → recheck inventario.
+  2. Si no, buscar en BANK_AREA → confirmar el spot en una caja chica
+     (screenshot fresco) → doble-click → esperar que aparezca en inventario,
+     con reintentos si el click no surtió efecto.
   3. Salvage con Rune Crafter (template match del kit en el inv).
   4. Click en "Accept" por template (salvage.click_accept).
 """
@@ -48,7 +50,14 @@ SLEEP_HOVER_USE_ALL = schedule.PHASE1_HOVER_USE_ALL
 SLEEP_AFTER_SALVAGE_OPTION = schedule.PHASE1_AFTER_SALVAGE_OPTION
 SLEEP_AFTER_IDENTIFY = schedule.PHASE1_AFTER_IDENTIFY
 SLEEP_AFTER_SALVAGE = schedule.PHASE1_AFTER_SALVAGE
-SLEEP_AFTER_BANK_DOUBLECLICK = schedule.PHASE1_AFTER_BANK_DOUBLECLICK
+BANK_TO_INV_TIMEOUT = schedule.PHASE1_BANK_TO_INV_TIMEOUT
+
+# Confirmación del green en banco: re-buscar en una caja chica alrededor del
+# spot con screenshot FRESCO antes de clickear (la posición original viene de
+# una captura previa), y tras el doble-click verificar que llegue al
+# inventario. Si no llegó, reintentar el doble-click.
+BANK_CONFIRM_HALF = 60
+BANK_CLICK_ATTEMPTS = 3
 
 # Sacar el cursor del item hacia el menú: quita el tooltip de hover.
 MENU_DISMISS_OFFSET = (16, 88)
@@ -110,6 +119,43 @@ def find_green_in_bank() -> tuple[int, int] | None:
         return (abs_x, abs_y)
 
     return None
+
+
+def confirm_green_at(spot: tuple[int, int]) -> tuple[int, int] | None:
+    """Re-busca el green en una caja chica alrededor de spot (screenshot
+    fresco). Devuelve la posición afinada, o None si ya no está ahí."""
+    x0 = max(0, spot[0] - BANK_CONFIRM_HALF)
+    y0 = max(0, spot[1] - BANK_CONFIRM_HALF)
+    w = min(BANK_CONFIRM_HALF * 2, config.SCREEN_WIDTH - x0)
+    h = min(BANK_CONFIRM_HALF * 2, config.SCREEN_HEIGHT - y0)
+    return vision.find(GREEN, region=Region(x0, y0, w, h),
+                       threshold=GREEN_THRESHOLD)
+
+
+def move_bank_green_to_inventory(bank_spot: tuple[int, int]) -> tuple[int, int] | None:
+    """Pasa un green del banco al inventario con doble-click.
+
+    Cada intento re-confirma el spot en una caja chica (posición afinada,
+    screenshot fresco) y luego espera a que aparezca en inventario; si no
+    apareció, reintenta. Devuelve la posición en inventario, o None.
+    """
+    for attempt in range(1, BANK_CLICK_ATTEMPTS + 1):
+        confirmed = confirm_green_at(bank_spot)
+        if not confirmed:
+            # Ya no está en ese spot: pudo haberse movido con el click
+            # anterior; el chequeo final de inventario decide.
+            print(f"[fase1] bank: spot {bank_spot} ya no confirma, re-chequeo inv...")
+            break
+        print(f"[fase1] bank: green confirmado en {confirmed}, doble-click (intento {attempt})...")
+        inp.double_click(confirmed)
+        spot = vision.wait_for(GREEN, region=get_region("INVENTORY_AREA"),
+                               timeout=BANK_TO_INV_TIMEOUT,
+                               threshold=GREEN_THRESHOLD)
+        if spot:
+            return spot
+        print("[fase1] bank: no apareció en inv tras el doble-click, reintento...")
+
+    return find_green_in_inventory()
 
 
 def _menu_region(point: tuple[int, int]) -> Region:
@@ -184,10 +230,7 @@ def run() -> bool:
         if not bank_spot:
             print("[fase1] no hay greens ni en inv ni en banco. Nada que hacer.")
             return NO_GREENS
-        print(f"[fase1] green en banco {bank_spot}, doble-click...")
-        inp.double_click(bank_spot)
-        time.sleep(SLEEP_AFTER_BANK_DOUBLECLICK)
-        spot = find_green_in_inventory()
+        spot = move_bank_green_to_inventory(bank_spot)
         if not spot:
             print("[fase1] tras mover, no apareció en inv. Aborto.")
             return False
