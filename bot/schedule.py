@@ -88,11 +88,22 @@ COMPACT_AFTER_CLICK = 0.3
 # --- store_luck (guardar luck al banco con doble-click) ---
 STORE_LUCK_AFTER_DOUBLECLICK = 0.2
 
+# --- exotics (vender los N más caros + salvage por posición del resto) ---
+EXOTICS_AFTER_CLOSE = 1.5        # tras cerrar el último panel de venta
+EXOTICS_AFTER_TAB = 1.5          # tras abrir la pestaña "Sell" del TP
+EXOTICS_AFTER_SORT = 0.5         # entre los 2 clicks de ordenar por precio
+EXOTICS_AFTER_SORT_FINAL = 1.5   # tras el 2do click de ordenar, ya ordenado
+EXOTICS_AFTER_SELECT = 2.0       # tras clickear el slot top (más caro)
+EXOTICS_AFTER_SUCCESS = 1.5      # tras confirmar la venta, antes de cerrar
+EXOTICS_AFTER_ARM_KIT = 0.5      # tras armar el silver_fed en modo "Use"
+EXOTICS_AFTER_SALVAGE_CLICK = 0.25  # tras clickear un slot armado, antes del Accept
+
 from .routines import (
     craft_essence,
     debug_green,
     deposit_metal_plates,
     ectos,
+    exotics,
     phase1_salvage_greens,
     phase2_consume_luck,
     phase3_salvage_rares,

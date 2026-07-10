@@ -17,7 +17,7 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | setup | conn_test | debug_green | click_test [<point_name>]")
+        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | exotics | setup | conn_test | debug_green | click_test [<point_name>]")
         return
 
     if cmd == "loop":
@@ -137,6 +137,13 @@ def main() -> None:
         from .routines import deposit_metal_plates
         boot.focus_game()
         deposit_metal_plates.run()
+        return
+
+    if cmd == "exotics":
+        from . import boot
+        from .routines import exotics
+        boot.focus_game()
+        exotics.run()
         return
 
     if cmd == "conn_test":

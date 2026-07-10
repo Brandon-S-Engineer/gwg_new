@@ -266,6 +266,131 @@
           "name": "craft_all",
           "x": 4038,
           "y": 1646
+        },
+        {
+          "name": "sell_items_tab",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "sell_sort_price",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "sell_top_slot",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "sell_top_confirm_1",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "sell_top_confirm_2",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_1",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_2",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_3",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_4",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_5",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_6",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_7",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_8",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_9",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_10",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_11",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_12",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_13",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_14",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_15",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_16",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_17",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_18",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_19",
+          "x": 4038,
+          "y": 1646
+        },
+        {
+          "name": "exotic_slot_20",
+          "x": 4038,
+          "y": 1646
         }
       ],
       "items": [
