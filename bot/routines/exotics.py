@@ -3,9 +3,14 @@ salvage del resto por posición con silver_fed.
 
 Portado del bot viejo (`sell_most_expensive_exotics` + `salvage_restant_exotics`
 en reference_old/main_old.py), con un cambio: en vez de clickear un número
-fijo de slots a ciegas para el salvage, usamos el Accept por imagen
-(salvage.click_accept, igual que fase1/fase3) y paramos en cuanto no
-aparece — así no importa si hay menos de MAX_SLOTS exotics restantes.
+fijo de slots a ciegas para el salvage, usamos el Accept por imagen y
+paramos en cuanto no aparece — así no importa si hay menos de MAX_SLOTS
+exotics restantes.
+
+Ojo: este Accept es un botón DISTINTO al de salvage.click_accept (ese sale
+del menú contextual del kit en fase1/fase3). El salvage por posición arma
+el kit y clickea directo sobre el item, y ese diálogo usa accept_salvage.png
+como template propio (misma columna/región que el otro, pero look distinto).
 
 Corre standalone en FINAL_TASKS, DESPUÉS de deposit_metal_plates (al mero
 final de todo). NO va durante las esperas de craft_essence: el
@@ -32,6 +37,10 @@ Coordenadas necesarias (agregar con el picker, ya tienen placeholder):
     sell_top_confirm_1      - click para confirmar la venta del top slot
     exotic_slot_1..20      - grid de slots del inventario post-compact, para
                               el barrido de salvage
+
+Item necesario (capturar con el picker, pestaña de items):
+    accept_salvage - botón Accept del diálogo que sale al salvage-por-click
+                     (distinto al accept.png del menú contextual)
 """
 
 import time
@@ -39,12 +48,20 @@ import time
 from .. import input as inp
 from .. import salvage
 from .. import schedule
+from .. import vision
+from ..config import ITEMS_DIR
 from ..coords_loader import get_point
 from . import store_luck
 
 TOP_N = 5
 MAX_SLOTS = 20
 SLOT_NAMES = [f"exotic_slot_{i}" for i in range(1, MAX_SLOTS + 1)]
+
+# El Accept del salvage por posición (kit armado + click en item) es un
+# botón DISTINTO al de salvage.click_accept (ese es del menú contextual del
+# kit). Mismo tipo de diálogo, misma columna, template propio.
+ACCEPT_SALVAGE = ITEMS_DIR / "accept_salvage.png"
+ACCEPT_SALVAGE_THRESHOLD = 0.85
 
 SLEEP_AFTER_CLOSE = schedule.EXOTICS_AFTER_CLOSE
 SLEEP_AFTER_TAB = schedule.EXOTICS_AFTER_TAB
@@ -107,10 +124,20 @@ def _arm_silver_fed():
     time.sleep(SLEEP_AFTER_ARM_KIT)
 
 
+def _click_accept_salvage(timeout: float = 2.0) -> bool:
+    btn = vision.wait_for(ACCEPT_SALVAGE, region=salvage.ACCEPT_REGION,
+                          timeout=timeout, threshold=ACCEPT_SALVAGE_THRESHOLD)
+    if btn:
+        inp.click(btn)
+        return True
+    print("[exotics] accept_salvage no encontrado en la columna")
+    return False
+
+
 def _salvage_slot(point_name: str) -> bool:
     inp.click(get_point(point_name))
     time.sleep(SLEEP_AFTER_SALVAGE_CLICK)
-    return salvage.click_accept()
+    return _click_accept_salvage()
 
 
 def _salvage_rest_exotics() -> None:
