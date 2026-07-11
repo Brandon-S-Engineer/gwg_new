@@ -45,6 +45,9 @@ Item necesario (capturar con el picker, pestaña de items):
 
 import time
 
+import cv2
+
+from .. import config
 from .. import input as inp
 from .. import salvage
 from .. import schedule
@@ -52,6 +55,11 @@ from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point
 from . import store_luck
+
+DEBUG_OUT_DIR = config.PROJECT_ROOT / "tools" / "debug_output"
+DEBUG_FLOOR = 0.30   # piso bajo: queremos ver todo lo que exista arriba del ruido
+DEBUG_MAX_MATCHES = 15
+DEBUG_CROP_HALF = 50
 
 TOP_N = 5
 MAX_SLOTS = 20
@@ -122,6 +130,56 @@ def _arm_silver_fed():
     time.sleep(schedule.PHASE3_AFTER_RIGHT_CLICK)
     inp.click(get_point("silver_fed_use"))
     time.sleep(SLEEP_AFTER_ARM_KIT)
+
+
+def _dump_accept_candidates() -> None:
+    """Diagnóstico: barrido de TODA la pantalla buscando accept_salvage.png
+    con piso bajo (no solo pass/fail contra el threshold real), para ver
+    dónde está de verdad en vez de adivinar la región. Guarda screenshot +
+    crops en tools/debug_output/ (git-tracked, llega por push/pull)."""
+    DEBUG_OUT_DIR.mkdir(parents=True, exist_ok=True)
+    tpl = cv2.imread(str(ACCEPT_SALVAGE), 0)
+    if tpl is None:
+        raise FileNotFoundError(ACCEPT_SALVAGE)
+    th, tw = tpl.shape[:2]
+
+    gray = vision.capture_screen(region=None, color=False)
+    color = vision.capture_screen(region=None, color=True)
+    cv2.imwrite(str(DEBUG_OUT_DIR / "accept_salvage_full.png"), color)
+
+    result = cv2.matchTemplate(gray, tpl, cv2.TM_CCOEFF_NORMED)
+    lines = [f"accept_salvage: piso {DEBUG_FLOOR}"]
+    h, w = gray.shape[:2]
+    for _ in range(DEBUG_MAX_MATCHES):
+        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+        if max_val < DEBUG_FLOOR:
+            break
+        x, y = max_loc[0] + tw // 2, max_loc[1] + th // 2
+        lines.append(f"  score={max_val:.3f}  pos=({x},{y})")
+        x0, y0 = max(0, x - DEBUG_CROP_HALF), max(0, y - DEBUG_CROP_HALF)
+        x1, y1 = min(w, x + DEBUG_CROP_HALF), min(h, y + DEBUG_CROP_HALF)
+        crop = color[y0:y1, x0:x1]
+        cv2.imwrite(str(DEBUG_OUT_DIR / f"accept_salvage_crop_{max_val:.3f}_{x}_{y}.png"), crop)
+        x0m = max(0, max_loc[0] - tw // 2)
+        y0m = max(0, max_loc[1] - th // 2)
+        x1m = min(result.shape[1], max_loc[0] + tw // 2 + 1)
+        y1m = min(result.shape[0], max_loc[1] + th // 2 + 1)
+        result[y0m:y1m, x0m:x1m] = 0
+
+    (DEBUG_OUT_DIR / "accept_salvage_report.txt").write_text("\n".join(lines), encoding="utf-8")
+    print("\n".join(lines))
+    print(f"[exotics] guardado en {DEBUG_OUT_DIR}")
+
+
+def test_debug_accept():
+    """Arma el kit, clickea exotic_slot_1 (para que el diálogo salga en
+    pantalla) y hace un barrido de TODA la pantalla buscando accept_salvage
+    con piso bajo. Para diagnosticar con datos reales dónde aparece de
+    verdad. `py -m bot exotics debug_accept`"""
+    _arm_silver_fed()
+    inp.click(get_point("exotic_slot_1"))
+    time.sleep(SLEEP_AFTER_SALVAGE_CLICK)
+    _dump_accept_candidates()
 
 
 def _click_accept_salvage(timeout: float = 2.0) -> bool:
