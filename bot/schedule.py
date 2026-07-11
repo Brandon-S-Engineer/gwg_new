@@ -147,7 +147,7 @@ TASKS = [
     (30, craft_essence.run),
     (30, deposit_metal_plates.run),
     (30, exotics.run),
-    (30, setup.restore_bank_filter),  # craft_essence/exotics dejan el banco en otra pestaña/filtro
+    (30, setup.restore_bank_filter),  # craft_essence/exotics dejan los filtros en otra cosa
 ]
 
 # Corren 1 vez al terminar el loop (no por iteración). sell_all_clean va también

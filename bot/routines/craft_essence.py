@@ -162,7 +162,7 @@ def run():
     # las exotic) y guardar (doble-click).
     inp.click(get_point("banco"))
     time.sleep(schedule.CRAFT_AFTER_OPEN)
-    setup.filter_bank("luck")
+    setup.filter_bank()
     for _ in range(MAX_STORE_PASSES):
         if not store_luck.run(store_luck.EXOTIC):
             break

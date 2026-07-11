@@ -4,8 +4,8 @@ Orden:
   1. drag_bank()       - arrastra el banco al costado (primero: 'banco' asume esa posición)
   2. click en la pestaña banco (por si quedó en artificing; así aseguramos)
   3. open_windows()    - presiona i / o / m para abrir inventario, TP y mapa
-  4. filter_inventory() - escribe 'luck' en el filtro del inventario
-  5. filter_bank()      - escribe 'unidentified' en el filtro del banco
+  4. filter_inventory() - escribe 'unidentified' en el filtro del inventario
+  5. filter_bank()      - escribe 'luck' en el filtro del banco
 
 Coordenadas necesarias (agregar con el picker):
     banco            - pestaña del banco (asegurar al iniciar)
@@ -41,17 +41,15 @@ def filter_inventory():
     inp.click(get_point("inventory_filter"))
     time.sleep(0.15)
     inp.clear_field()
-    inp.type_text("luck")
+    inp.type_text("unidentified")
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
-def filter_bank(text: str = "unidentified"):
-    """Default 'unidentified' (setup inicial, para los greens). craft_essence
-    la reusa con text='luck' antes de guardar la esencia exotic."""
+def filter_bank():
     inp.click(get_point("bank_filter"))
     time.sleep(0.15)
     inp.clear_field()
-    inp.type_text(text)
+    inp.type_text("luck")
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
@@ -63,11 +61,12 @@ def ensure_bank_tab():
 
 def restore_bank_filter():
     """craft_essence y exotics (cada 30 iteraciones) cambian de pestaña
-    banco/artificing y navegan el TP, dejando el filtro del banco en otra
-    cosa (o en 'luck'). Sin esto, fase1 deja de encontrar greens en el
-    banco a partir de la siguiente iteración."""
+    banco/artificing y navegan el TP, dejando los filtros en otra cosa.
+    Repite los mismos pasos que el final de run() para dejarlos como al
+    principio."""
     ensure_bank_tab()
-    filter_bank("unidentified")
+    filter_inventory()
+    filter_bank()
 
 
 def run():
