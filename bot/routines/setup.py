@@ -4,8 +4,8 @@ Orden:
   1. drag_bank()       - arrastra el banco al costado (primero: 'banco' asume esa posición)
   2. click en la pestaña banco (por si quedó en artificing; así aseguramos)
   3. open_windows()    - presiona i / o / m para abrir inventario, TP y mapa
-  4. filter_inventory() - escribe 'unidentified' en el filtro del inventario
-  5. filter_bank()      - escribe 'luck' en el filtro del banco
+  4. filter_inventory() - escribe 'luck' en el filtro del inventario
+  5. filter_bank()      - escribe 'unidentified' en el filtro del banco
 
 Coordenadas necesarias (agregar con el picker):
     banco            - pestaña del banco (asegurar al iniciar)
@@ -13,9 +13,6 @@ Coordenadas necesarias (agregar con el picker):
     bank_target      - destino del drag (costado derecho)
     inventory_filter - campo de texto del filtro del inventario
     bank_filter      - campo de texto del filtro del banco
-    inventory_close  - botón X del inventario (cerrar antes de abrir con 'i',
-                        que es un toggle: si ya estaba abierto de una corrida
-                        anterior, 'i' lo cerraría en vez de abrirlo)
 """
 
 import time
@@ -31,15 +28,7 @@ def drag_bank():
 
 
 def open_windows():
-    """'i' es un toggle: si el inventario ya estaba abierto de una corrida
-    anterior (el loop se reinicia sin cerrar el juego), presionarlo lo
-    CIERRA en vez de abrirlo, y filter_inventory() clickea sobre nada.
-    Por eso primero se cierra a la fuerza con inventory_close (botón X, no
-    toggle) para arrancar siempre desde "cerrado" — mismo truco que usaba
-    el bot viejo en open_menus()."""
     import keyboard as _kb
-    inp.click(get_point("inventory_close"))
-    time.sleep(schedule.SETUP_AFTER_KEYPRESS)
     _kb.press_and_release("i")
     time.sleep(schedule.SETUP_AFTER_KEYPRESS)
     _kb.press_and_release("o")
@@ -52,15 +41,17 @@ def filter_inventory():
     inp.click(get_point("inventory_filter"))
     time.sleep(0.15)
     inp.clear_field()
-    inp.type_text("unidentified")
+    inp.type_text("luck")
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
-def filter_bank():
+def filter_bank(text: str = "unidentified"):
+    """Default 'unidentified' (setup inicial, para los greens). craft_essence
+    la reusa con text='luck' antes de guardar la esencia exotic."""
     inp.click(get_point("bank_filter"))
     time.sleep(0.15)
     inp.clear_field()
-    inp.type_text("luck")
+    inp.type_text(text)
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
