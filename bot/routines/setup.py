@@ -61,6 +61,15 @@ def ensure_bank_tab():
     time.sleep(schedule.SETUP_AFTER_BANK_TAB)
 
 
+def restore_bank_filter():
+    """craft_essence y exotics (cada 30 iteraciones) cambian de pestaña
+    banco/artificing y navegan el TP, dejando el filtro del banco en otra
+    cosa (o en 'luck'). Sin esto, fase1 deja de encontrar greens en el
+    banco a partir de la siguiente iteración."""
+    ensure_bank_tab()
+    filter_bank("unidentified")
+
+
 def run():
     drag_bank()        # primero acomodar: el punto 'banco' asume la ventana ya al costado
     ensure_bank_tab()

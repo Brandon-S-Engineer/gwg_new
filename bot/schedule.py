@@ -111,6 +111,7 @@ from .routines import (
     sell_all_clean,
     sell_materials,
     sell_seals,
+    setup,
     store_luck,
 )
 
@@ -146,6 +147,7 @@ TASKS = [
     (30, craft_essence.run),
     (30, deposit_metal_plates.run),
     (30, exotics.run),
+    (30, setup.restore_bank_filter),  # craft_essence/exotics dejan el banco en otra pestaña/filtro
 ]
 
 # Corren 1 vez al terminar el loop (no por iteración). sell_all_clean va también
