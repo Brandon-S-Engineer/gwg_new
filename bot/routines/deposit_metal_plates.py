@@ -26,6 +26,7 @@ from ..coords_loader import get_region
 from ..regions import Region
 
 RECLAIMED_METAL_PLATES = ITEMS_DIR / "reclaimed_metal_plates.png"
+GLOBS_OF_DARK_MATTER = ITEMS_DIR / "globs_of_dark_matter.png"
 
 MATERIALS = [RECLAIMED_METAL_PLATES]
 

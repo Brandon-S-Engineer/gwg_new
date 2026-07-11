@@ -28,6 +28,8 @@ Flujo:
   4. Armar el silver_fed en modo "Use" (cursor de salvage) y recorrer el grid
      fijo de slots (post-compact), salvage + Accept por imagen; para en el
      primer slot vacío (Accept no aparece).
+  5. Depositar los globs of dark matter que soltó el salvage (misma lógica
+     que deposit_metal_plates: right-click → template del botón → click).
 
 Coordenadas necesarias (agregar con el picker, ya tienen placeholder):
     tp_section            - sección/pestaña de Trading Post tras el reset
@@ -53,7 +55,7 @@ from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
-from . import store_luck
+from . import deposit_metal_plates, store_luck
 
 TOP_N = 5
 MAX_SLOTS = 20
@@ -165,6 +167,12 @@ def test_salvage_rest():
     _salvage_rest_exotics()
 
 
+def test_deposit_dark_matter():
+    """Solo depositar globs of dark matter (sin lo demás). Misma lógica que
+    deposit_metal_plates. `py -m bot exotics dark_matter`"""
+    deposit_metal_plates.run(materials=[deposit_metal_plates.GLOBS_OF_DARK_MATTER])
+
+
 def run():
     """Corre todo el flujo (`py -m bot exotics`)."""
     print("[exotics] limpieza de exotics...")
@@ -176,4 +184,6 @@ def run():
     # exotic_slot_N ya no coincide con lo que realmente queda.
     store_luck.compact()
     _salvage_rest_exotics()
+    # El salvage de los exotics suelta dark matter: depositarlo al final.
+    deposit_metal_plates.run(materials=[deposit_metal_plates.GLOBS_OF_DARK_MATTER])
     print("[exotics] OK")

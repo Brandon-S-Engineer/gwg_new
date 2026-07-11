@@ -150,6 +150,8 @@ def main() -> None:
             exotics.test_reset_view()
         elif sub == "salvage":
             exotics.test_salvage_rest()
+        elif sub == "dark_matter":
+            exotics.test_deposit_dark_matter()
         return
 
     if cmd == "conn_test":
