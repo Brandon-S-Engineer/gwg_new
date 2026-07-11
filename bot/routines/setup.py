@@ -13,6 +13,9 @@ Coordenadas necesarias (agregar con el picker):
     bank_target      - destino del drag (costado derecho)
     inventory_filter - campo de texto del filtro del inventario
     bank_filter      - campo de texto del filtro del banco
+    inventory_close  - botón X del inventario (cerrar antes de abrir con 'i',
+                        que es un toggle: si ya estaba abierto de una corrida
+                        anterior, 'i' lo cerraría en vez de abrirlo)
 """
 
 import time
@@ -28,7 +31,15 @@ def drag_bank():
 
 
 def open_windows():
+    """'i' es un toggle: si el inventario ya estaba abierto de una corrida
+    anterior (el loop se reinicia sin cerrar el juego), presionarlo lo
+    CIERRA en vez de abrirlo, y filter_inventory() clickea sobre nada.
+    Por eso primero se cierra a la fuerza con inventory_close (botón X, no
+    toggle) para arrancar siempre desde "cerrado" — mismo truco que usaba
+    el bot viejo en open_menus()."""
     import keyboard as _kb
+    inp.click(get_point("inventory_close"))
+    time.sleep(schedule.SETUP_AFTER_KEYPRESS)
     _kb.press_and_release("i")
     time.sleep(schedule.SETUP_AFTER_KEYPRESS)
     _kb.press_and_release("o")
