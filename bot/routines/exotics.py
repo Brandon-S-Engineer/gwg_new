@@ -29,7 +29,7 @@ Coordenadas necesarias (agregar con el picker, ya tienen placeholder):
     sell_items_tab        - pestaña "Sell" del panel del TP
     sell_sort_price        - columna "Price" para ordenar (se clickea 2 veces)
     sell_top_slot           - primer/top item de la lista ordenada
-    sell_top_confirm_1/2    - los 2 clicks para confirmar la venta del top slot
+    sell_top_confirm_1      - click para confirmar la venta del top slot
     exotic_slot_1..20      - grid de slots del inventario post-compact, para
                               el barrido de salvage
 """
@@ -81,11 +81,12 @@ def _open_sell_sorted_by_price():
 
 def _sell_top_one() -> bool:
     """Vende el item en el slot top (el más caro tras ordenar). Cada venta
-    hace que el siguiente más caro suba a esa misma posición."""
+    hace que el siguiente más caro suba a esa misma posición. Un solo click
+    de confirmación; el diálogo se cierra con sell_close, no hace falta un
+    segundo confirm."""
     inp.click(get_point("sell_top_slot"))
     time.sleep(SLEEP_AFTER_SELECT)
     inp.click(get_point("sell_top_confirm_1"))
-    inp.click(get_point("sell_top_confirm_2"))
     time.sleep(SLEEP_AFTER_SUCCESS)
     inp.click(get_point("sell_close"))
     time.sleep(SLEEP_AFTER_CLOSE)
