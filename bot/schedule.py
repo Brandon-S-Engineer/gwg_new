@@ -158,12 +158,14 @@ FINAL_TASKS = [
     # backlog el loop se pasa de MAX_ITERATIONS sin avisar. El backlog que
     # quede se procesa solo en la siguiente corrida (TASKS ya llama a
     # phase1_salvage_greens.run cada iteración).
-    phase3_salvage_rares.run,  # limpiar rares que sueltan más ectos
-    ectos.run,            # salvage de ectos + vender el crystalline dust
-    craft_essence.run,    # craftea esencia y, durante las esperas, vende seals + materiales
-                          # (luego guarda exotic, consume el resto y compacta)
-    deposit_metal_plates.run,  # reclaimed_metal_plates al depósito, al final de todo
+
+    # phase3_salvage_rares.run,  # limpiar rares que sueltan más ectos
+    # ectos.run,            # salvage de ectos + vender el crystalline dust
+    # craft_essence.run,    # craftea esencia y, durante las esperas, vende seals + materiales
+    #                       # (luego guarda exotic, consume el resto y compacta)
+    # deposit_metal_plates.run,  # reclaimed_metal_plates al depósito, al final de todo
     exotics.run,           # reset vista TP + vender los más caros + salvage del resto
+  
                            # (va después de todo el procesamiento de luck: ese traba el TP)
-    debug_green.run,      # captura + scores de lo que quedó sin tomar (tools/debug_output/)
+    # debug_green.run,      # captura + scores de lo que quedó sin tomar (tools/debug_output/)
 ]
