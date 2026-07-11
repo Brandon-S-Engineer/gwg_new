@@ -564,6 +564,10 @@
         {
           "name": "recipe_exotic",
           "image": "recipe_exotic.png"
+        },
+        {
+          "name": "accept_salvage",
+          "image": "accept_salvage.png"
         }
       ]
     },
