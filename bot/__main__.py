@@ -148,6 +148,8 @@ def main() -> None:
             exotics.run()
         elif sub == "view":
             exotics.test_reset_view()
+        elif sub == "salvage":
+            exotics.test_salvage_rest()
         return
 
     if cmd == "conn_test":

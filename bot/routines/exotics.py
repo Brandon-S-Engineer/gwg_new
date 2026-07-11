@@ -128,11 +128,23 @@ def test_reset_view():
     _reset_tp_view()
 
 
+def test_salvage_rest():
+    """Solo compactar + salvage del resto (sin reset de vista ni vender los
+    más caros). Para probar esta parte sola cuando ya no queden exotics
+    caros que vender. `py -m bot exotics salvage`"""
+    store_luck.compact()
+    _salvage_rest_exotics()
+
+
 def run():
     """Corre todo el flujo (`py -m bot exotics`)."""
     print("[exotics] limpieza de exotics...")
     _reset_tp_view()
     store_luck.compact()
     _sell_top_exotics()
+    # Vender cambia el inventario (huecos donde estaban los vendidos): hay
+    # que re-compactar antes del barrido por posición, si no el grid de
+    # exotic_slot_N ya no coincide con lo que realmente queda.
+    store_luck.compact()
     _salvage_rest_exotics()
     print("[exotics] OK")
