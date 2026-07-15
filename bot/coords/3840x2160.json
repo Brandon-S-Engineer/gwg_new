@@ -248,13 +248,13 @@
         },
         {
           "name": "inventory_filter",
-          "x": 3023,
-          "y": 1234
+          "x": 3050,
+          "y": 1233
         },
         {
           "name": "bank_filter",
-          "x": 2687,
-          "y": 1243
+          "x": 2649,
+          "y": 1230
         },
         {
           "name": "artificing_station",
