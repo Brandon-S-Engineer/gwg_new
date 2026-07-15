@@ -86,9 +86,9 @@ CRAFT_WAIT_EXOTIC = 220
 # de greens: blue→green 11s, green→yellow 14s, yellow→exotic 9s. Cada 2
 # iteraciones hay mucho menos acumulado, así que esto sobra; la espera se
 # pasa vendiendo igual, no es tiempo perdido.
-CRAFT_QUICK_WAIT_MASTERWORK = 12
-CRAFT_QUICK_WAIT_RARE = 15
-CRAFT_QUICK_WAIT_EXOTIC = 10
+CRAFT_QUICK_WAIT_MASTERWORK = 24
+CRAFT_QUICK_WAIT_RARE = 30
+CRAFT_QUICK_WAIT_EXOTIC = 20
 
 # --- compact (compactar inventario) ---
 COMPACT_AFTER_CLICK = 0.3
