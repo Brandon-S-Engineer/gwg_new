@@ -105,7 +105,7 @@ EXOTICS_AFTER_TP_SECTION = 1.5   # tras el reset de vista (m,o,o,m), click a la 
 OPEN_BAGS_BEFORE_RIGHT_CLICK = 0.2   # asentar cursor sobre la bolsa antes del right-click
 OPEN_BAGS_AFTER_RIGHT_CLICK = 0.6    # que abra el menú contextual
 OPEN_BAGS_HOVER_USE_ALL = 0.25       # asentar cursor sobre "Use All" antes de clickear
-OPEN_BAGS_AFTER_OPEN = 15.0          # espera larga tras abrir (que procese el loot), antes de re-escanear
+OPEN_BAGS_AFTER_OPEN = 22.0          # espera larga tras abrir (que procese el loot), antes de re-escanear
 
 from .routines import (
     craft_essence,
