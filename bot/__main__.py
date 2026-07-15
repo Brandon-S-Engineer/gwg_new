@@ -192,6 +192,8 @@ def main() -> None:
             craft_essence.run()
         elif sub == "quick":
             craft_essence.quick()
+        elif sub == "ectos_luck":
+            craft_essence.run_after_ectos()
         elif sub == "search":
             craft_essence.open_and_search_luck()
         elif sub == "find":

@@ -90,6 +90,10 @@ CRAFT_QUICK_WAIT_MASTERWORK = 24
 CRAFT_QUICK_WAIT_RARE = 30
 CRAFT_QUICK_WAIT_EXOTIC = 20
 
+# run_after_ectos(): espera por imagen el "luck [0]" en CRAFT_DONE_REGION.
+CRAFT_ZERO_GRACE = 2.0     # tras craft_all, antes de empezar a mirar
+CRAFT_ZERO_TIMEOUT = 300   # respaldo por si el template no aparece nunca
+
 # --- compact (compactar inventario) ---
 COMPACT_AFTER_CLICK = 0.3
 
@@ -163,6 +167,8 @@ TASKS = [
     # Acá se repiten cada 30 iteraciones para que no esperen horas.
     (30, ectos.run),
     # (30, craft_essence.run),
+    (30, craft_essence.run_after_ectos),  # procesar la luck de los ectos (espera por imagen)
+                                          # + guardar exotic + consumir + compact
     (30, deposit_metal_plates.run),
     (30, exotics.run),
     (30, setup.restore_bank_filter),  # craft_essence/exotics dejan los filtros en otra cosa

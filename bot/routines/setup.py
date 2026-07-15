@@ -41,7 +41,7 @@ def filter_inventory():
     inp.click(get_point("inventory_filter"))
     time.sleep(0.15)
     inp.clear_field()
-    inp.type_text("unidentified")
+    inp.type_text("unid")  # alcanza, no hay items con nombre parecido
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 

@@ -56,6 +56,13 @@
           "y": 1180,
           "w": 900,
           "h": 280
+        },
+        {
+          "name": "CRAFT_DONE_REGION",
+          "x": 1500,
+          "y": 900,
+          "w": 450,
+          "h": 140
         }
       ],
       "points": [
@@ -548,6 +555,10 @@
         {
           "name": "lucky_red_bag",
           "image": "lucky_red_bag.png"
+        },
+        {
+          "name": "luck_zero",
+          "image": "luck_zero.png"
         }
       ]
     },

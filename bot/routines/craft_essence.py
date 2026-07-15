@@ -36,13 +36,17 @@ Coordenadas necesarias (agregar con el picker):
     search_production - campo de búsqueda de recetas
     craft_all         - botón Craft All
 
-Región necesaria (agregar con el picker):
+Regiones necesarias (agregar con el picker):
     RECIPE_LIST_AREA  - caja que cubre las 3 filas de resultados
+    CRAFT_DONE_REGION - zona del botón de craft donde aparece "luck [0]"
+                        al terminar (para run_after_ectos)
 
 Items necesarios (capturar con el picker, pestaña de items):
     recipe_masterwork, recipe_rare, recipe_exotic - recorte de cada
     receta en la lista. Recortar el ÍCONO o el texto del NOMBRE, sin
     incluir el conteo entre paréntesis al final (ese número cambia).
+    luck_zero - el "luck [0]" que aparece al terminar un craft (sirve
+    para los 3 tiers).
 """
 
 import time
@@ -57,6 +61,15 @@ from . import phase2_consume_luck, sell, sell_all_clean, sell_materials, sell_se
 RECIPE_MASTERWORK = ITEMS_DIR / "recipe_masterwork.png"
 RECIPE_RARE = ITEMS_DIR / "recipe_rare.png"
 RECIPE_EXOTIC = ITEMS_DIR / "recipe_exotic.png"
+
+# "luck [0]" en la zona del botón de craft: señal de que el craft terminó.
+# Capturar con el picker; sirve igual para los 3 tiers.
+LUCK_ZERO = ITEMS_DIR / "luck_zero.png"
+LUCK_ZERO_THRESHOLD = 0.85
+
+# Sacar el cursor hacia abajo tras clickear craft_all, para que no tape
+# el "luck [0]" al reconocerlo por imagen.
+CRAFT_MOUSE_PARK_OFFSET = (0, 150)
 
 # Templates a capturar en el VM (recorte del nombre/ícono, sin el conteo).
 RECIPE_THRESHOLD = 0.85
@@ -129,19 +142,29 @@ def test_find_recipes():
             print(f"[craft_essence] {template.name}: NO encontrada")
 
 
-def open_and_search_luck():
-    """Pestaña artificing + escribir 'luck' en la búsqueda de recetas.
+# La búsqueda de la artificing station persiste dentro de la sesión: con
+# escribir "luck" la primera vez alcanza. Las siguientes solo cambian de tab.
+_luck_searched = False
+
+
+def open_and_search_luck(force: bool = False):
+    """Pestaña artificing + escribir 'luck' en la búsqueda de recetas
+    (solo la primera vez de la corrida: el texto persiste en el juego).
 
     Separado de run() para poder probarlo solo (`py -m bot craft_essence
     search`) sin correr los ~7 min de craft completos.
     """
+    global _luck_searched
     inp.click(get_point("artificing_station"))
     time.sleep(schedule.CRAFT_AFTER_OPEN)
+    if _luck_searched and not force:
+        return
     inp.click(get_point("search_production"))
     time.sleep(0.15)
     inp.clear_field()
     inp.type_text("luck")
     time.sleep(schedule.CRAFT_AFTER_SEARCH)
+    _luck_searched = True
 
 
 def _quick_sell_steps(materials):
@@ -176,8 +199,61 @@ def quick(materials=None):
     for _ in work:
         pass
 
-    # Volver al banco y reponer filtros para la siguiente green.
-    setup.restore_bank_filter()
+    # Volver al banco. El filtro del inventario no persiste: reponerlo.
+    # El "luck" del banco NO hace falta acá (solo al guardar exotic al final).
+    setup.ensure_bank_tab()
+    setup.filter_inventory()
+
+
+def _craft_wait_zero(template) -> bool:
+    """Como _craft, pero espera el fin del craft POR IMAGEN: tras craft_all
+    saca el cursor hacia abajo y espera a que aparezca "luck [0]" en
+    CRAFT_DONE_REGION. Timeout grande de respaldo por si el template falla."""
+    spot = vision.wait_for(template, region=get_region("RECIPE_LIST_AREA"),
+                           timeout=RECIPE_FIND_TIMEOUT, threshold=RECIPE_THRESHOLD)
+    if not spot:
+        print(f"[craft_essence] no encontré {template.name} en la lista, salto este craft")
+        return False
+
+    inp.click(spot)
+    time.sleep(schedule.CRAFT_AFTER_SELECT)
+    inp.click(get_point("craft_all"))
+    inp.move_rel(*CRAFT_MOUSE_PARK_OFFSET)
+    time.sleep(schedule.CRAFT_ZERO_GRACE)
+
+    print(f"[craft_essence] {template.name} → craft_all, esperando 'luck [0]'...")
+    done = vision.wait_for(LUCK_ZERO, region=get_region("CRAFT_DONE_REGION"),
+                           timeout=schedule.CRAFT_ZERO_TIMEOUT,
+                           threshold=LUCK_ZERO_THRESHOLD)
+    if not done:
+        print(f"[craft_essence] no vi 'luck [0]' en {schedule.CRAFT_ZERO_TIMEOUT:.0f}s, sigo igual")
+    return True
+
+
+def _store_exotic_and_finish():
+    """Pestaña banco + filtro 'luck' (si no, no salen todas las exotic) +
+    guardar exotic (doble-click) + consumir remanente + compactar."""
+    inp.click(get_point("banco"))
+    time.sleep(schedule.CRAFT_AFTER_OPEN)
+    setup.filter_bank()
+    for _ in range(MAX_STORE_PASSES):
+        if not store_luck.run(store_luck.EXOTIC):
+            break
+    phase2_consume_luck.run(phase2_consume_luck.NON_EXOTIC)
+    store_luck.compact()
+
+
+def run_after_ectos():
+    """Iter 30, después de ectos: procesar la luck que soltaron. Sin venta
+    en paralelo (ya se vendió antes en la iteración); cada tier espera por
+    imagen a que diga "luck [0]". Al final, el cierre de siempre: guardar
+    exotic al banco, consumir el remanente y compactar."""
+    print("[craft_essence] luck de los ectos: craft de tiers (espera por imagen)")
+    open_and_search_luck()
+    _craft_wait_zero(RECIPE_MASTERWORK)
+    _craft_wait_zero(RECIPE_RARE)
+    _craft_wait_zero(RECIPE_EXOTIC)
+    _store_exotic_and_finish()
 
 
 def run():
@@ -194,15 +270,5 @@ def run():
     for _ in work:
         pass
 
-    # Cambiar a la pestaña banco, filtrar por "luck" (si no, no salen todas
-    # las exotic) y guardar (doble-click).
-    inp.click(get_point("banco"))
-    time.sleep(schedule.CRAFT_AFTER_OPEN)
-    setup.filter_bank()
-    for _ in range(MAX_STORE_PASSES):
-        if not store_luck.run(store_luck.EXOTIC):
-            break
-
-    # Consumir el remanente que no sea exotic y compactar.
-    phase2_consume_luck.run(phase2_consume_luck.NON_EXOTIC)
-    store_luck.compact()
+    # Guardar exotic al banco, consumir el remanente y compactar.
+    _store_exotic_and_finish()
