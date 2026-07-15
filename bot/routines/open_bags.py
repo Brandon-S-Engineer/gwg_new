@@ -23,9 +23,7 @@ from ..regions import Region
 from .phase1_salvage_greens import USE_ALL, USE_ALL_THRESHOLD
 
 LUCKY_RED_BAG = ITEMS_DIR / "lucky_red_bag.png"
-# No es un ítem fácil de confundir con otros: threshold bajo, sin riesgo de
-# falso positivo. 0.85 dejaba varias bolsas sin abrir (30 en inv, abrió 6).
-BAG_THRESHOLD = 0.65
+BAG_THRESHOLD = 0.85
 
 MAX_PASSES = 40  # tope de seguridad, no loop infinito
 
@@ -34,8 +32,9 @@ SLEEP_AFTER_RIGHT_CLICK = schedule.OPEN_BAGS_AFTER_RIGHT_CLICK
 SLEEP_HOVER_USE_ALL = schedule.OPEN_BAGS_HOVER_USE_ALL
 SLEEP_AFTER_OPEN = schedule.OPEN_BAGS_AFTER_OPEN
 
-# Mismo patrón de menú que fase1 (right-click → mover al menú → "Use All").
-MENU_DISMISS_OFFSET = (16, 88)
+# Mover el cursor en horizontal puro (sin bajar) para no tapar el texto de
+# "Use All" con el ícono del cursor al pasar por encima camino al menú.
+MENU_DISMISS_OFFSET = (120, 0)
 MENU_REGION_DX = -10
 MENU_REGION_DY = 0
 MENU_REGION_W = 500
