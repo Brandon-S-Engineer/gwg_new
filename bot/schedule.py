@@ -35,8 +35,8 @@ PHASE1_BEFORE_RIGHT_CLICK = 0.25     # asentar cursor sobre el green antes del r
 PHASE1_AFTER_RIGHT_CLICK = 0.8       # que abra el menú contextual
 PHASE1_HOVER_USE_ALL = 0.3           # asentar cursor sobre "Use All" antes de clickear
 PHASE1_AFTER_SALVAGE_OPTION = 0.5    # tras clickear la opción "salvage green" del rune_crafter
-PHASE1_AFTER_IDENTIFY = 8.0          # esperar a que procese el unidentified green gear
-PHASE1_AFTER_SALVAGE = 19.0           # que termine el salvage con rune_crafter
+PHASE1_AFTER_IDENTIFY = 8.0
+PHASE1_AFTER_SALVAGE = 19.0
 PHASE1_AFTER_BANK_DOUBLECLICK = 0.5  # que la verde aparezca en inv antes de re-escanear
 # --- phase2_consume_luck ---
 PHASE2_BEFORE_RIGHT_CLICK = 0.08     # asentar cursor antes del right-click
@@ -78,9 +78,17 @@ CRAFT_AFTER_OPEN = 1.0           # tras abrir el banco / artificing station
 CRAFT_AFTER_SEARCH = 0.5         # tras escribir "luck" en la búsqueda
 CRAFT_AFTER_SELECT = 0.5         # tras seleccionar una receta
 
-CRAFT_WAIT_MASTERWORK = 360      
-CRAFT_WAIT_RARE = 360            
-CRAFT_WAIT_EXOTIC = 220           
+CRAFT_WAIT_MASTERWORK = 360
+CRAFT_WAIT_RARE = 360
+CRAFT_WAIT_EXOTIC = 220
+
+# quick(): craft incremental cada 2 iteraciones. Medido para 1 stack entero
+# de greens: blue→green 11s, green→yellow 14s, yellow→exotic 9s. Cada 2
+# iteraciones hay mucho menos acumulado, así que esto sobra; la espera se
+# pasa vendiendo igual, no es tiempo perdido.
+CRAFT_QUICK_WAIT_MASTERWORK = 12
+CRAFT_QUICK_WAIT_RARE = 15
+CRAFT_QUICK_WAIT_EXOTIC = 10
 
 # --- compact (compactar inventario) ---
 COMPACT_AFTER_CLICK = 0.3
@@ -134,15 +142,17 @@ TASKS = [
     # (5, phase2_consume_luck.run),
 
     # guardar esencia de suerte al banco (doble-click)
-    (1,  lambda: store_luck.run(store_luck.BLUE)),
-    (1,  lambda: store_luck.run(store_luck.BLUE)),
-    (6,  lambda: store_luck.run(store_luck.GREEN)),
-    (30, lambda: store_luck.run(store_luck.YELLOW)),
+    # (1,  lambda: store_luck.run(store_luck.BLUE)),
+    # (1,  lambda: store_luck.run(store_luck.BLUE)),
+    # (6,  lambda: store_luck.run(store_luck.GREEN)),
+    # (30, lambda: store_luck.run(store_luck.YELLOW)),
 
-    # vender mats en TP, por ritmo de acumulación
-    (2, lambda: sell_materials.run(sell_materials.LUCENT)),   # lucent motes
-    (2, lambda: sell_materials.run(sell_materials.FAST)),     # silk, mithril, elder wood
-    (10, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto
+    # craft de luck (3 tiers) + venta LUCENT/FAST en paralelo: es la misma
+    # venta de siempre cada 2 iteraciones, pero mientras el craft espera.
+    # En iter 1 no corre (todavía no hay luck). Reemplaza a store_luck y
+    # al craft_essence.run gigante del final.
+    (2, craft_essence.quick),
+    (10, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto, ya de vuelta en banco
 
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
@@ -152,7 +162,7 @@ TASKS = [
     # FINAL_TASKS, pero ahí solo corren 1 vez al terminar el loop entero.
     # Acá se repiten cada 30 iteraciones para que no esperen horas.
     (30, ectos.run),
-    (30, craft_essence.run),
+    # (30, craft_essence.run),
     (30, deposit_metal_plates.run),
     (30, exotics.run),
     (30, setup.restore_bank_filter),  # craft_essence/exotics dejan los filtros en otra cosa

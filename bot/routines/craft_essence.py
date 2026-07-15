@@ -52,7 +52,7 @@ from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
-from . import phase2_consume_luck, sell, sell_all_clean, sell_seals, setup, store_luck
+from . import phase2_consume_luck, sell, sell_all_clean, sell_materials, sell_seals, setup, store_luck
 
 RECIPE_MASTERWORK = ITEMS_DIR / "recipe_masterwork.png"
 RECIPE_RARE = ITEMS_DIR / "recipe_rare.png"
@@ -142,6 +142,42 @@ def open_and_search_luck():
     inp.clear_field()
     inp.type_text("luck")
     time.sleep(schedule.CRAFT_AFTER_SEARCH)
+
+
+def _quick_sell_steps(materials):
+    """Un yield por venta: los mismos materiales/pases que sell_materials.run,
+    pero como generator para consumirlo durante las esperas del craft."""
+    for name in materials:
+        pre = sell_materials.PRE_DELAY.get(name, 0.0)
+        passes = sell_materials.MAX_PASSES if name in sell_materials.MULTI_STACK else 1
+        for _ in range(passes):
+            if not sell.sell_item(name, pre_delay=pre):
+                break
+            yield
+
+
+def quick(materials=None):
+    """Craft incremental (cada 2 iteraciones): sube los 3 tiers con la luck
+    acumulada en inventario, vendiendo LUCENT+FAST durante las esperas.
+    Es la venta que igual tocaba esta iteración: el craft va gratis en sus
+    tiempos muertos. Al final vuelve a la pestaña banco y repone filtros.
+    """
+    if materials is None:
+        materials = sell_materials.LUCENT + sell_materials.FAST
+    print("[craft_essence] quick: craft de tiers + venta en paralelo")
+    open_and_search_luck()
+
+    work = _quick_sell_steps(materials)
+    _craft(RECIPE_MASTERWORK, schedule.CRAFT_QUICK_WAIT_MASTERWORK, work)
+    _craft(RECIPE_RARE, schedule.CRAFT_QUICK_WAIT_RARE, work)
+    _craft(RECIPE_EXOTIC, schedule.CRAFT_QUICK_WAIT_EXOTIC, work)
+
+    # Terminar la venta que no entró en las esperas (el craft ya corre solo).
+    for _ in work:
+        pass
+
+    # Volver al banco y reponer filtros para la siguiente green.
+    setup.restore_bank_filter()
 
 
 def run():

@@ -190,6 +190,8 @@ def main() -> None:
         boot.focus_game()
         if sub == "all":
             craft_essence.run()
+        elif sub == "quick":
+            craft_essence.quick()
         elif sub == "search":
             craft_essence.open_and_search_luck()
         elif sub == "find":
