@@ -575,6 +575,10 @@
         {
           "name": "accept_salvage",
           "image": "accept_salvage.png"
+        },
+        {
+          "name": "lucky_red_bag",
+          "image": "lucky_red_bag.png"
         }
       ]
     },

@@ -99,6 +99,14 @@ EXOTICS_AFTER_ARM_KIT = 0.5      # tras armar el silver_fed en modo "Use"
 EXOTICS_AFTER_SALVAGE_CLICK = 0.25  # tras clickear un slot armado, antes del Accept
 EXOTICS_AFTER_TP_SECTION = 1.5   # tras el reset de vista (m,o,o,m), click a la sección TP
 
+# --- open_bags (abrir Lucky Red Bags del inventario, comando suelto) ---
+# Igual que fase1 pero un poco más rápido: no hay que identificar ni
+# salvage después, solo abrir. Calibrar a mano.
+OPEN_BAGS_BEFORE_RIGHT_CLICK = 0.2   # asentar cursor sobre la bolsa antes del right-click
+OPEN_BAGS_AFTER_RIGHT_CLICK = 0.6    # que abra el menú contextual
+OPEN_BAGS_HOVER_USE_ALL = 0.25       # asentar cursor sobre "Use All" antes de clickear
+OPEN_BAGS_AFTER_OPEN = 1.0           # tras abrir, antes de re-escanear la siguiente
+
 from .routines import (
     craft_essence,
     debug_green,

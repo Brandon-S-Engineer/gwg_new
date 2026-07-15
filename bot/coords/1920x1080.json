@@ -544,6 +544,10 @@
         {
           "name": "recipe_exotic",
           "image": "recipe_exotic.png"
+        },
+        {
+          "name": "lucky_red_bag",
+          "image": "lucky_red_bag.png"
         }
       ]
     },

@@ -17,7 +17,7 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | exotics | setup | conn_test | debug_green | click_test [<point_name>]")
+        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | exotics | open_bags | setup | conn_test | debug_green | click_test [<point_name>]")
         return
 
     if cmd == "loop":
@@ -152,6 +152,13 @@ def main() -> None:
             exotics.test_salvage_rest()
         elif sub == "dark_matter":
             exotics.test_deposit_dark_matter()
+        return
+
+    if cmd == "open_bags":
+        from . import boot
+        from .routines import open_bags
+        boot.focus_game()
+        open_bags.run()
         return
 
     if cmd == "conn_test":
