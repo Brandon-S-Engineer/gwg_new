@@ -191,18 +191,37 @@ def quick(materials=None):
     open_and_search_luck()
 
     work = _quick_sell_steps(materials)
-    _craft(RECIPE_MASTERWORK, schedule.CRAFT_QUICK_WAIT_MASTERWORK, work)
-    _craft(RECIPE_RARE, schedule.CRAFT_QUICK_WAIT_RARE, work)
-    _craft(RECIPE_EXOTIC, schedule.CRAFT_QUICK_WAIT_EXOTIC, work)
+    crafted = _craft(RECIPE_MASTERWORK, schedule.CRAFT_QUICK_WAIT_MASTERWORK, work)
+    crafted = _craft(RECIPE_RARE, schedule.CRAFT_QUICK_WAIT_RARE, work) or crafted
+    crafted = _craft(RECIPE_EXOTIC, schedule.CRAFT_QUICK_WAIT_EXOTIC, work) or crafted
 
     # Terminar la venta que no entró en las esperas (el craft ya corre solo).
     for _ in work:
         pass
 
+    # Mientras el craft corre NO se puede cambiar de pestaña: el juego se
+    # come el click a 'banco' y quedamos pegados en artificing (phase1 después
+    # no ve greens y corta el loop). Esperar el "luck [0]" antes de volver.
+    if crafted:
+        _park_mouse()
+        done = vision.wait_for(LUCK_ZERO, region=get_region("CRAFT_DONE_REGION"),
+                               timeout=schedule.CRAFT_ZERO_TIMEOUT,
+                               threshold=LUCK_ZERO_THRESHOLD)
+        if not done:
+            print(f"[craft_essence] no vi 'luck [0]' en {schedule.CRAFT_ZERO_TIMEOUT:.0f}s, sigo igual")
+
     # Volver al banco. El filtro del inventario no persiste: reponerlo.
     # El "luck" del banco NO hace falta acá (solo al guardar exotic al final).
     setup.ensure_bank_tab()
     setup.filter_inventory()
+
+
+def _park_mouse():
+    """Cursor abajo del botón de craft, fuera de CRAFT_DONE_REGION, para que
+    no tape el "luck [0]" en el reconocimiento por imagen."""
+    x, y = get_point("craft_all")
+    dx, dy = CRAFT_MOUSE_PARK_OFFSET
+    inp.move_to((x + dx, y + dy))
 
 
 def _craft_wait_zero(template) -> bool:
@@ -218,7 +237,7 @@ def _craft_wait_zero(template) -> bool:
     inp.click(spot)
     time.sleep(schedule.CRAFT_AFTER_SELECT)
     inp.click(get_point("craft_all"))
-    inp.move_rel(*CRAFT_MOUSE_PARK_OFFSET)
+    _park_mouse()
     time.sleep(schedule.CRAFT_ZERO_GRACE)
 
     print(f"[craft_essence] {template.name} → craft_all, esperando 'luck [0]'...")
