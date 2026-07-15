@@ -23,7 +23,9 @@ from ..regions import Region
 from .phase1_salvage_greens import USE_ALL, USE_ALL_THRESHOLD
 
 LUCKY_RED_BAG = ITEMS_DIR / "lucky_red_bag.png"
-BAG_THRESHOLD = 0.85
+# No es un ítem fácil de confundir con otros: threshold bajo, sin riesgo de
+# falso positivo. 0.85 dejaba varias bolsas sin abrir (30 en inv, abrió 6).
+BAG_THRESHOLD = 0.65
 
 MAX_PASSES = 40  # tope de seguridad, no loop infinito
 
