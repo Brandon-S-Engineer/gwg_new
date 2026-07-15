@@ -93,6 +93,10 @@ CRAFT_QUICK_WAIT_EXOTIC = 20
 # run_after_ectos(): espera por imagen el "luck [0]" en CRAFT_DONE_REGION.
 CRAFT_ZERO_GRACE = 2.0     # tras craft_all, antes de empezar a mirar
 CRAFT_ZERO_TIMEOUT = 300   # respaldo por si el template no aparece nunca
+CRAFT_ZERO_POLL_INTERVAL = 3.0  # cada cuánto revisar (un solo match aislado
+                                 # puede ser un parpadeo a medio contar)
+CRAFT_ZERO_CONFIRMATIONS = 2    # lecturas seguidas por encima del threshold
+                                 # antes de dar el craft por terminado
 
 # --- compact (compactar inventario) ---
 COMPACT_AFTER_CLICK = 0.3

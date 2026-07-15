@@ -213,6 +213,23 @@ def _park_mouse():
     inp.move_to((x + dx, y + dy))
 
 
+def _wait_for_luck_zero(timeout: float) -> bool:
+    """Poll cada CRAFT_ZERO_POLL_INTERVAL seg; exige CRAFT_ZERO_CONFIRMATIONS
+    lecturas seguidas por encima del threshold antes de dar el craft por
+    terminado. Un solo match aislado puede ser el número a medio contar
+    (ej. terminando en 0 de casualidad) y no el final real."""
+    deadline = time.time() + timeout
+    streak = 0
+    while time.time() < deadline:
+        found = vision.is_present(LUCK_ZERO, region=get_region("CRAFT_DONE_REGION"),
+                                  threshold=LUCK_ZERO_THRESHOLD)
+        streak = streak + 1 if found else 0
+        if streak >= schedule.CRAFT_ZERO_CONFIRMATIONS:
+            return True
+        time.sleep(schedule.CRAFT_ZERO_POLL_INTERVAL)
+    return False
+
+
 def _craft_wait_zero(template) -> bool:
     """Como _craft, pero espera el fin del craft POR IMAGEN: tras craft_all
     saca el cursor hacia abajo y espera a que aparezca "luck [0]" en
@@ -230,9 +247,7 @@ def _craft_wait_zero(template) -> bool:
     time.sleep(schedule.CRAFT_ZERO_GRACE)
 
     print(f"[craft_essence] {template.name} → craft_all, esperando 'luck [0]'...")
-    done = vision.wait_for(LUCK_ZERO, region=get_region("CRAFT_DONE_REGION"),
-                           timeout=schedule.CRAFT_ZERO_TIMEOUT,
-                           threshold=LUCK_ZERO_THRESHOLD)
+    done = _wait_for_luck_zero(schedule.CRAFT_ZERO_TIMEOUT)
     if not done:
         print(f"[craft_essence] no vi 'luck [0]' en {schedule.CRAFT_ZERO_TIMEOUT:.0f}s, sigo igual")
     return True
