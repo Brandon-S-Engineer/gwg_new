@@ -400,6 +400,11 @@
           "name": "tp_section",
           "x": 2542,
           "y": 244
+        },
+        {
+          "name": "sell_top_confirm_2",
+          "x": 3139,
+          "y": 591
         }
       ],
       "items": [

@@ -1621,7 +1621,7 @@
         const filename = state.coords.types[state.activeType]?.image || state.activeType + '.png'
         capturing = true
         try {
-          for (let i = 11; i > 0; i--) {
+          for (let i = 5; i > 0; i--) {
             toast(`Capturando en ${i}...  (cambia a la ventana del juego)`)
             await new Promise((r) => setTimeout(r, 1000))
           }
