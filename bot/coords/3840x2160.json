@@ -403,8 +403,8 @@
         },
         {
           "name": "sell_top_confirm_2",
-          "x": 3139,
-          "y": 591
+          "x": 3138,
+          "y": 544
         }
       ],
       "items": [
@@ -595,6 +595,26 @@
         {
           "name": "luck_zero",
           "image": "luck_zero.png"
+        },
+        {
+          "name": "destroy",
+          "image": "destroy.png"
+        },
+        {
+          "name": "shaman_inscription",
+          "image": "shaman_inscription.png"
+        },
+        {
+          "name": "dire_inscription",
+          "image": "dire_inscription.png"
+        },
+        {
+          "name": "rabid_inscription",
+          "image": "rabid_inscription.png"
+        },
+        {
+          "name": "destroy_yes",
+          "image": "destroy_yes.png"
         }
       ]
     },
