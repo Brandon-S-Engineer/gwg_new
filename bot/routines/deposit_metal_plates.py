@@ -68,10 +68,20 @@ def _menu_region(point: tuple[int, int]) -> Region:
     return Region(x, y, w, h)
 
 
-def deposit_at(point: tuple[int, int]) -> bool:
-    """True si depositó (apareció el botón); False si fue falso positivo."""
+def deposit_at(point: tuple[int, int], pre_right_click: bool = False) -> bool:
+    """True si depositó (apareció el botón); False si fue falso positivo.
+
+    pre_right_click: un right-click extra antes del real. Uso: exotics.py
+    llama a esto justo después del salvage por posición, donde a veces se
+    procesa un ecto por error y el silver_fed se queda armado; con el kit
+    armado el primer right-click solo lo cancela (no abre menú), así que
+    hace falta uno de más para que el segundo sí abra el menú contextual.
+    """
     inp.move_to(point)
     time.sleep(SLEEP_BEFORE_RIGHT_CLICK)
+    if pre_right_click:
+        inp.right_click(point)
+        time.sleep(SLEEP_AFTER_RIGHT_CLICK)
     inp.right_click(point)
     time.sleep(SLEEP_AFTER_RIGHT_CLICK)
 
@@ -90,7 +100,7 @@ def deposit_at(point: tuple[int, int]) -> bool:
     return False
 
 
-def run(materials=None) -> bool:
+def run(materials=None, pre_right_click: bool = False) -> bool:
     if materials is None:
         materials = MATERIALS
     deposited = False
@@ -100,7 +110,7 @@ def run(materials=None) -> bool:
             if not spot:
                 break
             print(f"[deposit_metal_plates] {tpl.name} en {spot}, Deposit Material...")
-            if not deposit_at(spot):
+            if not deposit_at(spot, pre_right_click=pre_right_click):
                 break  # falso positivo persistente: no reintentar este material
             time.sleep(SLEEP_AFTER_DEPOSIT)
             deposited = True

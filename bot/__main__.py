@@ -152,6 +152,8 @@ def main() -> None:
             exotics.test_salvage_rest()
         elif sub == "dark_matter":
             exotics.test_deposit_dark_matter()
+        elif sub == "destroy":
+            exotics.test_destroy_inscriptions()
         return
 
     if cmd == "open_bags":

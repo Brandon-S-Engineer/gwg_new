@@ -30,6 +30,11 @@ Flujo:
      primer slot vacío (Accept no aparece).
   5. Depositar los globs of dark matter que soltó el salvage (misma lógica
      que deposit_metal_plates: right-click → template del botón → click).
+     Con un right-click extra por delante: si el salvage tocó un ecto por
+     error, el silver_fed se queda armado y se come el primer right-click.
+  6. Destruir las inscripciones que soltó el salvage (valen tan poco que no
+     vale la pena venderlas): right-click → 'Destroy' (por imagen) →
+     confirmar en EXOTIC_ACCEPT_REGION.
 
 Coordenadas necesarias (agregar con el picker, ya tienen placeholder):
     tp_section            - sección/pestaña de Trading Post tras el reset
@@ -45,18 +50,24 @@ Coordenadas necesarias (agregar con el picker, ya tienen placeholder):
 Región necesaria (agregar con el picker):
     EXOTIC_ACCEPT_REGION - caja donde sale el Accept del salvage-por-click
 
-Item necesario (capturar con el picker, pestaña de items):
+Items necesarios (capturar con el picker, pestaña de items):
     accept_salvage - botón Accept del diálogo que sale al salvage-por-click
                      (distinto al accept.png del menú contextual)
+    shaman_inscription, dire_inscription, rabid_inscription - las 3
+                     inscripciones que sueltan los exotics
+    destroy        - botón 'Destroy' del menú contextual de una inscripción
+    destroy_yes    - botón de confirmar, aparece en EXOTIC_ACCEPT_REGION
 """
 
 import time
 
+from .. import config
 from .. import input as inp
 from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
+from ..regions import Region
 from . import deposit_metal_plates, store_luck
 
 TOP_N = 5
@@ -68,6 +79,30 @@ SLOT_NAMES = [f"exotic_slot_{i}" for i in range(1, MAX_SLOTS + 1)]
 # kit). Mismo tipo de diálogo, misma columna, template propio.
 ACCEPT_SALVAGE = ITEMS_DIR / "accept_salvage.png"
 ACCEPT_SALVAGE_THRESHOLD = 0.85
+
+# Inscripciones que sueltan los exotics: valen tan poco que se destruyen
+# directo en vez de venderlas. El diálogo de confirmar ("destroy_yes") es
+# el mismo tipo de columna que accept_salvage: reusa EXOTIC_ACCEPT_REGION.
+INSCRIPTIONS = [
+    ITEMS_DIR / "shaman_inscription.png",
+    ITEMS_DIR / "dire_inscription.png",
+    ITEMS_DIR / "rabid_inscription.png",
+]
+DESTROY = ITEMS_DIR / "destroy.png"
+DESTROY_YES = ITEMS_DIR / "destroy_yes.png"
+INSCRIPTION_THRESHOLD = 0.85
+DESTROY_THRESHOLD = 0.85
+DESTROY_YES_THRESHOLD = 0.85
+
+# Sacar el cursor del item hacia el menú: quita el tooltip de hover (mismo
+# truco que deposit_metal_plates, mismo tipo de menú contextual).
+DESTROY_MENU_DISMISS_OFFSET = (20, 125)
+DESTROY_MENU_REGION_DX = -10
+DESTROY_MENU_REGION_DY = 0
+DESTROY_MENU_REGION_W = 420
+DESTROY_MENU_REGION_H = 280
+
+MAX_PASSES_PER_INSCRIPTION = 2
 
 SLEEP_AFTER_CLOSE = schedule.EXOTICS_AFTER_CLOSE
 SLEEP_AFTER_TAB = schedule.EXOTICS_AFTER_TAB
@@ -157,6 +192,62 @@ def _salvage_rest_exotics() -> None:
             break
 
 
+def _destroy_menu_region(point: tuple[int, int]) -> Region:
+    x = max(0, point[0] + DESTROY_MENU_REGION_DX)
+    y = max(0, point[1] + DESTROY_MENU_REGION_DY)
+    w = min(DESTROY_MENU_REGION_W, config.SCREEN_WIDTH - x)
+    h = min(DESTROY_MENU_REGION_H, config.SCREEN_HEIGHT - y)
+    return Region(x, y, w, h)
+
+
+def _destroy_at(point: tuple[int, int]) -> bool:
+    """Right-click sobre la inscripción → 'Destroy' (menú contextual, por
+    imagen) → confirmar en EXOTIC_ACCEPT_REGION (mismo diálogo que
+    accept_salvage). True si se destruyó."""
+    inp.right_click(point)
+    time.sleep(schedule.EXOTICS_AFTER_DESTROY_RIGHT_CLICK)
+    inp.move_rel(*DESTROY_MENU_DISMISS_OFFSET)
+    time.sleep(schedule.EXOTICS_AFTER_DESTROY_DISMISS)
+
+    btn = vision.wait_for(DESTROY, region=_destroy_menu_region(point),
+                          timeout=1.5, threshold=DESTROY_THRESHOLD)
+    if not btn:
+        print("[exotics] no apareció 'Destroy' en el menú, falso positivo")
+        return False
+    inp.click(btn)
+    time.sleep(schedule.EXOTICS_AFTER_DESTROY_CLICK)
+
+    confirm = vision.wait_for(DESTROY_YES, region=get_region("EXOTIC_ACCEPT_REGION"),
+                              timeout=2.0, threshold=DESTROY_YES_THRESHOLD)
+    if not confirm:
+        print("[exotics] no apareció 'destroy_yes', abortando esta inscripción")
+        return False
+    inp.click(confirm)
+    return True
+
+
+def _destroy_inscriptions() -> None:
+    """Barre las 3 inscripciones conocidas en el inventario y las destruye.
+    Corre al final, después de depositar los globs of dark matter."""
+    for tpl in INSCRIPTIONS:
+        for _ in range(MAX_PASSES_PER_INSCRIPTION):
+            spot = vision.find(tpl, region=get_region("INVENTORY_AREA"),
+                               threshold=INSCRIPTION_THRESHOLD)
+            if not spot:
+                break
+            print(f"[exotics] {tpl.name} en {spot}, destruyendo...")
+            if not _destroy_at(spot):
+                break
+            time.sleep(schedule.EXOTICS_AFTER_DESTROY_CLICK)
+
+
+def test_destroy_inscriptions():
+    """Solo el barrido de inscripciones (sin vender ni salvage). Para
+    calibrar destroy/destroy_yes sin arriesgar lo demás.
+    `py -m bot exotics destroy`"""
+    _destroy_inscriptions()
+
+
 def test_reset_view():
     """Solo el reset de vista (m,o,o,m + click tp_section), sin vender ni
     salvage. Para calibrar 'tp_section' sin arriesgar ventas.
@@ -190,5 +281,11 @@ def run():
     store_luck.compact()
     _salvage_rest_exotics()
     # El salvage de los exotics suelta dark matter: depositarlo al final.
-    deposit_metal_plates.run(materials=[deposit_metal_plates.GLOBS_OF_DARK_MATTER])
+    # pre_right_click=True: si el salvage tocó un ecto por error, el
+    # silver_fed se queda armado y el primer right-click no abre el menú.
+    deposit_metal_plates.run(materials=[deposit_metal_plates.GLOBS_OF_DARK_MATTER],
+                             pre_right_click=True)
+    # Las inscripciones que soltó el salvage valen tan poco que se destruyen
+    # directo en vez de venderlas.
+    _destroy_inscriptions()
     print("[exotics] OK")

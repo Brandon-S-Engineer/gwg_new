@@ -114,6 +114,9 @@ EXOTICS_AFTER_SUCCESS = 1.5      # tras confirmar la venta, antes de cerrar
 EXOTICS_AFTER_ARM_KIT = 0.5      # tras armar el silver_fed en modo "Use"
 EXOTICS_AFTER_SALVAGE_CLICK = 0.25  # tras clickear un slot armado, antes del Accept
 EXOTICS_AFTER_TP_SECTION = 1.5   # tras el reset de vista (m,o,o,m), click a la sección TP
+EXOTICS_AFTER_DESTROY_RIGHT_CLICK = 0.8  # que abra el menú contextual de la inscripción
+EXOTICS_AFTER_DESTROY_DISMISS = 0.1      # tooltip ya se fue al mover el cursor
+EXOTICS_AFTER_DESTROY_CLICK = 0.3        # tras click en 'Destroy', que aparezca el confirm
 
 # --- open_bags (abrir Lucky Red Bags del inventario, comando suelto) ---
 # Igual que fase1 pero un poco más rápido: no hay que identificar ni
