@@ -142,7 +142,7 @@ from .routines import (
     store_luck,
 )
 
-MAX_ITERATIONS = 120  # -1 = infinito
+MAX_ITERATIONS = 90  # -1 = infinito
 
 STARTUP_DELAY = 5  # 
 
