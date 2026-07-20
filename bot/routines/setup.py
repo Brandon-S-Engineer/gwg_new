@@ -72,6 +72,16 @@ def restore_bank_filter():
     filter_bank()
 
 
+def position_bank_for_calibration():
+    """El banco no retoma su posición solo al abrirse: hace falta este drag
+    para dejarlo siempre en el mismo lugar. Útil para calibrar a mano
+    coordenadas que dependen de esa posición (ej. rune_sigil_bank_zone_1 en
+    extract_yellow.py) — abrí el banco en el juego primero, después corré
+    esto. `py -m bot setup position`"""
+    drag_bank()
+    ensure_bank_tab()
+
+
 def run():
     drag_bank()        # primero acomodar: el punto 'banco' asume la ventana ya al costado
     ensure_bank_tab()

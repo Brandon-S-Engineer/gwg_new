@@ -167,6 +167,8 @@ def main() -> None:
             extract_yellow.identify_one()
         elif sub == "extract":
             extract_yellow.extract_all()
+        elif sub == "identify_extract":
+            extract_yellow.identify_and_extract()
         elif sub == "separate":
             extract_yellow.separate_runes_and_sigils()
         elif sub == "retrieve":
@@ -238,6 +240,8 @@ def main() -> None:
             setup.filter_inventory()
         elif sub == "bank":
             setup.filter_bank()
+        elif sub == "position":
+            setup.position_bank_for_calibration()
         return
 
     print(f"comando desconocido: {cmd}")

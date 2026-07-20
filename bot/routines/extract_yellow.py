@@ -221,6 +221,17 @@ def extract_all() -> int:
     return count
 
 
+def identify_and_extract() -> int:
+    """Identifica UN stack (inventario, o banco→inventario si no hay —
+    misma lógica que fase1 con los greens) y barre los 250 slots al
+    Upgrade Extractor. Para ahí: no separa runes/sigils ni hace salvage.
+    Para probar el pipeline hasta el extractor antes de calibrar el resto.
+    `py -m bot extract_yellow identify_extract`"""
+    if not identify_one():
+        return 0
+    return extract_all()
+
+
 # ============================================================
 # 3. Separar runes/sigils al banco
 # ============================================================
