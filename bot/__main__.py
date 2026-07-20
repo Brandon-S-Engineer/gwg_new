@@ -169,12 +169,8 @@ def main() -> None:
             extract_yellow.extract_all()
         elif sub == "identify_extract":
             extract_yellow.identify_and_extract()
-        elif sub == "separate":
-            extract_yellow.separate_runes_and_sigils()
-        elif sub == "retrieve":
-            extract_yellow.retrieve_runes_and_sigils()
-        elif sub == "copper":
-            extract_yellow.salvage_runes_and_sigils()
+        elif sub == "salvage":
+            extract_yellow.salvage_gear_then_upgrades()
         return
 
     if cmd == "open_bags":

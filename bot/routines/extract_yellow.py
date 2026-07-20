@@ -20,57 +20,57 @@ Pipeline completo:
      porque un miss es ambiguo (slot vacío O item sin upgrade) — se barren
      los 250 siempre. Esto deja sigils/runes sueltos mezclados con la
      armadura/arma ya sin upgrade.
-  3. Separar: filtrar inventario por 'rune', guardar todo al banco con
-     doble-click en las 2 'zonas' conocidas (cada bolsa compacta los
-     matches filtrados en el mismo slot visual — doble-click ahí las veces
-     que haga falta; clickear un slot vacío/filtrado-sin-match no hace nada
-     en el juego, así que un tope de pasadas generoso es seguro). Repetir
-     con 'sigil'.
-  4. Salvage del resto (la armadura/arma ya pelada, ahora son rares
-     comunes): reusa phase3_salvage_rares.run() TAL CUAL, sin tocarlo.
-  5. Traer runes/sigils de vuelta: filtrar el BANCO por 'rune'/'sigil',
-     doble-click en la zona del banco hasta vaciar cada uno.
-  6. Salvage de runes/sigils con copper_fed (20x más barato que silver_fed;
-     el resultado es idéntico para upgrades — investigado por el usuario).
-     copper_fed tiene la misma opción bulk "salvage rares" que silver_fed/
-     rune_crafter (copper_fed_salvage_rare): right-click al kit → click en
-     la opción → Accept. Nada de armar cursor ni barrer slots acá.
-  7. Reponer filtros normales (setup.restore_bank_filter) + compactar.
+  3. Salvage de la armadura/arma con silver_fed (bulk, igual que fase3),
+     pero CORTADO justo antes de que le toque a los sigils/runes: como no
+     hay forma de saber el milisegundo exacto en que termina el gear y
+     empieza el upgrade, se vigilan 5 zonas fijas (EXTRACT_BOUNDARY_1..5,
+     las últimas en vaciarse del lado del gear tras compactar) comparando
+     screenshot antes/después. En cuanto cambian, se interrumpe el salvage
+     cerrando y reabriendo inventario+mapa (cancela la acción en curso sin
+     perder nada de lo ya salvageado).
+  4. Salvage de lo que quedó (sigils/runes, y tal vez algún gear que no
+     llegó a tocarse) con copper_fed — 20x más barato que silver_fed, el
+     resultado es idéntico para upgrades (investigado por el usuario).
+     Mismo patrón bulk que silver_fed/rune_crafter (copper_fed_salvage_rare):
+     right-click al kit → click en la opción → Accept.
+  5. Reponer filtros normales (setup.restore_bank_filter) + compactar.
+
+Sin round-trip al banco: se probó separar runes/sigils al banco primero,
+pero cortar el salvage caro a tiempo por imagen es más simple y más rápido
+que todo ese ida y vuelta con filtros.
 
 Coordenadas necesarias (agregar/calibrar con el picker, placeholders ya
 puestos):
     upgrade_extractor_window - punto donde soltar el drag (la ventana del
         Upgrade Extractor)
-    copper_fed, copper_fed_salvage_rare - kit barato, mismo patrón bulk que
-        silver_fed/silver_fed_salvage_rare en phase3_salvage_rares.py
-    rune_sigil_inv_zone_1, rune_sigil_inv_zone_2 - slot donde se compactan
-        los matches filtrados en el INVENTARIO (2 bolsas — ~23 clicks en la
-        1, ~12 en la 2, según lo medido; los topes son ajustables)
-    rune_sigil_bank_zone_1 - igual pero del lado del BANCO, al traerlos de
-        vuelta (si hace falta una 2da zona acá también, se agrega igual
-        que se hizo con sell_top_confirm_2)
     slot_1..250 - grilla completa del inventario, COMPARTIDA con
         exotics.py (mismo menú, mismas posiciones — exotics solo usa
         slot_1..20 de esta misma lista). Solo se usa para el drag al
-        extractor (paso 2); el salvage con copper_fed (paso 6) es bulk,
-        no necesita slots.
+        extractor (paso 2).
 
-Región necesaria:
+Regiones necesarias:
     EXTRACT_WINDOW_REGION - caja donde aparece el botón 'Extract' cerca de
         upgrade_extractor_window
+    EXTRACT_BOUNDARY_1..5 - 5 cajas chicas sobre los últimos slots de gear
+        antes de donde suelen empezar los sigils/runes tras compactar (ver
+        paso 3). Se comparan por imagen, no hace falta que sean exactas —
+        mientras más cerca del borde real, mejor el corte.
 
 Items necesarios (capturar con el picker):
     yellow_gear - ícono del unidentified gear amarillo (igual idea que
         green.png pero para rare)
     extract_button - botón 'Extract' de la ventana del Upgrade Extractor
 
-Reusa sin capturar de nuevo (mismo botón real en el juego):
+Reusa sin capturar de nuevo (mismo botón/kit real en el juego):
     use_all.png (fase1) - identificar
-    salvage.click_accept() (bot/salvage.py) - Accept del salvage bulk con
-        copper_fed, mismo diálogo que usan fase1/fase3
+    silver_fed, silver_fed_salvage_rare (fase3) - salvage bulk del gear
+    copper_fed, copper_fed_salvage_rare - salvage bulk barato de upgrades
+    salvage.click_accept() (bot/salvage.py) - Accept de ambos salvage bulk
 """
 
 import time
+
+import numpy as np
 
 from .. import config
 from .. import dialogs
@@ -81,7 +81,7 @@ from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
 from ..regions import Region
-from . import phase3_salvage_rares, setup, store_luck
+from . import setup, store_luck
 from .phase1_salvage_greens import USE_ALL, USE_ALL_THRESHOLD
 
 YELLOW_GEAR = ITEMS_DIR / "yellow_gear.png"
@@ -104,8 +104,13 @@ IDENTIFY_MENU_REGION_DY = 0
 IDENTIFY_MENU_REGION_W = 500
 IDENTIFY_MENU_REGION_H = 360
 
-SEPARATE_INV_ZONES = ["rune_sigil_inv_zone_1", "rune_sigil_inv_zone_2"]
-RETRIEVE_BANK_ZONES = ["rune_sigil_bank_zone_1"]
+BOUNDARY_REGIONS = [f"EXTRACT_BOUNDARY_{i}" for i in range(1, 6)]
+
+# Diferencia promedio de intensidad (0-255) entre screenshot antes/después
+# de una zona para contarla como "cambió". El ícono salvageado desaparece
+# del todo (queda vacío/otro fondo), así que el salto real es grande;
+# valor conservador para no gatillar con ruido de compresión/animación.
+BOUNDARY_CHANGE_THRESHOLD = 12.0
 
 # Tiempos centralizados en schedule.py para calibrarlos en un solo lugar.
 SLEEP_BEFORE_RIGHT_CLICK = schedule.EXTRACT_BEFORE_RIGHT_CLICK
@@ -115,9 +120,11 @@ SLEEP_AFTER_IDENTIFY = schedule.EXTRACT_AFTER_IDENTIFY
 SLEEP_AFTER_BANK_DOUBLECLICK = schedule.EXTRACT_AFTER_BANK_DOUBLECLICK
 SLEEP_AFTER_DRAG = schedule.EXTRACT_AFTER_DRAG
 SLEEP_AFTER_EXTRACT_CLICK = schedule.EXTRACT_AFTER_EXTRACT_CLICK
-SLEEP_AFTER_ZONE_DOUBLECLICK = schedule.EXTRACT_AFTER_ZONE_DOUBLECLICK
 SLEEP_AFTER_KIT_RIGHT_CLICK = schedule.EXTRACT_AFTER_KIT_RIGHT_CLICK
 SLEEP_AFTER_KIT_OPTION = schedule.EXTRACT_AFTER_KIT_OPTION
+SLEEP_AFTER_INTERRUPT_KEYPRESS = schedule.EXTRACT_AFTER_INTERRUPT_KEYPRESS
+BOUNDARY_POLL_INTERVAL = schedule.EXTRACT_BOUNDARY_POLL_INTERVAL
+SALVAGE_TIMEOUT = schedule.EXTRACT_SALVAGE_TIMEOUT
 
 
 # ============================================================
@@ -233,68 +240,72 @@ def identify_and_extract() -> int:
 
 
 # ============================================================
-# 3. Separar runes/sigils al banco
+# 3. Salvage del gear con silver_fed, cortado antes de llegar a upgrades
 # ============================================================
 
-def _store_zone(zone_point_name: str, max_passes: int) -> None:
-    """Doble-click repetido en la misma posición: cada guardado hace que el
-    siguiente match (mismo filtro) se acomode ahí mismo. Clickear una
-    posición sin match no hace nada en el juego, así que un tope generoso
-    es seguro (como mucho pierde un par de segundos de más)."""
-    point = get_point(zone_point_name)
-    for _ in range(max_passes):
-        inp.double_click(point)
-        time.sleep(SLEEP_AFTER_ZONE_DOUBLECLICK)
+def _capture_boundary() -> list[np.ndarray]:
+    return [vision.capture_screen(get_region(name)) for name in BOUNDARY_REGIONS]
 
 
-def store_filtered(filter_text: str) -> None:
-    """Filtra el inventario por `filter_text` ('rune' o 'sigil') y guarda
-    todo al banco, doble-click en las 2 zonas conocidas."""
-    setup.filter_inventory(filter_text)
-    zones = [
-        (SEPARATE_INV_ZONES[0], schedule.EXTRACT_ZONE1_MAX_PASSES),
-        (SEPARATE_INV_ZONES[1], schedule.EXTRACT_ZONE2_MAX_PASSES),
-    ]
-    for zone_name, max_passes in zones:
-        print(f"[extract_yellow] guardando '{filter_text}' en {zone_name}...")
-        _store_zone(zone_name, max_passes)
+def _boundary_changed(baseline: list[np.ndarray]) -> bool:
+    current = _capture_boundary()
+    for before, after in zip(baseline, current):
+        if before.shape != after.shape:
+            return True
+        diff = float(np.abs(after.astype(int) - before.astype(int)).mean())
+        if diff > BOUNDARY_CHANGE_THRESHOLD:
+            return True
+    return False
 
 
-def separate_runes_and_sigils() -> None:
-    store_filtered("rune")
-    store_filtered("sigil")
+def _fire_silver_fed_salvage() -> None:
+    """Dispara el salvage bulk (no espera a que termine — eso lo maneja
+    salvage_gear_then_upgrades vigilando la frontera)."""
+    inp.right_click(get_point("silver_fed"))
+    time.sleep(SLEEP_AFTER_KIT_RIGHT_CLICK)
+    inp.click(get_point("silver_fed_salvage_rare"))
+    time.sleep(SLEEP_AFTER_KIT_OPTION)
+    salvage.click_accept()
 
 
-# ============================================================
-# 5. Traer runes/sigils de vuelta del banco
-# ============================================================
-
-def retrieve_filtered(filter_text: str) -> None:
-    setup.filter_bank(filter_text)
-    for zone_name in RETRIEVE_BANK_ZONES:
-        print(f"[extract_yellow] trayendo '{filter_text}' de {zone_name}...")
-        _store_zone(zone_name, schedule.EXTRACT_BANK_ZONE1_MAX_PASSES)
-
-
-def retrieve_runes_and_sigils() -> None:
-    retrieve_filtered("rune")
-    retrieve_filtered("sigil")
+def _interrupt_inventory() -> None:
+    """Cierra inventario a media-salvage (cancela la acción en curso sin
+    perder lo ya salvageado) y lo reabre junto con el mapa, que se deja
+    abierto para que el juego corra más fluido."""
+    import keyboard as _kb
+    for key in ("i", "m", "i", "m"):
+        _kb.press_and_release(key)
+        time.sleep(SLEEP_AFTER_INTERRUPT_KEYPRESS)
 
 
-# ============================================================
-# 6. Salvage de runes/sigils con copper_fed
-# ============================================================
-# copper_fed_salvage_rare (renombrado de un copper_fed_salvage_common ya
-# calibrado) es la MISMA clase de opción bulk que silver_fed_salvage_rare
-# (fase3) y rune_crafter_salvage_green (fase1): right-click al kit → click
-# en la opción → Accept. Nada de armar cursor ni barrer slots.
+def salvage_gear_then_upgrades() -> None:
+    """Arranca el salvage bulk de silver_fed y vigila las 5 zonas frontera
+    por imagen. En cuanto cambian (el salvage ya llegó a esa altura, está
+    por tocar sigils/runes) interrumpe cerrando/reabriendo inventario, y
+    termina lo que quedó (upgrades, y tal vez algo de gear sin tocar) con
+    el copper_fed barato."""
+    store_luck.compact()
+    baseline = _capture_boundary()
+    _fire_silver_fed_salvage()
 
-def salvage_runes_and_sigils() -> bool:
+    deadline = time.time() + SALVAGE_TIMEOUT
+    while time.time() < deadline:
+        if _boundary_changed(baseline):
+            print("[extract_yellow] frontera detectada, interrumpiendo salvage caro...")
+            break
+        time.sleep(BOUNDARY_POLL_INTERVAL)
+    else:
+        print(f"[extract_yellow] no detecté cambio en {SALVAGE_TIMEOUT:.0f}s, "
+              f"interrumpo igual (puede que ya haya terminado solo)")
+
+    _interrupt_inventory()
+
+    print("[extract_yellow] salvage del resto con copper_fed...")
     inp.right_click(get_point("copper_fed"))
     time.sleep(SLEEP_AFTER_KIT_RIGHT_CLICK)
     inp.click(get_point("copper_fed_salvage_rare"))
     time.sleep(SLEEP_AFTER_KIT_OPTION)
-    return salvage.click_accept()
+    salvage.click_accept()
 
 
 # ============================================================
@@ -306,10 +317,7 @@ def run() -> bool:
     if not identify_one():
         return False
     extract_all()
-    separate_runes_and_sigils()
-    phase3_salvage_rares.run()
-    retrieve_runes_and_sigils()
-    salvage_runes_and_sigils()
+    salvage_gear_then_upgrades()
     setup.restore_bank_filter()
     store_luck.compact()
     print("[extract_yellow] OK")

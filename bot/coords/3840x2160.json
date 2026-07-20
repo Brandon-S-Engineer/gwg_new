@@ -70,6 +70,41 @@
           "y": 1105,
           "w": 621,
           "h": 816
+        },
+        {
+          "name": "EXTRACT_BOUNDARY_1",
+          "x": 561,
+          "y": 805,
+          "w": 60,
+          "h": 60
+        },
+        {
+          "name": "EXTRACT_BOUNDARY_2",
+          "x": 641,
+          "y": 805,
+          "w": 60,
+          "h": 60
+        },
+        {
+          "name": "EXTRACT_BOUNDARY_3",
+          "x": 721,
+          "y": 805,
+          "w": 60,
+          "h": 60
+        },
+        {
+          "name": "EXTRACT_BOUNDARY_4",
+          "x": 801,
+          "y": 805,
+          "w": 60,
+          "h": 60
+        },
+        {
+          "name": "EXTRACT_BOUNDARY_5",
+          "x": 881,
+          "y": 805,
+          "w": 60,
+          "h": 60
         }
       ],
       "points": [
@@ -317,21 +352,6 @@
           "name": "upgrade_extractor_window",
           "x": 1363,
           "y": 1451
-        },
-        {
-          "name": "rune_sigil_inv_zone_1",
-          "x": 4295,
-          "y": 1488
-        },
-        {
-          "name": "rune_sigil_inv_zone_2",
-          "x": 3934,
-          "y": 1643
-        },
-        {
-          "name": "rune_sigil_bank_zone_1",
-          "x": 3913,
-          "y": 1488
         },
         {
           "name": "slot_1",

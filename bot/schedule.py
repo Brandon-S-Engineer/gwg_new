@@ -135,12 +135,11 @@ EXTRACT_AFTER_IDENTIFY = 8.0         # esperar a que procese el unidentified yel
 EXTRACT_AFTER_BANK_DOUBLECLICK = 0.5 # que la yellow aparezca en inv antes de re-escanear
 EXTRACT_AFTER_DRAG = 0.5             # tras soltar el drag en la ventana del extractor
 EXTRACT_AFTER_EXTRACT_CLICK = 0.3    # tras clickear 'Extract', antes del siguiente slot
-EXTRACT_AFTER_ZONE_DOUBLECLICK = 0.3 # entre cada doble-click de guardar/traer zona
-EXTRACT_ZONE1_MAX_PASSES = 30        # tope de la 1ra bolsa (medido ~23, con margen)
-EXTRACT_ZONE2_MAX_PASSES = 20        # tope de la 2da bolsa (medido ~12, con margen)
-EXTRACT_BANK_ZONE1_MAX_PASSES = 40   # tope al traer de vuelta del banco (1 sola zona)
-EXTRACT_AFTER_KIT_RIGHT_CLICK = 0.8  # que abra el menú del copper_fed
+EXTRACT_AFTER_KIT_RIGHT_CLICK = 0.8  # que abra el menú del kit (silver_fed/copper_fed)
 EXTRACT_AFTER_KIT_OPTION = 0.5       # tras clickear 'salvage rares', que aparezca el Accept
+EXTRACT_AFTER_INTERRUPT_KEYPRESS = 0.5  # entre cada tecla de i,m,i,m al interrumpir
+EXTRACT_BOUNDARY_POLL_INTERVAL = 0.5    # cada cuánto revisar las 5 zonas frontera
+EXTRACT_SALVAGE_TIMEOUT = 40.0          # respaldo si nunca se detecta el cambio
 
 from .routines import (
     craft_essence,
