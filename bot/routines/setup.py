@@ -37,19 +37,22 @@ def open_windows():
     time.sleep(schedule.SETUP_AFTER_KEYPRESS)
 
 
-def filter_inventory():
+def filter_inventory(text: str = "unid"):
+    """text por defecto alcanza con 'unid', no hay items con nombre parecido.
+    extract_yellow.py pasa 'rune'/'sigil' para separar upgrades."""
     inp.click(get_point("inventory_filter"))
     time.sleep(0.15)
     inp.clear_field()
-    inp.type_text("unid")  # alcanza, no hay items con nombre parecido
+    inp.type_text(text)
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
-def filter_bank():
+def filter_bank(text: str = "luck"):
+    """extract_yellow.py pasa 'rune'/'sigil' para traerlos de vuelta."""
     inp.click(get_point("bank_filter"))
     time.sleep(0.15)
     inp.clear_field()
-    inp.type_text("luck")
+    inp.type_text(text)
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 

@@ -63,6 +63,13 @@
           "y": 1869,
           "w": 60,
           "h": 93
+        },
+        {
+          "name": "EXTRACT_WINDOW_REGION",
+          "x": 215,
+          "y": 364,
+          "w": 500,
+          "h": 300
         }
       ],
       "points": [
@@ -405,6 +412,1281 @@
           "name": "sell_top_confirm_2",
           "x": 3138,
           "y": 544
+        },
+        {
+          "name": "upgrade_extractor_window",
+          "x": 1920,
+          "y": 1080
+        },
+        {
+          "name": "copper_fed_use",
+          "x": 2020,
+          "y": 900
+        },
+        {
+          "name": "rune_sigil_inv_zone_1",
+          "x": 300,
+          "y": 300
+        },
+        {
+          "name": "rune_sigil_inv_zone_2",
+          "x": 300,
+          "y": 400
+        },
+        {
+          "name": "rune_sigil_bank_zone_1",
+          "x": 300,
+          "y": 500
+        },
+        {
+          "name": "extract_slot_1",
+          "x": 64,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_2",
+          "x": 163,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_3",
+          "x": 262,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_4",
+          "x": 361,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_5",
+          "x": 459,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_6",
+          "x": 558,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_7",
+          "x": 657,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_8",
+          "x": 756,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_9",
+          "x": 855,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_10",
+          "x": 954,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_11",
+          "x": 1053,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_12",
+          "x": 1152,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_13",
+          "x": 1251,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_14",
+          "x": 1349,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_15",
+          "x": 1448,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_16",
+          "x": 1547,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_17",
+          "x": 1646,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_18",
+          "x": 1745,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_19",
+          "x": 1844,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_20",
+          "x": 1943,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_21",
+          "x": 2042,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_22",
+          "x": 2140,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_23",
+          "x": 2239,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_24",
+          "x": 2338,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_25",
+          "x": 2437,
+          "y": 209
+        },
+        {
+          "name": "extract_slot_26",
+          "x": 64,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_27",
+          "x": 163,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_28",
+          "x": 262,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_29",
+          "x": 361,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_30",
+          "x": 459,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_31",
+          "x": 558,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_32",
+          "x": 657,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_33",
+          "x": 756,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_34",
+          "x": 855,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_35",
+          "x": 954,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_36",
+          "x": 1053,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_37",
+          "x": 1152,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_38",
+          "x": 1251,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_39",
+          "x": 1349,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_40",
+          "x": 1448,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_41",
+          "x": 1547,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_42",
+          "x": 1646,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_43",
+          "x": 1745,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_44",
+          "x": 1844,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_45",
+          "x": 1943,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_46",
+          "x": 2042,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_47",
+          "x": 2140,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_48",
+          "x": 2239,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_49",
+          "x": 2338,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_50",
+          "x": 2437,
+          "y": 300
+        },
+        {
+          "name": "extract_slot_51",
+          "x": 64,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_52",
+          "x": 163,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_53",
+          "x": 262,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_54",
+          "x": 361,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_55",
+          "x": 459,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_56",
+          "x": 558,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_57",
+          "x": 657,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_58",
+          "x": 756,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_59",
+          "x": 855,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_60",
+          "x": 954,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_61",
+          "x": 1053,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_62",
+          "x": 1152,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_63",
+          "x": 1251,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_64",
+          "x": 1349,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_65",
+          "x": 1448,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_66",
+          "x": 1547,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_67",
+          "x": 1646,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_68",
+          "x": 1745,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_69",
+          "x": 1844,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_70",
+          "x": 1943,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_71",
+          "x": 2042,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_72",
+          "x": 2140,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_73",
+          "x": 2239,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_74",
+          "x": 2338,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_75",
+          "x": 2437,
+          "y": 391
+        },
+        {
+          "name": "extract_slot_76",
+          "x": 64,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_77",
+          "x": 163,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_78",
+          "x": 262,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_79",
+          "x": 361,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_80",
+          "x": 459,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_81",
+          "x": 558,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_82",
+          "x": 657,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_83",
+          "x": 756,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_84",
+          "x": 855,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_85",
+          "x": 954,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_86",
+          "x": 1053,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_87",
+          "x": 1152,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_88",
+          "x": 1251,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_89",
+          "x": 1349,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_90",
+          "x": 1448,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_91",
+          "x": 1547,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_92",
+          "x": 1646,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_93",
+          "x": 1745,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_94",
+          "x": 1844,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_95",
+          "x": 1943,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_96",
+          "x": 2042,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_97",
+          "x": 2140,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_98",
+          "x": 2239,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_99",
+          "x": 2338,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_100",
+          "x": 2437,
+          "y": 482
+        },
+        {
+          "name": "extract_slot_101",
+          "x": 64,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_102",
+          "x": 163,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_103",
+          "x": 262,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_104",
+          "x": 361,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_105",
+          "x": 459,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_106",
+          "x": 558,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_107",
+          "x": 657,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_108",
+          "x": 756,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_109",
+          "x": 855,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_110",
+          "x": 954,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_111",
+          "x": 1053,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_112",
+          "x": 1152,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_113",
+          "x": 1251,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_114",
+          "x": 1349,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_115",
+          "x": 1448,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_116",
+          "x": 1547,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_117",
+          "x": 1646,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_118",
+          "x": 1745,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_119",
+          "x": 1844,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_120",
+          "x": 1943,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_121",
+          "x": 2042,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_122",
+          "x": 2140,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_123",
+          "x": 2239,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_124",
+          "x": 2338,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_125",
+          "x": 2437,
+          "y": 573
+        },
+        {
+          "name": "extract_slot_126",
+          "x": 64,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_127",
+          "x": 163,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_128",
+          "x": 262,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_129",
+          "x": 361,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_130",
+          "x": 459,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_131",
+          "x": 558,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_132",
+          "x": 657,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_133",
+          "x": 756,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_134",
+          "x": 855,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_135",
+          "x": 954,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_136",
+          "x": 1053,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_137",
+          "x": 1152,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_138",
+          "x": 1251,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_139",
+          "x": 1349,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_140",
+          "x": 1448,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_141",
+          "x": 1547,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_142",
+          "x": 1646,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_143",
+          "x": 1745,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_144",
+          "x": 1844,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_145",
+          "x": 1943,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_146",
+          "x": 2042,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_147",
+          "x": 2140,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_148",
+          "x": 2239,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_149",
+          "x": 2338,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_150",
+          "x": 2437,
+          "y": 665
+        },
+        {
+          "name": "extract_slot_151",
+          "x": 64,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_152",
+          "x": 163,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_153",
+          "x": 262,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_154",
+          "x": 361,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_155",
+          "x": 459,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_156",
+          "x": 558,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_157",
+          "x": 657,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_158",
+          "x": 756,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_159",
+          "x": 855,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_160",
+          "x": 954,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_161",
+          "x": 1053,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_162",
+          "x": 1152,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_163",
+          "x": 1251,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_164",
+          "x": 1349,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_165",
+          "x": 1448,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_166",
+          "x": 1547,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_167",
+          "x": 1646,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_168",
+          "x": 1745,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_169",
+          "x": 1844,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_170",
+          "x": 1943,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_171",
+          "x": 2042,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_172",
+          "x": 2140,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_173",
+          "x": 2239,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_174",
+          "x": 2338,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_175",
+          "x": 2437,
+          "y": 756
+        },
+        {
+          "name": "extract_slot_176",
+          "x": 64,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_177",
+          "x": 163,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_178",
+          "x": 262,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_179",
+          "x": 361,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_180",
+          "x": 459,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_181",
+          "x": 558,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_182",
+          "x": 657,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_183",
+          "x": 756,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_184",
+          "x": 855,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_185",
+          "x": 954,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_186",
+          "x": 1053,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_187",
+          "x": 1152,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_188",
+          "x": 1251,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_189",
+          "x": 1349,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_190",
+          "x": 1448,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_191",
+          "x": 1547,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_192",
+          "x": 1646,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_193",
+          "x": 1745,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_194",
+          "x": 1844,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_195",
+          "x": 1943,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_196",
+          "x": 2042,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_197",
+          "x": 2140,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_198",
+          "x": 2239,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_199",
+          "x": 2338,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_200",
+          "x": 2437,
+          "y": 847
+        },
+        {
+          "name": "extract_slot_201",
+          "x": 64,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_202",
+          "x": 163,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_203",
+          "x": 262,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_204",
+          "x": 361,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_205",
+          "x": 459,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_206",
+          "x": 558,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_207",
+          "x": 657,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_208",
+          "x": 756,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_209",
+          "x": 855,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_210",
+          "x": 954,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_211",
+          "x": 1053,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_212",
+          "x": 1152,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_213",
+          "x": 1251,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_214",
+          "x": 1349,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_215",
+          "x": 1448,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_216",
+          "x": 1547,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_217",
+          "x": 1646,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_218",
+          "x": 1745,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_219",
+          "x": 1844,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_220",
+          "x": 1943,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_221",
+          "x": 2042,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_222",
+          "x": 2140,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_223",
+          "x": 2239,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_224",
+          "x": 2338,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_225",
+          "x": 2437,
+          "y": 938
+        },
+        {
+          "name": "extract_slot_226",
+          "x": 64,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_227",
+          "x": 163,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_228",
+          "x": 262,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_229",
+          "x": 361,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_230",
+          "x": 459,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_231",
+          "x": 558,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_232",
+          "x": 657,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_233",
+          "x": 756,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_234",
+          "x": 855,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_235",
+          "x": 954,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_236",
+          "x": 1053,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_237",
+          "x": 1152,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_238",
+          "x": 1251,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_239",
+          "x": 1349,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_240",
+          "x": 1448,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_241",
+          "x": 1547,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_242",
+          "x": 1646,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_243",
+          "x": 1745,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_244",
+          "x": 1844,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_245",
+          "x": 1943,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_246",
+          "x": 2042,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_247",
+          "x": 2140,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_248",
+          "x": 2239,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_249",
+          "x": 2338,
+          "y": 1029
+        },
+        {
+          "name": "extract_slot_250",
+          "x": 2437,
+          "y": 1029
         }
       ],
       "items": [
@@ -615,6 +1897,14 @@
         {
           "name": "destroy_yes",
           "image": "destroy_yes.png"
+        },
+        {
+          "name": "yellow_gear",
+          "image": "yellow_gear.png"
+        },
+        {
+          "name": "extract_button",
+          "image": "extract_button.png"
         }
       ]
     },

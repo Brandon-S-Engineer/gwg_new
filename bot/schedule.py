@@ -126,12 +126,29 @@ OPEN_BAGS_AFTER_RIGHT_CLICK = 0.6    # que abra el menú contextual
 OPEN_BAGS_HOVER_USE_ALL = 0.25       # asentar cursor sobre "Use All" antes de clickear
 OPEN_BAGS_AFTER_OPEN = 8.0          # espera larga tras abrir (que procese el loot), antes de re-escanear
 
+# --- extract_yellow (Upgrade Extractor: yellow unidentified gear, comando
+# suelto, independiente del pipeline de greens) ---
+EXTRACT_BEFORE_RIGHT_CLICK = 0.25    # asentar cursor antes del right-click (identificar)
+EXTRACT_AFTER_RIGHT_CLICK = 0.8      # que abra el menú contextual
+EXTRACT_HOVER_USE_ALL = 0.3          # asentar cursor sobre "Use All" antes de clickear
+EXTRACT_AFTER_IDENTIFY = 8.0         # esperar a que procese el unidentified yellow gear
+EXTRACT_AFTER_BANK_DOUBLECLICK = 0.5 # que la yellow aparezca en inv antes de re-escanear
+EXTRACT_AFTER_DRAG = 0.5             # tras soltar el drag en la ventana del extractor
+EXTRACT_AFTER_EXTRACT_CLICK = 0.3    # tras clickear 'Extract', antes del siguiente slot
+EXTRACT_AFTER_ZONE_DOUBLECLICK = 0.3 # entre cada doble-click de guardar/traer zona
+EXTRACT_ZONE1_MAX_PASSES = 30        # tope de la 1ra bolsa (medido ~23, con margen)
+EXTRACT_ZONE2_MAX_PASSES = 20        # tope de la 2da bolsa (medido ~12, con margen)
+EXTRACT_BANK_ZONE1_MAX_PASSES = 40   # tope al traer de vuelta del banco (1 sola zona)
+EXTRACT_AFTER_ARM_KIT = 0.5          # tras armar el copper_fed en modo "Use"
+EXTRACT_AFTER_SALVAGE_CLICK = 0.25   # tras clickear un slot armado, antes del Accept
+
 from .routines import (
     craft_essence,
     debug_green,
     deposit_metal_plates,
     ectos,
     exotics,
+    extract_yellow,
     phase1_salvage_greens,
     phase2_consume_luck,
     phase3_salvage_rares,

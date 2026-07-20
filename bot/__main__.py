@@ -17,7 +17,7 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | exotics | open_bags | setup | conn_test | debug_green | click_test [<point_name>]")
+        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | exotics | extract_yellow | open_bags | setup | conn_test | debug_green | click_test [<point_name>]")
         return
 
     if cmd == "loop":
@@ -154,6 +154,25 @@ def main() -> None:
             exotics.test_deposit_dark_matter()
         elif sub == "destroy":
             exotics.test_destroy_inscriptions()
+        return
+
+    if cmd == "extract_yellow":
+        from . import boot
+        from .routines import extract_yellow
+        sub = sys.argv[2] if len(sys.argv) > 2 else "all"
+        boot.focus_game()
+        if sub == "all":
+            extract_yellow.run()
+        elif sub == "identify":
+            extract_yellow.identify_one()
+        elif sub == "extract":
+            extract_yellow.extract_all()
+        elif sub == "separate":
+            extract_yellow.separate_runes_and_sigils()
+        elif sub == "retrieve":
+            extract_yellow.retrieve_runes_and_sigils()
+        elif sub == "copper":
+            extract_yellow.salvage_runes_and_sigils()
         return
 
     if cmd == "open_bags":
