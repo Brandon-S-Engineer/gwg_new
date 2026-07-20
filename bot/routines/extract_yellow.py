@@ -12,7 +12,7 @@ Pipeline completo:
 
   1. Identificar: igual idea que fase1 (inventario, con fallback a banco),
      pero buscando el ícono amarillo (yellow_gear.png).
-  2. Barrer la grilla fija de inventario (extract_slot_1..250) arrastrando
+  2. Barrer la grilla fija de inventario (slot_1..250) arrastrando
      cada slot a la ventana del Upgrade Extractor. Si sale el botón
      'Extract' (por imagen) se clickea; si no aparece en el timeout corto,
      ese slot no tenía upgrade (o estaba vacío) — se sigue al siguiente.
@@ -49,9 +49,11 @@ puestos):
     rune_sigil_bank_zone_1 - igual pero del lado del BANCO, al traerlos de
         vuelta (si hace falta una 2da zona acá también, se agrega igual
         que se hizo con sell_top_confirm_2)
-    extract_slot_1..250 - grilla completa del inventario. Se reusa dos
-        veces: para el drag al extractor (paso 2) y para el barrido de
-        salvage con copper_fed (paso 6)
+    slot_1..250 - grilla completa del inventario, COMPARTIDA con
+        exotics.py (mismo menú, mismas posiciones — exotics solo usa
+        slot_1..20 de esta misma lista). Se reusa dos veces acá: para el
+        drag al extractor (paso 2) y para el barrido de salvage con
+        copper_fed (paso 6)
 
 Región necesaria:
     EXTRACT_WINDOW_REGION - caja donde aparece el botón 'Extract' cerca de
@@ -92,7 +94,9 @@ EXTRACT_BUTTON = ITEMS_DIR / "extract_button.png"
 EXTRACT_BUTTON_THRESHOLD = 0.85
 
 MAX_SLOTS = 250
-SLOT_NAMES = [f"extract_slot_{i}" for i in range(1, MAX_SLOTS + 1)]
+# slot_1..250: grilla compartida con exotics.py (mismo menú de inventario,
+# exotics solo calibró/usa las primeras 20 posiciones de esta misma lista).
+SLOT_NAMES = [f"slot_{i}" for i in range(1, MAX_SLOTS + 1)]
 
 # Sacar el cursor del item hacia el menú: quita el tooltip de hover. Mismo
 # truco que fase1/exotics, valores propios (independientes) por si hace

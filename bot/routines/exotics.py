@@ -44,8 +44,9 @@ Coordenadas necesarias (agregar con el picker, ya tienen placeholder):
     sell_top_confirm_1      - click para confirmar la venta del top slot
     sell_top_confirm_2      - 2do click de confirmar (nombres largos bajan
                               el botón; se clickean las dos posiciones)
-    exotic_slot_1..20      - grid de slots del inventario post-compact, para
-                              el barrido de salvage
+    slot_1..20             - grid de slots del inventario post-compact, para
+                              el barrido de salvage (compartida con
+                              extract_yellow.py, ver ese módulo)
 
 Región necesaria (agregar con el picker):
     EXOTIC_ACCEPT_REGION - caja donde sale el Accept del salvage-por-click
@@ -72,7 +73,10 @@ from . import deposit_metal_plates, store_luck
 
 TOP_N = 5
 MAX_SLOTS = 20
-SLOT_NAMES = [f"exotic_slot_{i}" for i in range(1, MAX_SLOTS + 1)]
+# slot_1..20: grilla compartida con extract_yellow.py (mismo menú de
+# inventario, mismas 250 posiciones calibradas; exotics solo usa las
+# primeras 20 tras compactar).
+SLOT_NAMES = [f"slot_{i}" for i in range(1, MAX_SLOTS + 1)]
 
 # El Accept del salvage por posición (kit armado + click en item) es un
 # botón DISTINTO al de salvage.click_accept (ese es del menú contextual del
@@ -277,7 +281,7 @@ def run():
     _sell_top_exotics()
     # Vender cambia el inventario (huecos donde estaban los vendidos): hay
     # que re-compactar antes del barrido por posición, si no el grid de
-    # exotic_slot_N ya no coincide con lo que realmente queda.
+    # slot_N ya no coincide con lo que realmente queda.
     store_luck.compact()
     _salvage_rest_exotics()
     # El salvage de los exotics suelta dark matter: depositarlo al final.
