@@ -66,10 +66,10 @@
         },
         {
           "name": "EXTRACT_WINDOW_REGION",
-          "x": 215,
-          "y": 364,
-          "w": 500,
-          "h": 300
+          "x": 1070,
+          "y": 1105,
+          "w": 621,
+          "h": 816
         }
       ],
       "points": [
@@ -320,18 +320,18 @@
         },
         {
           "name": "rune_sigil_inv_zone_1",
-          "x": -800,
-          "y": 300
+          "x": 4295,
+          "y": 1488
         },
         {
           "name": "rune_sigil_inv_zone_2",
-          "x": -950,
-          "y": 400
+          "x": 3934,
+          "y": 1643
         },
         {
           "name": "rune_sigil_bank_zone_1",
-          "x": -1100,
-          "y": 500
+          "x": 3913,
+          "y": 1488
         },
         {
           "name": "slot_1",
@@ -1708,10 +1708,6 @@
         {
           "name": "thick_leather_sections",
           "image": "thick_leather_sections.png"
-        },
-        {
-          "name": "yellow",
-          "image": "yellow.png"
         },
         {
           "name": "yellow_luck",
