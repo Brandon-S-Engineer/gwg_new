@@ -139,8 +139,8 @@ EXTRACT_AFTER_ZONE_DOUBLECLICK = 0.3 # entre cada doble-click de guardar/traer z
 EXTRACT_ZONE1_MAX_PASSES = 30        # tope de la 1ra bolsa (medido ~23, con margen)
 EXTRACT_ZONE2_MAX_PASSES = 20        # tope de la 2da bolsa (medido ~12, con margen)
 EXTRACT_BANK_ZONE1_MAX_PASSES = 40   # tope al traer de vuelta del banco (1 sola zona)
-EXTRACT_AFTER_ARM_KIT = 0.5          # tras armar el copper_fed en modo "Use"
-EXTRACT_AFTER_SALVAGE_CLICK = 0.25   # tras clickear un slot armado, antes del Accept
+EXTRACT_AFTER_KIT_RIGHT_CLICK = 0.8  # que abra el menú del copper_fed
+EXTRACT_AFTER_KIT_OPTION = 0.5       # tras clickear 'salvage rares', que aparezca el Accept
 
 from .routines import (
     craft_essence,

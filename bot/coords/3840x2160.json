@@ -319,23 +319,18 @@
           "y": 1451
         },
         {
-          "name": "copper_fed_use",
-          "x": 2020,
-          "y": 900
-        },
-        {
           "name": "rune_sigil_inv_zone_1",
-          "x": 300,
+          "x": -800,
           "y": 300
         },
         {
           "name": "rune_sigil_inv_zone_2",
-          "x": 300,
+          "x": -950,
           "y": 400
         },
         {
           "name": "rune_sigil_bank_zone_1",
-          "x": 300,
+          "x": -1100,
           "y": 500
         },
         {

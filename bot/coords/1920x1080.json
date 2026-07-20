@@ -244,7 +244,7 @@
           "y": 0
         },
         {
-          "name": "copper_fed_salvage_common",
+          "name": "copper_fed_salvage_rare",
           "x": 0,
           "y": 0
         },
@@ -324,23 +324,18 @@
           "y": 1646
         },
         {
-          "name": "copper_fed_use",
-          "x": 4038,
-          "y": 1646
-        },
-        {
           "name": "rune_sigil_inv_zone_1",
-          "x": 4038,
+          "x": -800,
           "y": 1646
         },
         {
           "name": "rune_sigil_inv_zone_2",
-          "x": 4038,
+          "x": -950,
           "y": 1646
         },
         {
           "name": "rune_sigil_bank_zone_1",
-          "x": 4038,
+          "x": -1100,
           "y": 1646
         },
         {

@@ -32,17 +32,17 @@ Pipeline completo:
      doble-click en la zona del banco hasta vaciar cada uno.
   6. Salvage de runes/sigils con copper_fed (20x más barato que silver_fed;
      el resultado es idéntico para upgrades — investigado por el usuario).
-     Acá sí se puede compactar primero y cortar en el primer miss (ver
-     salvage_runes_and_sigils): en este punto lo ÚNICO que queda en el
-     inventario son runes/sigils, así que un miss sí es "ya no hay más".
+     copper_fed tiene la misma opción bulk "salvage rares" que silver_fed/
+     rune_crafter (copper_fed_salvage_rare): right-click al kit → click en
+     la opción → Accept. Nada de armar cursor ni barrer slots acá.
   7. Reponer filtros normales (setup.restore_bank_filter) + compactar.
 
 Coordenadas necesarias (agregar/calibrar con el picker, placeholders ya
 puestos):
     upgrade_extractor_window - punto donde soltar el drag (la ventana del
         Upgrade Extractor)
-    copper_fed, copper_fed_use - kit barato, mismo patrón que silver_fed/
-        silver_fed_use en exotics.py
+    copper_fed, copper_fed_salvage_rare - kit barato, mismo patrón bulk que
+        silver_fed/silver_fed_salvage_rare en phase3_salvage_rares.py
     rune_sigil_inv_zone_1, rune_sigil_inv_zone_2 - slot donde se compactan
         los matches filtrados en el INVENTARIO (2 bolsas — ~23 clicks en la
         1, ~12 en la 2, según lo medido; los topes son ajustables)
@@ -51,9 +51,9 @@ puestos):
         que se hizo con sell_top_confirm_2)
     slot_1..250 - grilla completa del inventario, COMPARTIDA con
         exotics.py (mismo menú, mismas posiciones — exotics solo usa
-        slot_1..20 de esta misma lista). Se reusa dos veces acá: para el
-        drag al extractor (paso 2) y para el barrido de salvage con
-        copper_fed (paso 6)
+        slot_1..20 de esta misma lista). Solo se usa para el drag al
+        extractor (paso 2); el salvage con copper_fed (paso 6) es bulk,
+        no necesita slots.
 
 Región necesaria:
     EXTRACT_WINDOW_REGION - caja donde aparece el botón 'Extract' cerca de
@@ -66,11 +66,8 @@ Items necesarios (capturar con el picker):
 
 Reusa sin capturar de nuevo (mismo botón real en el juego):
     use_all.png (fase1) - identificar
-    accept_salvage.png + EXOTIC_ACCEPT_REGION (exotics) - Accept del
-        salvage por posición con copper_fed. Es una apuesta razonable (
-        mismo tipo de diálogo que el salvage por posición de exotics); si
-        resulta ser un diálogo distinto, se captura uno propio acá y se
-        cambia sin afectar a exotics.py.
+    salvage.click_accept() (bot/salvage.py) - Accept del salvage bulk con
+        copper_fed, mismo diálogo que usan fase1/fase3
 """
 
 import time
@@ -78,13 +75,13 @@ import time
 from .. import config
 from .. import dialogs
 from .. import input as inp
+from .. import salvage
 from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
 from ..regions import Region
 from . import phase3_salvage_rares, setup, store_luck
-from .exotics import ACCEPT_SALVAGE, ACCEPT_SALVAGE_THRESHOLD
 from .phase1_salvage_greens import USE_ALL, USE_ALL_THRESHOLD
 
 YELLOW_GEAR = ITEMS_DIR / "yellow_gear.png"
@@ -119,8 +116,8 @@ SLEEP_AFTER_BANK_DOUBLECLICK = schedule.EXTRACT_AFTER_BANK_DOUBLECLICK
 SLEEP_AFTER_DRAG = schedule.EXTRACT_AFTER_DRAG
 SLEEP_AFTER_EXTRACT_CLICK = schedule.EXTRACT_AFTER_EXTRACT_CLICK
 SLEEP_AFTER_ZONE_DOUBLECLICK = schedule.EXTRACT_AFTER_ZONE_DOUBLECLICK
-SLEEP_AFTER_ARM_KIT = schedule.EXTRACT_AFTER_ARM_KIT
-SLEEP_AFTER_SALVAGE_CLICK = schedule.EXTRACT_AFTER_SALVAGE_CLICK
+SLEEP_AFTER_KIT_RIGHT_CLICK = schedule.EXTRACT_AFTER_KIT_RIGHT_CLICK
+SLEEP_AFTER_KIT_OPTION = schedule.EXTRACT_AFTER_KIT_OPTION
 
 
 # ============================================================
@@ -276,39 +273,17 @@ def retrieve_runes_and_sigils() -> None:
 # ============================================================
 # 6. Salvage de runes/sigils con copper_fed
 # ============================================================
+# copper_fed_salvage_rare (renombrado de un copper_fed_salvage_common ya
+# calibrado) es la MISMA clase de opción bulk que silver_fed_salvage_rare
+# (fase3) y rune_crafter_salvage_green (fase1): right-click al kit → click
+# en la opción → Accept. Nada de armar cursor ni barrer slots.
 
-def _arm_copper_fed() -> None:
+def salvage_runes_and_sigils() -> bool:
     inp.right_click(get_point("copper_fed"))
-    time.sleep(SLEEP_AFTER_RIGHT_CLICK)
-    inp.click(get_point("copper_fed_use"))
-    time.sleep(SLEEP_AFTER_ARM_KIT)
-
-
-def _click_accept(timeout: float = 2.0) -> bool:
-    btn = vision.wait_for(ACCEPT_SALVAGE, region=get_region("EXOTIC_ACCEPT_REGION"),
-                          timeout=timeout, threshold=ACCEPT_SALVAGE_THRESHOLD)
-    if btn:
-        inp.click(btn)
-        return True
-    return False
-
-
-def _salvage_slot(slot_name: str) -> bool:
-    inp.click(get_point(slot_name))
-    time.sleep(SLEEP_AFTER_SALVAGE_CLICK)
-    return _click_accept()
-
-
-def salvage_runes_and_sigils() -> None:
-    """A esta altura lo ÚNICO que queda en el inventario son runes/sigils
-    (ya se separó y procesó todo lo demás), así que acá SÍ se puede cortar
-    en el primer miss tras compactar — mismo patrón que exotics.py."""
-    store_luck.compact()
-    _arm_copper_fed()
-    for name in SLOT_NAMES:
-        if not _salvage_slot(name):
-            print(f"[extract_yellow] {name} vacío, fin del salvage de runes/sigils")
-            break
+    time.sleep(SLEEP_AFTER_KIT_RIGHT_CLICK)
+    inp.click(get_point("copper_fed_salvage_rare"))
+    time.sleep(SLEEP_AFTER_KIT_OPTION)
+    return salvage.click_accept()
 
 
 # ============================================================
