@@ -294,8 +294,9 @@ def salvage_gear_then_upgrades() -> None:
           BOUNDARY_CONFIRMATIONS veces seguidas (un cambio aislado puede
           ser un parpadeo del efecto de salvage, no el ícono desapareciendo
           de verdad), o
-      (b) pasan EXTRACT_SALVAGE_TIMEOUT segundos — a propósito más ajustado
-          que el batch completo, como respaldo si la imagen falla.
+      (b) pasan EXTRACT_SALVAGE_TIMEOUT segundos — respaldo si la imagen
+          falla del todo; calibrado para alcanzar casi hasta el final del
+          batch (250), no para cortar temprano (eso lo hace (a)).
     Termina lo que quedó (upgrades, y tal vez algo de gear sin tocar) con
     el copper_fed barato."""
     store_luck.compact()

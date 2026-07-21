@@ -145,11 +145,13 @@ EXTRACT_AFTER_KIT_OPTION = 0.5       # tras clickear 'salvage rares', que aparez
 EXTRACT_AFTER_INTERRUPT_CANCEL = 1.0    # tras la 1ra 'i', antes de seguir con m,i,m
 EXTRACT_AFTER_INTERRUPT_KEYPRESS = 0.6  # entre cada una de las 3 restantes (con jitter)
 EXTRACT_BOUNDARY_POLL_INTERVAL = 0.2    # zona chica, revisar rápido — tiempo crítico
-# Doble seguro: 17s es a propósito MÁS AJUSTADO que el ~19s típico de un
-# batch completo, para garantizar que se corte ANTES de llegar a los
-# sigils/runes aunque la detección por imagen falle. Lo que dispare
-# primero (imagen o este tope) interrumpe el salvage.
-EXTRACT_SALVAGE_TIMEOUT = 17.0
+# Doble seguro: este tope es el respaldo si la detección por imagen falla
+# del todo, así que tiene que alcanzar para llegar cerca del final (250)
+# y no cortar el salvage a medias dejando gear sin tocar. Calibrado por
+# regla de 3 con un dato real: a los 17s había llegado al item 182 →
+# 17 * 250/182 ≈ 23.35s para llegar a 250. La detección por imagen (el
+# 1er seguro) debería disparar mucho antes de esto en el uso normal.
+EXTRACT_SALVAGE_TIMEOUT = 23.4
 # Lecturas seguidas por encima del umbral antes de aceptar la frontera:
 # un solo cambio aislado puede ser un parpadeo/efecto del salvage mismo,
 # no el ícono desapareciendo de verdad. A 0.2s de poll, 3 seguidas cuestan
