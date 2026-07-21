@@ -133,8 +133,15 @@ EXTRACT_AFTER_RIGHT_CLICK = 0.8      # que abra el menú contextual
 EXTRACT_HOVER_USE_ALL = 0.3          # asentar cursor sobre "Use All" antes de clickear
 EXTRACT_AFTER_IDENTIFY = 8.0         # esperar a que procese el unidentified yellow gear
 EXTRACT_AFTER_BANK_DOUBLECLICK = 0.5 # que la yellow aparezca en inv antes de re-escanear
-EXTRACT_AFTER_DRAG = 0.5             # tras soltar el drag en la ventana del extractor
-EXTRACT_AFTER_EXTRACT_CLICK = 0.3    # tras clickear 'Extract', antes del siguiente slot
+# El barrido de 250 slots amplifica cualquier segundo de sobra (~18min
+# medidos). Recortado ~2.2x manteniendo el humanismo del movimiento
+# (ver input.py: jitter + curva de aceleración variable), no el timing.
+EXTRACT_DRAG_HOLD = 0.15             # hold_before del drag (default global es 0.5, pensado
+                                      # para arrastrar ventanas, no para 250 items seguidos)
+EXTRACT_BUTTON_TIMEOUT = 0.45        # esperar 'Extract' — la mayoría de slots no lo tienen,
+                                      # así que este timeout se paga entero en casi cada uno
+EXTRACT_AFTER_DRAG = 0.2             # tras soltar el drag en la ventana del extractor
+EXTRACT_AFTER_EXTRACT_CLICK = 0.2    # tras clickear 'Extract', antes del siguiente slot
 EXTRACT_AFTER_KIT_RIGHT_CLICK = 0.8  # que abra el menú del kit (silver_fed/copper_fed)
 EXTRACT_AFTER_KIT_OPTION = 0.5       # tras clickear 'salvage rares', que aparezca el Accept
 # Interrumpir (i,m,i,m): la 1ra 'i' es la que realmente cancela el salvage

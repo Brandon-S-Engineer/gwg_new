@@ -43,7 +43,7 @@ pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0
 
 # Tunables (ver docs/disimulo.md)
-POS_JITTER = 3  # ±3px sobre el target; suficiente random sin fallar templates
+POS_JITTER = 5  # ±5px sobre el target; suficiente random sin fallar templates
 # Duración del move escalada con distancia. Mano humana: cerca rápido, lejos lento.
 MOVE_DUR_SHORT = 0.12   # distancia ~50px
 MOVE_DUR_LONG = 0.60    # distancia ~1500px+
@@ -91,9 +91,15 @@ def _human_duration(target):
     return random.uniform(base - delta, base + delta)
 
 
-def _ease_in_out_quad(t):
-    """Arranque y final suaves, pico de velocidad al medio (no lineal)."""
-    return 2 * t * t if t < 0.5 else 1 - ((-2 * t + 2) ** 2) / 2
+EASE_POWER_MIN = 1.6  # curva más pareja (casi lineal)
+EASE_POWER_MAX = 2.6  # curva más marcada (acelera/frena más fuerte)
+
+
+def _ease_in_out(t, power):
+    """Arranque y final suaves, pico de velocidad al medio (no lineal).
+    `power` variable por movimiento (ver move_to): no siempre la misma
+    curva de aceleración/desaceleración, más orgánico."""
+    return 0.5 * (2 * t) ** power if t < 0.5 else 1 - 0.5 * (2 * (1 - t)) ** power
 
 
 STEP_DT = 0.012  # ~12ms por paso del move
@@ -152,8 +158,9 @@ def move_to(point):
         return
     dur = _human_duration(target)
     steps = max(2, int(dur / STEP_DT))
+    power = _rand(EASE_POWER_MIN, EASE_POWER_MAX)
     for s in range(1, steps + 1):
-        e = _ease_in_out_quad(s / steps)
+        e = _ease_in_out(s / steps, power)
         _abs_move(int(round(start[0] + dx * e)),
                   int(round(start[1] + dy * e)))
         time.sleep(dur / steps)

@@ -120,6 +120,8 @@ SLEEP_AFTER_IDENTIFY = schedule.EXTRACT_AFTER_IDENTIFY
 SLEEP_AFTER_BANK_DOUBLECLICK = schedule.EXTRACT_AFTER_BANK_DOUBLECLICK
 SLEEP_AFTER_DRAG = schedule.EXTRACT_AFTER_DRAG
 SLEEP_AFTER_EXTRACT_CLICK = schedule.EXTRACT_AFTER_EXTRACT_CLICK
+DRAG_HOLD = schedule.EXTRACT_DRAG_HOLD
+BUTTON_TIMEOUT = schedule.EXTRACT_BUTTON_TIMEOUT
 SLEEP_AFTER_KIT_RIGHT_CLICK = schedule.EXTRACT_AFTER_KIT_RIGHT_CLICK
 SLEEP_AFTER_KIT_OPTION = schedule.EXTRACT_AFTER_KIT_OPTION
 SLEEP_AFTER_INTERRUPT_CANCEL = schedule.EXTRACT_AFTER_INTERRUPT_CANCEL
@@ -203,14 +205,19 @@ def identify_one() -> bool:
 def _extract_at(slot_name: str) -> bool:
     """Arrastra el item del slot a la ventana del extractor. True si salió
     'Extract' y se clickeó; False si no apareció (slot vacío o item sin
-    upgrade — ambos casos válidos, no es error)."""
+    upgrade — ambos casos válidos, no es error).
+
+    Este paso se repite 250 veces por stack: cualquier segundo de sobra acá
+    se multiplica mucho (~18min medidos con los tiempos originales), así
+    que va con timings propios más ajustados (DRAG_HOLD, BUTTON_TIMEOUT) en
+    vez de los defaults genéricos de input.py."""
     slot_point = get_point(slot_name)
     window_point = get_point("upgrade_extractor_window")
-    inp.drag(slot_point, window_point)
+    inp.drag(slot_point, window_point, hold_before=DRAG_HOLD)
     time.sleep(SLEEP_AFTER_DRAG)
 
     btn = vision.wait_for(EXTRACT_BUTTON, region=get_region("EXTRACT_WINDOW_REGION"),
-                          timeout=1.0, threshold=EXTRACT_BUTTON_THRESHOLD)
+                          timeout=BUTTON_TIMEOUT, threshold=EXTRACT_BUTTON_THRESHOLD)
     if not btn:
         return False
     inp.click(btn)
