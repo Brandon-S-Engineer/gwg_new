@@ -20,6 +20,10 @@ Pipeline completo:
      porque un miss es ambiguo (slot vacío O item sin upgrade) — se barren
      los 250 siempre. Esto deja sigils/runes sueltos mezclados con la
      armadura/arma ya sin upgrade.
+     Optimización: tras STATIC_AFTER_HITS (10) extracciones confirmadas
+     por imagen, el botón 'Extract' deja de moverse (visto en la
+     práctica) — de ahí en más se clickea directo en esa posición
+     recordada, sin buscar por imagen ni esperar nada.
   3. Salvage de la armadura/arma con silver_fed (bulk, igual que fase3),
      pero CORTADO justo antes de que le toque a los sigils/runes: como no
      hay forma de saber el milisegundo exacto en que termina el gear y
@@ -202,10 +206,16 @@ def identify_one() -> bool:
 # 2. Drag al Upgrade Extractor
 # ============================================================
 
-def _extract_at(slot_name: str) -> bool:
-    """Arrastra el item del slot a la ventana del extractor. True si salió
-    'Extract' y se clickeó; False si no apareció (slot vacío o item sin
-    upgrade — ambos casos válidos, no es error).
+# Tras esta cantidad de extracciones CONFIRMADAS por imagen, el botón
+# 'Extract' deja de moverse (visto en la práctica): de ahí en más se
+# clickea directo en esa posición, sin buscarlo por imagen ni esperar.
+STATIC_AFTER_HITS = 10
+
+
+def _extract_at(slot_name: str) -> tuple[int, int] | None:
+    """Arrastra el item del slot a la ventana del extractor. Devuelve la
+    posición del botón 'Extract' si salió y se clickeó; None si no apareció
+    (slot vacío o item sin upgrade — ambos casos válidos, no es error).
 
     Este paso se repite 250 veces por stack: cualquier segundo de sobra acá
     se multiplica mucho (~18min medidos con los tiempos originales), así
@@ -219,22 +229,49 @@ def _extract_at(slot_name: str) -> bool:
     btn = vision.wait_for(EXTRACT_BUTTON, region=get_region("EXTRACT_WINDOW_REGION"),
                           timeout=BUTTON_TIMEOUT, threshold=EXTRACT_BUTTON_THRESHOLD)
     if not btn:
-        return False
+        return None
     inp.click(btn)
     time.sleep(SLEEP_AFTER_EXTRACT_CLICK)
-    return True
+    return btn
+
+
+def _extract_at_direct(slot_name: str, button_point: tuple[int, int]) -> None:
+    """Modo directo (botón ya estático): drag + click en la posición
+    recordada, sin buscar por imagen ni esperar nada — máxima velocidad.
+    Si el slot no tenía upgrade, clickear ahí no hace nada (no hay botón
+    real debajo, es como clickear un espacio vacío)."""
+    slot_point = get_point(slot_name)
+    window_point = get_point("upgrade_extractor_window")
+    inp.drag(slot_point, window_point, hold_before=DRAG_HOLD)
+    inp.click(button_point)
 
 
 def extract_all() -> int:
     """Barre TODA la grilla (250 slots), siempre completa: acá un miss es
     ambiguo (vacío vs. sin upgrade) así que no se puede cortar temprano
-    como en exotics.py. Devuelve cuántos upgrades extrajo."""
+    como en exotics.py. Tras STATIC_AFTER_HITS confirmaciones por imagen
+    cambia a modo directo (ver _extract_at_direct) para el resto del
+    barrido. Devuelve cuántos upgrades extrajo (los de modo directo se
+    cuentan como intento, ya no se verifican por imagen)."""
     store_luck.compact()
     count = 0
+    hits = 0
+    button_pos = None
     for name in SLOT_NAMES:
-        if _extract_at(name):
+        if button_pos is not None:
+            _extract_at_direct(name, button_pos)
             count += 1
-    print(f"[extract_yellow] {count} upgrade(s) extraído(s) de {MAX_SLOTS} slots")
+            continue
+        btn = _extract_at(name)
+        if not btn:
+            continue
+        count += 1
+        hits += 1
+        if hits >= STATIC_AFTER_HITS:
+            print(f"[extract_yellow] botón estático tras {hits} usos, "
+                  f"modo directo desde acá (sin imagen, sin espera)")
+            button_pos = btn
+    print(f"[extract_yellow] {count} upgrade(s) extraído(s)/intentado(s) de {MAX_SLOTS} slots")
     return count
 
 
