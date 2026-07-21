@@ -231,13 +231,33 @@ STATIC_AFTER_HITS = 10
 # ignore_2.png, ...) — agregar uno nuevo con el picker no toca código.
 IGNORE_THRESHOLD = 0.85
 
+# Los templates capturados (~68x68) son MÁS GRANDES que el cuadro del slot
+# (60x60): sin margen ni entran completos en la zona de búsqueda, así que
+# el match no tiene dónde deslizarse para encontrar la mejor posición. Se
+# busca en un cuadro más grande, centrado en el mismo punto — no hace
+# falta que el slot esté pixel-perfect, con que el ítem quede adentro de
+# esta zona alcanza. 80px = el espaciado real de la grilla, así da margen
+# sin llegar a pisar el slot vecino.
+IGNORE_CHECK_SIZE = 80
+
 
 def _ignore_templates() -> list[Path]:
     return sorted(ITEMS_DIR.glob("ignore_*.png"))
 
 
+def _ignore_search_region(slot_region: Region) -> Region:
+    cx, cy = slot_region.center
+    half = IGNORE_CHECK_SIZE // 2
+    x = max(0, cx - half)
+    y = max(0, cy - half)
+    w = min(IGNORE_CHECK_SIZE, config.SCREEN_WIDTH - x)
+    h = min(IGNORE_CHECK_SIZE, config.SCREEN_HEIGHT - y)
+    return Region(x, y, w, h)
+
+
 def _is_ignored(slot_region: Region, templates: list[Path]) -> bool:
-    return any(vision.is_present(tpl, region=slot_region, threshold=IGNORE_THRESHOLD)
+    search = _ignore_search_region(slot_region)
+    return any(vision.is_present(tpl, region=search, threshold=IGNORE_THRESHOLD)
                for tpl in templates)
 
 
