@@ -122,6 +122,7 @@ SLEEP_AFTER_DRAG = schedule.EXTRACT_AFTER_DRAG
 SLEEP_AFTER_EXTRACT_CLICK = schedule.EXTRACT_AFTER_EXTRACT_CLICK
 SLEEP_AFTER_KIT_RIGHT_CLICK = schedule.EXTRACT_AFTER_KIT_RIGHT_CLICK
 SLEEP_AFTER_KIT_OPTION = schedule.EXTRACT_AFTER_KIT_OPTION
+SLEEP_AFTER_INTERRUPT_CANCEL = schedule.EXTRACT_AFTER_INTERRUPT_CANCEL
 SLEEP_AFTER_INTERRUPT_KEYPRESS = schedule.EXTRACT_AFTER_INTERRUPT_KEYPRESS
 BOUNDARY_POLL_INTERVAL = schedule.EXTRACT_BOUNDARY_POLL_INTERVAL
 SALVAGE_TIMEOUT = schedule.EXTRACT_SALVAGE_TIMEOUT
@@ -272,11 +273,18 @@ def _fire_silver_fed_salvage() -> None:
 def _interrupt_inventory() -> None:
     """Cierra inventario a media-salvage (cancela la acción en curso sin
     perder lo ya salvageado) y lo reabre junto con el mapa, que se deja
-    abierto para que el juego corra más fluido."""
+    abierto para que el juego corra más fluido.
+
+    La 1ra 'i' es la que realmente cancela — le damos más tiempo para que
+    registre antes de seguir. Las demás van con ritmo humano (jitter): si
+    van muy rápido y parejo el juego no llega a procesarlas todas (se vio
+    en la práctica, el inventario ni llegaba a reabrirse)."""
     import keyboard as _kb
-    for key in ("i", "m", "i", "m"):
+    _kb.press_and_release("i")
+    time.sleep(SLEEP_AFTER_INTERRUPT_CANCEL)
+    for key in ("m", "i", "m"):
         _kb.press_and_release(key)
-        time.sleep(SLEEP_AFTER_INTERRUPT_KEYPRESS)
+        inp.sleep(SLEEP_AFTER_INTERRUPT_KEYPRESS, jitter=0.3)
 
 
 def salvage_gear_then_upgrades() -> None:

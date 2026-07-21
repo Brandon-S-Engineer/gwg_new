@@ -137,7 +137,13 @@ EXTRACT_AFTER_DRAG = 0.5             # tras soltar el drag en la ventana del ext
 EXTRACT_AFTER_EXTRACT_CLICK = 0.3    # tras clickear 'Extract', antes del siguiente slot
 EXTRACT_AFTER_KIT_RIGHT_CLICK = 0.8  # que abra el menú del kit (silver_fed/copper_fed)
 EXTRACT_AFTER_KIT_OPTION = 0.5       # tras clickear 'salvage rares', que aparezca el Accept
-EXTRACT_AFTER_INTERRUPT_KEYPRESS = 0.5  # entre cada tecla de i,m,i,m al interrumpir
+# Interrumpir (i,m,i,m): la 1ra 'i' es la que realmente cancela el salvage
+# en curso — le damos más tiempo para que registre antes de seguir. Las
+# demás van con ritmo humano (jitter), no tecleo robótico parejo: muy
+# rápido y el juego no llega a procesarlas (se vio con las 0.5s parejas,
+# ni se alcanzaba a reabrir el inventario).
+EXTRACT_AFTER_INTERRUPT_CANCEL = 1.0    # tras la 1ra 'i', antes de seguir con m,i,m
+EXTRACT_AFTER_INTERRUPT_KEYPRESS = 0.6  # entre cada una de las 3 restantes (con jitter)
 EXTRACT_BOUNDARY_POLL_INTERVAL = 0.2    # zona chica, revisar rápido — tiempo crítico
 # Doble seguro: 17s es a propósito MÁS AJUSTADO que el ~19s típico de un
 # batch completo, para garantizar que se corte ANTES de llegar a los
