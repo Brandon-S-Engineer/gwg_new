@@ -46,7 +46,7 @@ pyautogui.PAUSE = 0
 POS_JITTER = 5  # ±5px sobre el target; suficiente random sin fallar templates
 # Duración del move escalada con distancia. Mano humana: cerca rápido, lejos lento.
 MOVE_DUR_SHORT = 0.12   # distancia ~50px
-MOVE_DUR_LONG = 0.60    # distancia ~1500px+
+MOVE_DUR_LONG = 0.35    # distancia ~1500px+ (bajado de 0.60: se sentía lento en tramos largos)
 MOVE_DUR_JITTER = 0.10  # ±10% sobre la duración calculada
 PRE_CLICK_MIN = 0.05
 PRE_CLICK_MAX = 0.12

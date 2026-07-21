@@ -44,9 +44,9 @@ Coordenadas necesarias (agregar con el picker, ya tienen placeholder):
     sell_top_confirm_1      - click para confirmar la venta del top slot
     sell_top_confirm_2      - 2do click de confirmar (nombres largos bajan
                               el botón; se clickean las dos posiciones)
-    slot_1..20             - grid de slots del inventario post-compact, para
-                              el barrido de salvage (compartida con
-                              extract_yellow.py, ver ese módulo)
+    slot_1..20             - grid de REGIONES del inventario post-compact
+                              (cuadros chicos, no puntos), para el barrido
+                              de salvage. Compartida con extract_yellow.py
 
 Región necesaria (agregar con el picker):
     EXOTIC_ACCEPT_REGION - caja donde sale el Accept del salvage-por-click
@@ -182,8 +182,10 @@ def _click_accept_salvage(timeout: float = 2.0) -> bool:
     return False
 
 
-def _salvage_slot(point_name: str) -> bool:
-    inp.click(get_point(point_name))
+def _salvage_slot(slot_name: str) -> bool:
+    """slot_N ahora es una REGIÓN (cuadro chico, compartida con
+    extract_yellow.py): se clickea su centro."""
+    inp.click(get_region(slot_name).center)
     time.sleep(SLEEP_AFTER_SALVAGE_CLICK)
     return _click_accept_salvage()
 

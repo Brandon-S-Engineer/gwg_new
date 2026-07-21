@@ -47,12 +47,13 @@ Coordenadas necesarias (agregar/calibrar con el picker, placeholders ya
 puestos):
     upgrade_extractor_window - punto donde soltar el drag (la ventana del
         Upgrade Extractor)
-    slot_1..250 - grilla completa del inventario, COMPARTIDA con
-        exotics.py (mismo menú, mismas posiciones — exotics solo usa
-        slot_1..20 de esta misma lista). Solo se usa para el drag al
-        extractor (paso 2).
 
 Regiones necesarias:
+    slot_1..250 - grilla completa del inventario, COMPARTIDA con
+        exotics.py (mismo menú, mismas posiciones — exotics solo usa
+        slot_1..20 de esta misma lista). Son REGIONES (cuadros chicos, no
+        puntos): el centro se usa para el drag, y el cuadro completo para
+        chequear si el item ahí está en la lista de ignorados.
     EXTRACT_WINDOW_REGION - caja donde aparece el botón 'Extract' cerca de
         upgrade_extractor_window
     EXTRACT_BOUNDARY_1..5 - 5 cajas chicas sobre los últimos slots de gear
@@ -64,6 +65,13 @@ Items necesarios (capturar con el picker):
     yellow_gear - ícono del unidentified gear amarillo (igual idea que
         green.png pero para rare)
     extract_button - botón 'Extract' de la ventana del Upgrade Extractor
+    ignore_1, ignore_2, ... - items que NUNCA tienen upgrade (anillos,
+        amuletos, etc.): se detectan y se saltan sin arrastrarlos, sin
+        límite de cuántos — extract_all() los descubre por nombre en el
+        momento, agregar uno nuevo no toca código. _snapshot_inventory()
+        guarda tools/calibration/<res>/main_view.png justo antes de
+        arrancar el barrido (inventario ya identificado y abierto) para
+        recortarlos de ahí con el picker, con calma, entre corridas.
 
 Reusa sin capturar de nuevo (mismo botón/kit real en el juego):
     use_all.png (fase1) - identificar
@@ -73,6 +81,7 @@ Reusa sin capturar de nuevo (mismo botón/kit real en el juego):
 """
 
 import time
+from pathlib import Path
 
 import numpy as np
 
@@ -124,6 +133,7 @@ SLEEP_AFTER_IDENTIFY = schedule.EXTRACT_AFTER_IDENTIFY
 SLEEP_AFTER_BANK_DOUBLECLICK = schedule.EXTRACT_AFTER_BANK_DOUBLECLICK
 SLEEP_AFTER_DRAG = schedule.EXTRACT_AFTER_DRAG
 SLEEP_AFTER_EXTRACT_CLICK = schedule.EXTRACT_AFTER_EXTRACT_CLICK
+SLEEP_AFTER_DIRECT_CLICK = schedule.EXTRACT_AFTER_DIRECT_CLICK
 DRAG_HOLD = schedule.EXTRACT_DRAG_HOLD
 BUTTON_TIMEOUT = schedule.EXTRACT_BUTTON_TIMEOUT
 SLEEP_AFTER_KIT_RIGHT_CLICK = schedule.EXTRACT_AFTER_KIT_RIGHT_CLICK
@@ -211,17 +221,49 @@ def identify_one() -> bool:
 # clickea directo en esa posición, sin buscarlo por imagen ni esperar.
 STATIC_AFTER_HITS = 10
 
+# Items que NUNCA tienen upgrade (anillos, amuletos, etc.): se saltan sin
+# arrastrarlos. Se descubren por NOMBRE en el momento (ignore_1.png,
+# ignore_2.png, ...) — agregar uno nuevo con el picker no toca código.
+IGNORE_THRESHOLD = 0.85
+
+
+def _ignore_templates() -> list[Path]:
+    return sorted(ITEMS_DIR.glob("ignore_*.png"))
+
+
+def _is_ignored(slot_region: Region, templates: list[Path]) -> bool:
+    return any(vision.is_present(tpl, region=slot_region, threshold=IGNORE_THRESHOLD)
+               for tpl in templates)
+
+
+def _snapshot_inventory() -> None:
+    """Guarda un screenshot completo en el mismo archivo que usa el picker
+    para 'main_view' (tools/calibration/<res>/main_view.png) — como si se
+    apretara Ctrl+P ahí mismo. Se toma UNA vez, justo antes de arrancar el
+    barrido (inventario ya identificado y abierto), para poder ir
+    recortando ignore_N de esa captura real con calma, entre corridas."""
+    from PIL import ImageGrab
+    out_dir = config.PROJECT_ROOT / "tools" / "calibration" / config.RES_KEY
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "main_view.png"
+    ImageGrab.grab().save(out_path, "PNG")
+    print(f"[extract_yellow] snapshot guardado en {out_path}")
+
+
+def _slot_center(slot_name: str) -> tuple[int, int]:
+    return get_region(slot_name).center
+
 
 def _extract_at(slot_name: str) -> tuple[int, int] | None:
     """Arrastra el item del slot a la ventana del extractor. Devuelve la
     posición del botón 'Extract' si salió y se clickeó; None si no apareció
     (slot vacío o item sin upgrade — ambos casos válidos, no es error).
 
-    Este paso se repite 250 veces por stack: cualquier segundo de sobra acá
-    se multiplica mucho (~18min medidos con los tiempos originales), así
-    que va con timings propios más ajustados (DRAG_HOLD, BUTTON_TIMEOUT) en
-    vez de los defaults genéricos de input.py."""
-    slot_point = get_point(slot_name)
+    Este paso se repite hasta 250 veces por stack: cualquier segundo de
+    sobra acá se multiplica mucho, así que va con timings propios más
+    ajustados (DRAG_HOLD, BUTTON_TIMEOUT) en vez de los defaults genéricos
+    de input.py."""
+    slot_point = _slot_center(slot_name)
     window_point = get_point("upgrade_extractor_window")
     inp.drag(slot_point, window_point, hold_before=DRAG_HOLD)
     time.sleep(SLEEP_AFTER_DRAG)
@@ -237,27 +279,38 @@ def _extract_at(slot_name: str) -> tuple[int, int] | None:
 
 def _extract_at_direct(slot_name: str, button_point: tuple[int, int]) -> None:
     """Modo directo (botón ya estático): drag + click en la posición
-    recordada, sin buscar por imagen ni esperar nada — máxima velocidad.
-    Si el slot no tenía upgrade, clickear ahí no hace nada (no hay botón
-    real debajo, es como clickear un espacio vacío)."""
-    slot_point = get_point(slot_name)
+    recordada, sin buscar por imagen — máxima velocidad. Si el slot no
+    tenía upgrade, clickear ahí no hace nada (no hay botón real debajo)."""
+    slot_point = _slot_center(slot_name)
     window_point = get_point("upgrade_extractor_window")
     inp.drag(slot_point, window_point, hold_before=DRAG_HOLD)
     inp.click(button_point)
+    time.sleep(SLEEP_AFTER_DIRECT_CLICK)
 
 
 def extract_all() -> int:
     """Barre TODA la grilla (250 slots), siempre completa: acá un miss es
     ambiguo (vacío vs. sin upgrade) así que no se puede cortar temprano
-    como en exotics.py. Tras STATIC_AFTER_HITS confirmaciones por imagen
-    cambia a modo directo (ver _extract_at_direct) para el resto del
-    barrido. Devuelve cuántos upgrades extrajo (los de modo directo se
-    cuentan como intento, ya no se verifican por imagen)."""
+    como en exotics.py. Antes de dragear cada slot, chequea contra la
+    lista de ignore_N (items que nunca tienen upgrade) y lo salta directo
+    si matchea. Tras STATIC_AFTER_HITS confirmaciones por imagen cambia a
+    modo directo (ver _extract_at_direct) para el resto del barrido.
+    Devuelve cuántos upgrades extrajo (los de modo directo se cuentan como
+    intento, ya no se verifican por imagen)."""
     store_luck.compact()
+    _snapshot_inventory()
+    templates = _ignore_templates()
+    if templates:
+        print(f"[extract_yellow] {len(templates)} template(s) de items a ignorar")
+
     count = 0
+    skipped = 0
     hits = 0
     button_pos = None
     for name in SLOT_NAMES:
+        if templates and _is_ignored(get_region(name), templates):
+            skipped += 1
+            continue
         if button_pos is not None:
             _extract_at_direct(name, button_pos)
             count += 1
@@ -271,7 +324,8 @@ def extract_all() -> int:
             print(f"[extract_yellow] botón estático tras {hits} usos, "
                   f"modo directo desde acá (sin imagen, sin espera)")
             button_pos = btn
-    print(f"[extract_yellow] {count} upgrade(s) extraído(s)/intentado(s) de {MAX_SLOTS} slots")
+    print(f"[extract_yellow] {count} upgrade(s) extraído(s)/intentado(s), "
+          f"{skipped} ignorado(s) por template, de {MAX_SLOTS} slots")
     return count
 
 

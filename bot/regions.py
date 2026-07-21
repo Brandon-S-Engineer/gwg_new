@@ -17,6 +17,10 @@ class Region:
     def as_pyautogui_region(self) -> tuple[int, int, int, int]:
         return (self.x, self.y, self.w, self.h)
 
+    @property
+    def center(self) -> tuple[int, int]:
+        return (self.x + self.w // 2, self.y + self.h // 2)
+
 
 # Placeholders — se calibran en fase 3
 INVENTORY_AREA = Region(0, 0, 0, 0)

@@ -140,8 +140,9 @@ EXTRACT_DRAG_HOLD = 0.15             # hold_before del drag (default global es 0
                                       # para arrastrar ventanas, no para 250 items seguidos)
 EXTRACT_BUTTON_TIMEOUT = 0.45        # esperar 'Extract' — la mayoría de slots no lo tienen,
                                       # así que este timeout se paga entero en casi cada uno
-EXTRACT_AFTER_DRAG = 0.2             # tras soltar el drag en la ventana del extractor
-EXTRACT_AFTER_EXTRACT_CLICK = 0.2    # tras clickear 'Extract', antes del siguiente slot
+EXTRACT_AFTER_DRAG = 0.3             # tras soltar el drag en la ventana del extractor
+EXTRACT_AFTER_EXTRACT_CLICK = 0.3    # tras clickear 'Extract', antes del siguiente slot
+EXTRACT_AFTER_DIRECT_CLICK = 0.15    # igual, pero en modo directo (ver STATIC_AFTER_HITS)
 EXTRACT_AFTER_KIT_RIGHT_CLICK = 0.8  # que abra el menú del kit (silver_fed/copper_fed)
 EXTRACT_AFTER_KIT_OPTION = 0.5       # tras clickear 'salvage rares', que aparezca el Accept
 # Interrumpir (i,m,i,m): la 1ra 'i' es la que realmente cancela el salvage
