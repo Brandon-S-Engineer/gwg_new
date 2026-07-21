@@ -144,6 +144,11 @@ EXTRACT_BOUNDARY_POLL_INTERVAL = 0.2    # zona chica, revisar rápido — tiempo
 # sigils/runes aunque la detección por imagen falle. Lo que dispare
 # primero (imagen o este tope) interrumpe el salvage.
 EXTRACT_SALVAGE_TIMEOUT = 17.0
+# Lecturas seguidas por encima del umbral antes de aceptar la frontera:
+# un solo cambio aislado puede ser un parpadeo/efecto del salvage mismo,
+# no el ícono desapareciendo de verdad. A 0.2s de poll, 3 seguidas cuestan
+# ~0.6s — no afecta el "doble seguro" en la práctica.
+EXTRACT_BOUNDARY_CONFIRMATIONS = 3
 
 from .routines import (
     craft_essence,

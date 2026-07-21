@@ -125,6 +125,7 @@ SLEEP_AFTER_KIT_OPTION = schedule.EXTRACT_AFTER_KIT_OPTION
 SLEEP_AFTER_INTERRUPT_KEYPRESS = schedule.EXTRACT_AFTER_INTERRUPT_KEYPRESS
 BOUNDARY_POLL_INTERVAL = schedule.EXTRACT_BOUNDARY_POLL_INTERVAL
 SALVAGE_TIMEOUT = schedule.EXTRACT_SALVAGE_TIMEOUT
+BOUNDARY_CONFIRMATIONS = schedule.EXTRACT_BOUNDARY_CONFIRMATIONS
 
 
 # ============================================================
@@ -281,8 +282,10 @@ def _interrupt_inventory() -> None:
 def salvage_gear_then_upgrades() -> None:
     """Arranca el salvage bulk de silver_fed y corta ANTES de que le toque
     a sigils/runes por DOS seguros independientes, lo que dispare primero:
-      (a) las 5 zonas frontera cambian por imagen (detectó el salvage
-          llegando ahí), o
+      (a) las 5 zonas frontera cambian por imagen, confirmado
+          BOUNDARY_CONFIRMATIONS veces seguidas (un cambio aislado puede
+          ser un parpadeo del efecto de salvage, no el ícono desapareciendo
+          de verdad), o
       (b) pasan EXTRACT_SALVAGE_TIMEOUT segundos — a propósito más ajustado
           que el batch completo, como respaldo si la imagen falla.
     Termina lo que quedó (upgrades, y tal vez algo de gear sin tocar) con
@@ -292,10 +295,16 @@ def salvage_gear_then_upgrades() -> None:
     _fire_silver_fed_salvage()
 
     deadline = time.time() + SALVAGE_TIMEOUT
+    streak = 0
     while time.time() < deadline:
         if _boundary_changed(baseline):
-            print("[extract_yellow] frontera detectada por imagen, interrumpiendo...")
-            break
+            streak += 1
+            if streak >= BOUNDARY_CONFIRMATIONS:
+                print(f"[extract_yellow] frontera confirmada ({BOUNDARY_CONFIRMATIONS}x), "
+                      f"interrumpiendo...")
+                break
+        else:
+            streak = 0
         time.sleep(BOUNDARY_POLL_INTERVAL)
     else:
         print(f"[extract_yellow] tope de {SALVAGE_TIMEOUT:.0f}s alcanzado (2do seguro), "
