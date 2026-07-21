@@ -2281,6 +2281,46 @@
         {
           "name": "extract_button",
           "image": "extract_button.png"
+        },
+        {
+          "name": "ignore_1",
+          "image": "ignore_1.png"
+        },
+        {
+          "name": "ignore_2",
+          "image": "ignore_2.png"
+        },
+        {
+          "name": "ignore_3",
+          "image": "ignore_3.png"
+        },
+        {
+          "name": "ignore_4",
+          "image": "ignore_4.png"
+        },
+        {
+          "name": "ignore_5",
+          "image": "ignore_5.png"
+        },
+        {
+          "name": "ignore_6",
+          "image": "ignore_6.png"
+        },
+        {
+          "name": "ignore_7",
+          "image": "ignore_7.png"
+        },
+        {
+          "name": "ignore_8",
+          "image": "ignore_8.png"
+        },
+        {
+          "name": "ignore_9",
+          "image": "ignore_9.png"
+        },
+        {
+          "name": "ignore_10",
+          "image": "ignore_10.png"
         }
       ]
     },
