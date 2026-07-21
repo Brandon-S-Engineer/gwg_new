@@ -279,10 +279,13 @@ def _interrupt_inventory() -> None:
 
 
 def salvage_gear_then_upgrades() -> None:
-    """Arranca el salvage bulk de silver_fed y vigila las 5 zonas frontera
-    por imagen. En cuanto cambian (el salvage ya llegó a esa altura, está
-    por tocar sigils/runes) interrumpe cerrando/reabriendo inventario, y
-    termina lo que quedó (upgrades, y tal vez algo de gear sin tocar) con
+    """Arranca el salvage bulk de silver_fed y corta ANTES de que le toque
+    a sigils/runes por DOS seguros independientes, lo que dispare primero:
+      (a) las 5 zonas frontera cambian por imagen (detectó el salvage
+          llegando ahí), o
+      (b) pasan EXTRACT_SALVAGE_TIMEOUT segundos — a propósito más ajustado
+          que el batch completo, como respaldo si la imagen falla.
+    Termina lo que quedó (upgrades, y tal vez algo de gear sin tocar) con
     el copper_fed barato."""
     store_luck.compact()
     baseline = _capture_boundary()
@@ -291,12 +294,12 @@ def salvage_gear_then_upgrades() -> None:
     deadline = time.time() + SALVAGE_TIMEOUT
     while time.time() < deadline:
         if _boundary_changed(baseline):
-            print("[extract_yellow] frontera detectada, interrumpiendo salvage caro...")
+            print("[extract_yellow] frontera detectada por imagen, interrumpiendo...")
             break
         time.sleep(BOUNDARY_POLL_INTERVAL)
     else:
-        print(f"[extract_yellow] no detecté cambio en {SALVAGE_TIMEOUT:.0f}s, "
-              f"interrumpo igual (puede que ya haya terminado solo)")
+        print(f"[extract_yellow] tope de {SALVAGE_TIMEOUT:.0f}s alcanzado (2do seguro), "
+              f"interrumpiendo...")
 
     _interrupt_inventory()
 

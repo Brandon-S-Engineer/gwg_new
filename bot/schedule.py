@@ -138,8 +138,12 @@ EXTRACT_AFTER_EXTRACT_CLICK = 0.3    # tras clickear 'Extract', antes del siguie
 EXTRACT_AFTER_KIT_RIGHT_CLICK = 0.8  # que abra el menú del kit (silver_fed/copper_fed)
 EXTRACT_AFTER_KIT_OPTION = 0.5       # tras clickear 'salvage rares', que aparezca el Accept
 EXTRACT_AFTER_INTERRUPT_KEYPRESS = 0.5  # entre cada tecla de i,m,i,m al interrumpir
-EXTRACT_BOUNDARY_POLL_INTERVAL = 0.5    # cada cuánto revisar las 5 zonas frontera
-EXTRACT_SALVAGE_TIMEOUT = 40.0          # respaldo si nunca se detecta el cambio
+EXTRACT_BOUNDARY_POLL_INTERVAL = 0.2    # zona chica, revisar rápido — tiempo crítico
+# Doble seguro: 17s es a propósito MÁS AJUSTADO que el ~19s típico de un
+# batch completo, para garantizar que se corte ANTES de llegar a los
+# sigils/runes aunque la detección por imagen falle. Lo que dispare
+# primero (imagen o este tope) interrumpe el salvage.
+EXTRACT_SALVAGE_TIMEOUT = 17.0
 
 from .routines import (
     craft_essence,
