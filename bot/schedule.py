@@ -143,7 +143,8 @@ EXTRACT_AFTER_KIT_OPTION = 0.5       # tras clickear 'salvage rares', que aparez
 # rápido y el juego no llega a procesarlas (se vio con las 0.5s parejas,
 # ni se alcanzaba a reabrir el inventario).
 EXTRACT_AFTER_INTERRUPT_CANCEL = 1.0    # tras la 1ra 'i', antes de seguir con m,i,m
-EXTRACT_AFTER_INTERRUPT_KEYPRESS = 0.6  # entre cada una de las 3 restantes (con jitter)
+EXTRACT_AFTER_INTERRUPT_FIRST_M = 1.7   # tras la 1ra 'm': la que más tarda, no salía bien con menos
+EXTRACT_AFTER_INTERRUPT_KEYPRESS = 0.6  # entre la 2da 'i' y la 2da 'm' (con jitter)
 EXTRACT_BOUNDARY_POLL_INTERVAL = 0.2    # zona chica, revisar rápido — tiempo crítico
 # Doble seguro: este tope es el respaldo si la detección por imagen falla
 # del todo, así que tiene que alcanzar para llegar cerca del final (250)
