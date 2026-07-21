@@ -27,11 +27,11 @@ Pipeline completo:
   3. Salvage de la armadura/arma con silver_fed (bulk, igual que fase3),
      pero CORTADO justo antes de que le toque a los sigils/runes: como no
      hay forma de saber el milisegundo exacto en que termina el gear y
-     empieza el upgrade, se vigilan 5 zonas fijas (EXTRACT_BOUNDARY_1..5,
-     las últimas en vaciarse del lado del gear tras compactar) comparando
-     screenshot antes/después. En cuanto cambian, se interrumpe el salvage
-     cerrando y reabriendo inventario+mapa (cancela la acción en curso sin
-     perder nada de lo ya salvageado).
+     empieza el upgrade, se vigilan los últimos 9 slots (slot_242..250,
+     donde sigils/runes suelen quedar clusterizados tras compactar)
+     comparando screenshot antes/después. En cuanto cambian, se interrumpe
+     el salvage cerrando y reabriendo inventario+mapa (cancela la acción
+     en curso sin perder nada de lo ya salvageado).
   4. Salvage de lo que quedó (sigils/runes, y tal vez algún gear que no
      llegó a tocarse) con copper_fed — 20x más barato que silver_fed, el
      resultado es idéntico para upgrades (investigado por el usuario).
@@ -56,10 +56,9 @@ Regiones necesarias:
         chequear si el item ahí está en la lista de ignorados.
     EXTRACT_WINDOW_REGION - caja donde aparece el botón 'Extract' cerca de
         upgrade_extractor_window
-    EXTRACT_BOUNDARY_1..5 - 5 cajas chicas sobre los últimos slots de gear
-        antes de donde suelen empezar los sigils/runes tras compactar (ver
-        paso 3). Se comparan por imagen, no hace falta que sean exactas —
-        mientras más cerca del borde real, mejor el corte.
+
+La frontera del paso 3 (BOUNDARY_REGIONS) reusa slot_242..250 directo del
+grid — no hay una región aparte para eso, evita superponerse con el grid.
 
 Items necesarios (capturar con el picker):
     yellow_gear - ícono del unidentified gear amarillo (igual idea que
@@ -117,7 +116,12 @@ IDENTIFY_MENU_REGION_DY = 0
 IDENTIFY_MENU_REGION_W = 500
 IDENTIFY_MENU_REGION_H = 360
 
-BOUNDARY_REGIONS = [f"EXTRACT_BOUNDARY_{i}" for i in range(1, 6)]
+# Los últimos 9 slots (242..250) del grid, reusados como zona frontera:
+# sigils/runes suelen quedar clusterizados justo ahí tras compactar. Antes
+# había regiones EXTRACT_BOUNDARY_1..5 aparte, pero se superponían con los
+# slots reales del grid — se sacaron, esto usa directo slot_242..250 (más
+# margen de reacción que las 5 de antes).
+BOUNDARY_REGIONS = [f"slot_{i}" for i in range(242, 251)]
 
 # Diferencia promedio de intensidad (0-255) entre screenshot antes/después
 # de una zona para contarla como "cambió". El ícono salvageado desaparece

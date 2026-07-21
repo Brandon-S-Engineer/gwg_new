@@ -72,41 +72,6 @@
           "h": 300
         },
         {
-          "name": "EXTRACT_BOUNDARY_1",
-          "x": 265,
-          "y": 387,
-          "w": 60,
-          "h": 60
-        },
-        {
-          "name": "EXTRACT_BOUNDARY_2",
-          "x": 305,
-          "y": 387,
-          "w": 60,
-          "h": 60
-        },
-        {
-          "name": "EXTRACT_BOUNDARY_3",
-          "x": 345,
-          "y": 387,
-          "w": 60,
-          "h": 60
-        },
-        {
-          "name": "EXTRACT_BOUNDARY_4",
-          "x": 385,
-          "y": 387,
-          "w": 60,
-          "h": 60
-        },
-        {
-          "name": "EXTRACT_BOUNDARY_5",
-          "x": 425,
-          "y": 387,
-          "w": 60,
-          "h": 60
-        },
-        {
           "name": "slot_1",
           "x": 4008,
           "y": 1616,
