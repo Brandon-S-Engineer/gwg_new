@@ -158,9 +158,12 @@ EXTRACT_BOUNDARY_POLL_INTERVAL = 0.2    # zona chica, revisar rápido — tiempo
 # del todo, así que tiene que alcanzar para llegar cerca del final (250)
 # y no cortar el salvage a medias dejando gear sin tocar. Calibrado por
 # regla de 3 con un dato real: a los 17s había llegado al item 182 →
-# 17 * 250/182 ≈ 23.35s para llegar a 250. La detección por imagen (el
-# 1er seguro) debería disparar mucho antes de esto en el uso normal.
-EXTRACT_SALVAGE_TIMEOUT = 23.4
+# 17 * 250/182 ≈ 23.35s para llegar a 250, +1s extra de margen.
+EXTRACT_SALVAGE_TIMEOUT = 24.3
+# Tras disparar el copper_fed bulk (barato, sin interrumpir), darle tiempo
+# de terminar solo antes de compactar — si no, compact() puede pisarle el
+# salvage a medias.
+EXTRACT_AFTER_COPPER_SALVAGE = 18.0
 # Lecturas seguidas por encima del umbral antes de aceptar la frontera:
 # un solo cambio aislado puede ser un parpadeo/efecto del salvage mismo,
 # no el ícono desapareciendo de verdad. A 0.2s de poll, 3 seguidas cuestan

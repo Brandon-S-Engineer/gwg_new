@@ -148,6 +148,7 @@ SLEEP_AFTER_INTERRUPT_KEYPRESS = schedule.EXTRACT_AFTER_INTERRUPT_KEYPRESS
 BOUNDARY_POLL_INTERVAL = schedule.EXTRACT_BOUNDARY_POLL_INTERVAL
 SALVAGE_TIMEOUT = schedule.EXTRACT_SALVAGE_TIMEOUT
 BOUNDARY_CONFIRMATIONS = schedule.EXTRACT_BOUNDARY_CONFIRMATIONS
+SLEEP_AFTER_COPPER_SALVAGE = schedule.EXTRACT_AFTER_COPPER_SALVAGE
 
 
 # ============================================================
@@ -432,6 +433,9 @@ def salvage_gear_then_upgrades() -> None:
     inp.click(get_point("copper_fed_salvage_rare"))
     time.sleep(SLEEP_AFTER_KIT_OPTION)
     salvage.click_accept()
+    # Barato, no hace falta interrumpirlo — pero sí darle tiempo de
+    # terminar solo antes de que el caller compacte (si no, se lo pisa).
+    time.sleep(SLEEP_AFTER_COPPER_SALVAGE)
 
 
 # ============================================================
