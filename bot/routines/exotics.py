@@ -280,6 +280,11 @@ def run():
     print("[exotics] limpieza de exotics...")
     _reset_tp_view()
     store_luck.compact()
+    # PAUSA TEMPORAL: chequear a mano si conviene extraerles sigil/rune con
+    # el Upgrade Extractor (como con los yellow) antes de vender/salvagear
+    # los exotics tal cual. Sacar esta línea cuando ya esté decidido.
+    input("[exotics] PAUSA — exotics ya compactados, revisá antes de vender "
+          "los 5 más caros (Enter para continuar)... ")
     _sell_top_exotics()
     # Vender cambia el inventario (huecos donde estaban los vendidos): hay
     # que re-compactar antes del barrido por posición, si no el grid de
