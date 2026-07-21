@@ -82,6 +82,7 @@ Reusa sin capturar de nuevo (mismo botón/kit real en el juego):
 import time
 from pathlib import Path
 
+import cv2
 import numpy as np
 
 from .. import config
@@ -241,8 +242,15 @@ IGNORE_THRESHOLD = 0.85
 IGNORE_CHECK_SIZE = 80
 
 
-def _ignore_templates() -> list[Path]:
-    return sorted(ITEMS_DIR.glob("ignore_*.png"))
+def _load_ignore_templates() -> list[np.ndarray]:
+    """Carga los PNG de ignore_N UNA sola vez (no releerlos del disco en
+    cada slot — antes vision.find() los recargaba a cada rato)."""
+    templates = []
+    for path in sorted(ITEMS_DIR.glob("ignore_*.png")):
+        tpl = cv2.imread(str(path), 0)
+        if tpl is not None:
+            templates.append(tpl)
+    return templates
 
 
 def _ignore_search_region(slot_region: Region) -> Region:
@@ -255,10 +263,22 @@ def _ignore_search_region(slot_region: Region) -> Region:
     return Region(x, y, w, h)
 
 
-def _is_ignored(slot_region: Region, templates: list[Path]) -> bool:
+def _is_ignored(slot_region: Region, templates: list[np.ndarray]) -> bool:
+    """UNA sola captura de pantalla por slot, comparada contra los N
+    templates ya cargados en memoria — antes se tomaba una screenshot
+    (y se releía el PNG del disco) por cada uno de los ignore_N, hasta 10
+    veces por slot, lo que lo volvía mucho más lento en vez de más rápido."""
+    if not templates:
+        return False
     search = _ignore_search_region(slot_region)
-    return any(vision.is_present(tpl, region=search, threshold=IGNORE_THRESHOLD)
-               for tpl in templates)
+    screen = vision.capture_screen(search)
+    for tpl in templates:
+        if tpl.shape[0] > screen.shape[0] or tpl.shape[1] > screen.shape[1]:
+            continue  # no entra ni con el margen ampliado, saltar
+        res = cv2.matchTemplate(screen, tpl, cv2.TM_CCOEFF_NORMED)
+        if res.max() >= IGNORE_THRESHOLD:
+            return True
+    return False
 
 
 def _snapshot_inventory() -> None:
@@ -324,7 +344,7 @@ def extract_all() -> int:
     intento, ya no se verifican por imagen)."""
     store_luck.compact()
     _snapshot_inventory()
-    templates = _ignore_templates()
+    templates = _load_ignore_templates()
     if templates:
         print(f"[extract_yellow] {len(templates)} template(s) de items a ignorar")
 
