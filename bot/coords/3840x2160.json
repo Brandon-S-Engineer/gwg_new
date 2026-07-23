@@ -1869,6 +1869,11 @@
           "y": 512
         },
         {
+          "name": "sell_success_close",
+          "x": 3208,
+          "y": 509
+        },
+        {
           "name": "accept_button",
           "x": 1896,
           "y": 1156

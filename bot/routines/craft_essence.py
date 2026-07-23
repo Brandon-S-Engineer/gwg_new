@@ -58,6 +58,8 @@ Items necesarios (capturar con el picker, pestaña de items):
 import datetime
 import time
 
+import cv2
+
 from .. import config
 from .. import input as inp
 from .. import schedule
@@ -210,16 +212,39 @@ def _wait_for_luck_zero(timeout: float, work=None) -> bool:
     venta: de ahí en más solo se re-chequea la imagen hasta juntar las
     confirmaciones, sin meter otra venta de por medio. Vender durante las
     confirmaciones era lo que hacía que, al terminar el craft, todavía se
-    vendieran 1-2 items más antes de pasar al siguiente tier."""
+    vendieran 1-2 items más antes de pasar al siguiente tier.
+
+    Candado extra (CRAFT_ZERO_STATIC_POLLS): un craft en curso va cambiando
+    la región (contador bajando, animación); si deja de moverse del todo
+    durante varias lecturas seguidas es porque ya terminó, aunque el
+    template no lo confirme (ej. un popup tapando/oscureciendo la región
+    justo en ese momento). Solo cuenta después de haber visto cambiar la
+    región al menos una vez, para no disparar en falso apenas arranca."""
     deadline = time.time() + timeout
     streak = 0
     work_done = work is None
+    region = get_region("CRAFT_DONE_REGION")
+    prev_frame = None
+    static_streak = 0
+    ever_changed = False
     while time.time() < deadline:
-        found = vision.is_present(LUCK_ZERO, region=get_region("CRAFT_DONE_REGION"),
-                                  threshold=LUCK_ZERO_THRESHOLD)
+        found = vision.is_present(LUCK_ZERO, region=region, threshold=LUCK_ZERO_THRESHOLD)
         streak = streak + 1 if found else 0
         if streak >= schedule.CRAFT_ZERO_CONFIRMATIONS:
             return True
+
+        frame = vision.capture_screen(region)
+        if prev_frame is not None:
+            if cv2.absdiff(frame, prev_frame).mean() > schedule.CRAFT_ZERO_STATIC_DIFF:
+                ever_changed = True
+                static_streak = 0
+            else:
+                static_streak += 1
+        prev_frame = frame
+        if ever_changed and static_streak >= schedule.CRAFT_ZERO_STATIC_POLLS:
+            print("[craft_essence] región estática varias lecturas seguidas, asumo terminado")
+            return True
+
         if streak == 0 and not work_done:
             try:
                 next(work)

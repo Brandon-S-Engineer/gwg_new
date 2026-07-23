@@ -34,6 +34,7 @@ SELL_AFTER_DISMISS = 0.1             # tooltip ya se fue al bajar
 SELL_AFTER_READY = 0.3               # asentar tras cargar el TP
 SELL_STEP = 0.25                     # entre clicks del panel
 SELL_AFTER_LIST = 1.5                # que se procese el listado
+SELL_AFTER_SUCCESS_CLOSE = 0.2       # asentar tras cerrar el popup "Success"
 
 # --- setup (arrastrar banco + filtros de texto) ---
 SETUP_AFTER_BANK_TAB = 0.5   # tras click en la pestaña banco (asegurar al iniciar)
@@ -53,6 +54,12 @@ CRAFT_ZERO_TIMEOUT = 120   # respaldo por si el template no aparece nunca
 CRAFT_ZERO_POLL_INTERVAL = 1.0  # cada cuánto revisar (un solo match aislado
                                  # puede ser un parpadeo a medio contar)
 CRAFT_ZERO_CONFIRMATIONS = 3    # lecturas seguidas por encima del threshold
+CRAFT_ZERO_STATIC_POLLS = 6     # candado extra: si la región no cambia nada
+                                 # durante 6 lecturas seguidas (tras haber
+                                 # cambiado al menos una vez), se asume
+                                 # terminado aunque el template no confirme
+CRAFT_ZERO_STATIC_DIFF = 1.5    # diferencia media (escala 0-255) para
+                                 # considerar que la región "cambió"
                                  # antes de dar el craft por terminado
 
 # --- compact (compactar inventario) ---
@@ -144,9 +151,16 @@ from .routines import (
     store_luck,
 )
 
-MAX_ITERATIONS_GREEN = 120   # -1 = infinito
-MAX_ITERATIONS_YELLOW = 30  # cada iteración procesa 1 stack completo (más
-                             # pesado que una iteración de green)
+
+# El corte real es config.NO_GREENS (phase1 avisa cuando ya no hay greens):
+# poner un número acá es solo adivinar cuántas iteraciones va a necesitar
+# ESTA corrida en particular (varía según cuánto se acumuló), y si se
+# adivina bajo corta el loop con backlog sin procesar. -1 = infinito: deja
+# que NO_GREENS sea el único corte real.
+MAX_ITERATIONS_GREEN = -1
+MAX_ITERATIONS_YELLOW = -1  # cada iteración procesa 1 stack completo (más
+                             # pesado que una iteración de green); mismo
+                             # criterio: corta por NO_GREENS, no por número
 
 STARTUP_DELAY = 5  #
 
