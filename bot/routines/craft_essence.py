@@ -204,7 +204,13 @@ def _wait_for_luck_zero(timeout: float, work=None) -> bool:
 
     Si se pasa `work` (generator de ventas), intercala un paso de venta en
     cada vuelta que no confirma nada: aprovecha la espera real del craft
-    (nunca se adivina de antemano) en vez de solo dormir sin hacer nada."""
+    (nunca se adivina de antemano) en vez de solo dormir sin hacer nada.
+
+    En cuanto aparece la PRIMERA lectura positiva (streak >= 1) se corta la
+    venta: de ahí en más solo se re-chequea la imagen hasta juntar las
+    confirmaciones, sin meter otra venta de por medio. Vender durante las
+    confirmaciones era lo que hacía que, al terminar el craft, todavía se
+    vendieran 1-2 items más antes de pasar al siguiente tier."""
     deadline = time.time() + timeout
     streak = 0
     work_done = work is None
@@ -214,7 +220,7 @@ def _wait_for_luck_zero(timeout: float, work=None) -> bool:
         streak = streak + 1 if found else 0
         if streak >= schedule.CRAFT_ZERO_CONFIRMATIONS:
             return True
-        if not work_done:
+        if streak == 0 and not work_done:
             try:
                 next(work)
                 continue  # ya gastó tiempo real vendiendo, re-chequear ya
