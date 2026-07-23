@@ -144,8 +144,8 @@ from .routines import (
     store_luck,
 )
 
-MAX_ITERATIONS_GREEN = 90   # -1 = infinito
-MAX_ITERATIONS_YELLOW = 10  # cada iteración procesa 1 stack completo (más
+MAX_ITERATIONS_GREEN = 120   # -1 = infinito
+MAX_ITERATIONS_YELLOW = 30  # cada iteración procesa 1 stack completo (más
                              # pesado que una iteración de green)
 
 STARTUP_DELAY = 5  #
