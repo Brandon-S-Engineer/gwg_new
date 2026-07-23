@@ -1,0 +1,2 @@
+20260723_150215 | receta=recipe_masterwork.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260723_150215_recipe_masterwork.png
+20260723_150421 | receta=recipe_rare.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260723_150421_recipe_rare.png
