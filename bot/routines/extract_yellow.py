@@ -94,7 +94,7 @@ from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
 from ..regions import Region
-from . import setup, store_luck
+from . import phase3_salvage_rares, setup, store_luck
 from .phase1_salvage_greens import USE_ALL, USE_ALL_THRESHOLD
 
 YELLOW_GEAR = ITEMS_DIR / "yellow_gear.png"
@@ -487,16 +487,35 @@ def salvage_gear_then_upgrades() -> None:
 # Orquestador
 # ============================================================
 
-def run(max_slots: int = MAX_SLOTS) -> bool:
-    """max_slots: cuántos de los 250 slots barrer (tope MAX_SLOTS). Lo usa
-    `py -m bot loop y<N>` para no barrer de más si se sabe que hay menos
-    yellows que el máximo."""
+def run(max_slots: int = 0):
+    """Procesa UN stack de yellow gear (identifica uno solo, como fase1).
+
+    max_slots > 0: usa el Upgrade Extractor para sacarle sigil/rune a cada
+        item (hasta max_slots de los 250) ANTES de salvagear — separa el
+        salvage caro (gear) del barato (upgrades), como siempre.
+    max_slots == 0 (default): SIN extractor — identifica y salvagea
+        directo con silver_fed, igual que cualquier rare (fase3). Más
+        rápido, pero el upgrade se pierde en el salvage al no extraerse
+        antes: es la opción para cuando NO interesa el sigil/rune, solo
+        limpiar el unidentified gear amarillo.
+
+    Devuelve config.NO_GREENS si no había yellow gear para identificar
+    (mismo sentinel que fase1 — el loop general lo reconoce igual sin
+    importar el segmento)."""
     print(f"[extract_yellow] procesando stack de yellow unidentified gear "
           f"(max_slots={max_slots})...")
     if not identify_one():
-        return False
-    extract_all(max_slots)
-    salvage_gear_then_upgrades()
+        return config.NO_GREENS
+
+    if max_slots > 0:
+        extract_all(max_slots)
+        salvage_gear_then_upgrades()
+    else:
+        print("[extract_yellow] sin extractor: salvage directo con silver_fed "
+              "(se pierde el upgrade)")
+        store_luck.compact()
+        phase3_salvage_rares.run()
+
     setup.restore_bank_filter()
     store_luck.compact()
     print("[extract_yellow] OK")

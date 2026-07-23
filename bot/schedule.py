@@ -144,7 +144,9 @@ from .routines import (
     store_luck,
 )
 
-MAX_ITERATIONS = 90  # -1 = infinito (segmento GREEN)
+MAX_ITERATIONS_GREEN = 90   # -1 = infinito
+MAX_ITERATIONS_YELLOW = 10  # cada iteración procesa 1 stack completo (más
+                             # pesado que una iteración de green)
 
 STARTUP_DELAY = 5  #
 
@@ -176,7 +178,7 @@ TASKS_GREEN = [
     (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
     # (25, restart_or_not.run),                  # cada 25
 
-    # corridas largas (MAX_ITERATIONS grande/-1): estos también van en
+    # corridas largas (MAX_ITERATIONS_GREEN grande/-1): estos también van en
     # FINAL_TASKS_GREEN, pero ahí solo corren 1 vez al terminar el loop
     # entero. Acá se repiten cada 30 iteraciones para que no esperen horas.
     (30, ectos.run),
@@ -194,9 +196,9 @@ TASKS_GREEN = [
 FINAL_TASKS_GREEN = [
     # phase1_salvage_greens.drain: NO va acá — corre hasta que no quede
     # ningún green (hasta 100 pasadas), sin límite de tiempo, así que si hay
-    # backlog el loop se pasa de MAX_ITERATIONS sin avisar. El backlog que
-    # quede se procesa solo en la siguiente corrida (TASKS_GREEN ya llama a
-    # phase1_salvage_greens.run cada iteración).
+    # backlog el loop se pasa de MAX_ITERATIONS_GREEN sin avisar. El backlog
+    # que quede se procesa solo en la siguiente corrida (TASKS_GREEN ya
+    # llama a phase1_salvage_greens.run cada iteración).
 
     # phase3_salvage_rares.run,  # limpiar rares que sueltan más ectos
     # ectos.run,            # salvage de ectos + vender el crystalline dust
@@ -211,24 +213,41 @@ FINAL_TASKS_GREEN = [
 
 # ============================================================
 # YELLOW: Upgrade Extractor (yellow unidentified gear). `py -m bot loop
-# y<N>` — N = cuántos de los 250 slots barrer (ver YELLOW_MAX_SLOTS más
-# abajo, lo pisa __main__.py antes de correr este segmento). Sin número
-# (o 0) el loop no corre este segmento en absoluto — no hay valor por
-# defecto "razonable" para cuántos yellows hay, tiene que decirlo el
-# usuario cada vez.
+# y<N>` — el número NO es "cuántos yellows hay", es cuántos de los 250
+# slots barrer CON EL EXTRACTOR INFINITO para sacarles sigil/rune antes
+# de salvagear (ver extract_yellow.run):
+#   y100 / y250  -> usa el extractor, hasta N slots, separa salvage caro/
+#                   barato (gear con silver_fed, upgrades con copper_fed)
+#   y  (0 o sin número) -> SIN extractor, salvage directo con silver_fed
+#                   (más rápido, pero se pierde el upgrade del stack)
 #
-# extract_yellow.run() procesa UN stack completo (identificar + extraer +
-# salvage + limpiar) en una sola llamada, no por iteración como GREEN —
-# por eso TASKS_YELLOW está vacío por ahora: no hay nada que repetir cada
-# N vueltas, solo la corrida única en FINAL_TASKS_YELLOW.
+# Cada iteración procesa UN stack completo (identificar + [extraer] +
+# salvage + limpiar filtros/compactar), como una llamada a
+# extract_yellow.run() — por eso "every=1": cada vuelta es un stack nuevo,
+# hasta MAX_ITERATIONS_YELLOW o hasta que no quede yellow gear (mismo
+# sentinel NO_GREENS que usa fase1, run() lo devuelve si no identificó
+# nada).
 # ============================================================
 
-YELLOW_MAX_SLOTS = extract_yellow.MAX_SLOTS  # __main__.py lo pisa con el N del comando
+YELLOW_MAX_SLOTS = 0  # __main__.py lo pisa con el N de 'loop y<N>' antes de correr
 
 TASKS_YELLOW = [
-    # (every, callable) — vacío por ahora, ver nota arriba.
+    # (every, callable)
+    (1, lambda: extract_yellow.run(max_slots=YELLOW_MAX_SLOTS)),
+
+    # Pasos internos de extract_yellow.run(), documentados acá por si algún
+    # día hace falta separarlos en tasks propias (hoy van bundleados en la
+    # llamada de arriba, no hace falta tocar nada para que corran):
+    #   extract_yellow.identify_one          - identificar 1 stack
+    #   extract_yellow.extract_all            - drag al Upgrade Extractor (solo si max_slots>0)
+    #   extract_yellow.salvage_gear_then_upgrades  - silver_fed cortado + copper_fed (solo si max_slots>0)
+    #   phase3_salvage_rares.run              - salvage directo, sin extractor (solo si max_slots==0)
+    #   setup.restore_bank_filter             - reponer filtros
+    #   store_luck.compact                    - compactar
 ]
 
-FINAL_TASKS_YELLOW = [
-    lambda: extract_yellow.run(max_slots=YELLOW_MAX_SLOTS),
-]
+# Corren 1 vez al terminar el segmento YELLOW (no por iteración). Vacío por
+# ahora — nada necesita correr "una sola vez al final" todavía, a
+# diferencia de green (ectos/craft/exotics que solo tiene sentido hacer
+# de a poco cada 30). Mismo lugar para agregarlo si hace falta después.
+FINAL_TASKS_YELLOW = []

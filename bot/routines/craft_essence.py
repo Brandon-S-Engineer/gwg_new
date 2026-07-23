@@ -55,14 +55,21 @@ Items necesarios (capturar con el picker, pestaña de items):
     para los 3 tiers).
 """
 
+import datetime
 import time
 
+from .. import config
 from .. import input as inp
 from .. import schedule
 from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
 from . import phase2_consume_luck, sell, sell_all_clean, sell_materials, sell_seals, setup, store_luck
+
+# Diagnóstico cuando el 'luck [0]' nunca se confirma a tiempo: guardar
+# screenshot + una línea de log acá (mismo estilo que debug_green.py) para
+# revisar después qué pasó, sin tener que reproducirlo en vivo.
+CRAFT_TIMEOUT_DIR = config.PROJECT_ROOT / "tools" / "debug_output" / "craft_timeout"
 
 RECIPE_MASTERWORK = ITEMS_DIR / "recipe_masterwork.png"
 RECIPE_RARE = ITEMS_DIR / "recipe_rare.png"
@@ -243,7 +250,25 @@ def _craft_wait_zero(template, work=None) -> bool:
     done = _wait_for_luck_zero(schedule.CRAFT_ZERO_TIMEOUT, work=work)
     if not done:
         print(f"[craft_essence] no vi 'luck [0]' en {schedule.CRAFT_ZERO_TIMEOUT:.0f}s, sigo igual")
+        _log_craft_zero_timeout(template)
     return True
+
+
+def _log_craft_zero_timeout(template) -> None:
+    """No es infinito (CRAFT_ZERO_TIMEOUT tiene tope), pero si pasa seguido
+    conviene verlo con datos reales en vez de adivinar: guarda un
+    screenshot completo + una línea en tools/debug_output/craft_timeout/
+    (git-tracked, llega a la otra sesión/PC para revisarlo)."""
+    from PIL import ImageGrab
+    CRAFT_TIMEOUT_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    img_path = CRAFT_TIMEOUT_DIR / f"{ts}_{template.stem}.png"
+    ImageGrab.grab().save(img_path, "PNG")
+    with open(CRAFT_TIMEOUT_DIR / "log.txt", "a", encoding="utf-8") as f:
+        f.write(f"{ts} | receta={template.name} | timeout={schedule.CRAFT_ZERO_TIMEOUT:.0f}s "
+                f"| confirmations={schedule.CRAFT_ZERO_CONFIRMATIONS} "
+                f"| poll={schedule.CRAFT_ZERO_POLL_INTERVAL}s | screenshot={img_path.name}\n")
+    print(f"[craft_essence] diagnóstico guardado en {CRAFT_TIMEOUT_DIR}")
 
 
 def _store_exotic_and_finish():
