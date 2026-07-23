@@ -333,15 +333,20 @@ def _extract_at_direct(slot_name: str, button_point: tuple[int, int]) -> None:
     time.sleep(SLEEP_AFTER_DIRECT_CLICK)
 
 
-def extract_all() -> int:
-    """Barre TODA la grilla (250 slots), siempre completa: acá un miss es
-    ambiguo (vacío vs. sin upgrade) así que no se puede cortar temprano
-    como en exotics.py. Antes de dragear cada slot, chequea contra la
-    lista de ignore_N (items que nunca tienen upgrade) y lo salta directo
-    si matchea. Tras STATIC_AFTER_HITS confirmaciones por imagen cambia a
-    modo directo (ver _extract_at_direct) para el resto del barrido.
+def extract_all(max_slots: int = MAX_SLOTS) -> int:
+    """Barre la grilla (hasta max_slots, tope MAX_SLOTS=250), siempre
+    completa dentro de ese rango: acá un miss es ambiguo (vacío vs. sin
+    upgrade) así que no se puede cortar temprano como en exotics.py.
+    max_slots < 250 sirve para no barrer de más cuando se sabe que hay
+    menos yellows que el máximo (ej. loop y100).
+    Antes de dragear cada slot, chequea contra la lista de ignore_N
+    (items que nunca tienen upgrade) y lo salta directo si matchea. Tras
+    STATIC_AFTER_HITS confirmaciones por imagen cambia a modo directo (ver
+    _extract_at_direct) para el resto del barrido.
     Devuelve cuántos upgrades extrajo (los de modo directo se cuentan como
     intento, ya no se verifican por imagen)."""
+    max_slots = max(0, min(max_slots, MAX_SLOTS))
+    slot_names = SLOT_NAMES[:max_slots]
     store_luck.compact()
     _snapshot_inventory()
     templates = _load_ignore_templates()
@@ -352,7 +357,7 @@ def extract_all() -> int:
     skipped = 0
     hits = 0
     button_pos = None
-    for name in SLOT_NAMES:
+    for name in slot_names:
         if templates and _is_ignored(get_region(name), templates):
             skipped += 1
             continue
@@ -370,19 +375,19 @@ def extract_all() -> int:
                   f"modo directo desde acá (sin imagen, sin espera)")
             button_pos = btn
     print(f"[extract_yellow] {count} upgrade(s) extraído(s)/intentado(s), "
-          f"{skipped} ignorado(s) por template, de {MAX_SLOTS} slots")
+          f"{skipped} ignorado(s) por template, de {len(slot_names)} slots")
     return count
 
 
-def identify_and_extract() -> int:
+def identify_and_extract(max_slots: int = MAX_SLOTS) -> int:
     """Identifica UN stack (inventario, o banco→inventario si no hay —
-    misma lógica que fase1 con los greens) y barre los 250 slots al
-    Upgrade Extractor. Para ahí: no separa runes/sigils ni hace salvage.
+    misma lógica que fase1 con los greens) y barre los slots al Upgrade
+    Extractor. Para ahí: no separa runes/sigils ni hace salvage.
     Para probar el pipeline hasta el extractor antes de calibrar el resto.
     `py -m bot extract_yellow identify_extract`"""
     if not identify_one():
         return 0
-    return extract_all()
+    return extract_all(max_slots)
 
 
 # ============================================================
@@ -482,11 +487,15 @@ def salvage_gear_then_upgrades() -> None:
 # Orquestador
 # ============================================================
 
-def run() -> bool:
-    print("[extract_yellow] procesando stack de yellow unidentified gear...")
+def run(max_slots: int = MAX_SLOTS) -> bool:
+    """max_slots: cuántos de los 250 slots barrer (tope MAX_SLOTS). Lo usa
+    `py -m bot loop y<N>` para no barrer de más si se sabe que hay menos
+    yellows que el máximo."""
+    print(f"[extract_yellow] procesando stack de yellow unidentified gear "
+          f"(max_slots={max_slots})...")
     if not identify_one():
         return False
-    extract_all()
+    extract_all(max_slots)
     salvage_gear_then_upgrades()
     setup.restore_bank_filter()
     store_luck.compact()

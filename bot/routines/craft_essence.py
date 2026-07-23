@@ -8,12 +8,18 @@ banco (depositar). Se craftea en la primera y se deposita en la segunda.
 
 Corre 1 vez en FINAL_TASKS, después de ectos.run.
 
-Truco del overlap: las 3 esperas del craft (masterwork/rare/exotic) suman
-~6 min. En vez de dormir, esos segundos se usan vendiendo. El trabajo de venta
-es un generator compartido: cada espera consume lo que alcance y, cuando se
-acaba el tiempo, se lanza el siguiente craft y la próxima espera RETOMA donde
-quedó (el generator guarda su posición). Si la venta se acaba antes que la
-espera, se duerme el resto para no cortar el craft.
+La espera de cada craft SIEMPRE es por imagen (el "luck [0]" que aparece
+al terminar, ver _wait_for_luck_zero/CRAFT_DONE_REGION), nunca un tiempo
+fijo: craftear tarda variable y un tiempo fijo corto dejaba el juego
+pegado en artificing (craft aún en curso) cuando la iteración seguía de
+largo — eso hacía que phase1 después no encontrara greens en el inventario
+y cortara el loop entero con un falso "no quedan greens".
+
+Truco del overlap: mientras se espera el "luck [0]" de cada tier, se
+intercala venta (seals/materiales) en cada vuelta del poll en vez de solo
+dormir — el trabajo de venta es un generator compartido: se pausa y
+retoma entre los 3 tiers sin repetir lo ya vendido, y si se agota antes
+de que el craft termine, solo se sigue esperando la imagen sin más venta.
 
 Flujo:
   1. pestaña artificing → buscar "luck"
@@ -97,36 +103,6 @@ def _sell_steps():
             yield
 
 
-def _work_during(duration: float, work):
-    """Consume pasos de `work` hasta que pasen `duration` seg. Chequea el
-    tiempo ENTRE ventas (nunca corta una venta a medias). Si `work` se agota
-    antes, duerme el resto para que el craft tenga su tiempo completo."""
-    start = time.monotonic()
-    for _ in work:
-        if time.monotonic() - start >= duration:
-            return  # tiempo cumplido; el generator queda donde iba
-    rest = duration - (time.monotonic() - start)
-    if rest > 0:
-        time.sleep(rest)
-
-
-def _craft(template, wait: float, work) -> bool:
-    """Busca la receta por imagen en la lista (el orden de filas no es
-    estable entre sesiones) y craftea. False si no la encontró."""
-    spot = vision.wait_for(template, region=get_region("RECIPE_LIST_AREA"),
-                           timeout=RECIPE_FIND_TIMEOUT, threshold=RECIPE_THRESHOLD)
-    if not spot:
-        print(f"[craft_essence] no encontré {template.name} en la lista, salto este craft")
-        return False
-
-    inp.click(spot)
-    time.sleep(schedule.CRAFT_AFTER_SELECT)
-    inp.click(get_point("craft_all"))
-    print(f"[craft_essence] {template.name} → craft_all, {wait:.0f}s (vendiendo mientras)...")
-    _work_during(wait, work)
-    return True
-
-
 def test_find_recipes():
     """Abre artificing, busca 'luck' y solo DETECTA las 3 recetas por
     imagen (sin clickear ni craftear nada). Para probar que los templates
@@ -191,9 +167,9 @@ def quick(materials=None):
     open_and_search_luck()
 
     work = _quick_sell_steps(materials)
-    _craft(RECIPE_MASTERWORK, schedule.CRAFT_QUICK_WAIT_MASTERWORK, work)
-    _craft(RECIPE_RARE, schedule.CRAFT_QUICK_WAIT_RARE, work)
-    _craft(RECIPE_EXOTIC, schedule.CRAFT_QUICK_WAIT_EXOTIC, work)
+    _craft_wait_zero(RECIPE_MASTERWORK, work)
+    _craft_wait_zero(RECIPE_RARE, work)
+    _craft_wait_zero(RECIPE_EXOTIC, work)
 
     # Terminar la venta que no entró en las esperas (el craft ya corre solo).
     for _ in work:
@@ -213,27 +189,43 @@ def _park_mouse():
     inp.move_to((x + dx, y + dy))
 
 
-def _wait_for_luck_zero(timeout: float) -> bool:
+def _wait_for_luck_zero(timeout: float, work=None) -> bool:
     """Poll cada CRAFT_ZERO_POLL_INTERVAL seg; exige CRAFT_ZERO_CONFIRMATIONS
     lecturas seguidas por encima del threshold antes de dar el craft por
     terminado. Un solo match aislado puede ser el número a medio contar
-    (ej. terminando en 0 de casualidad) y no el final real."""
+    (ej. terminando en 0 de casualidad) y no el final real.
+
+    Si se pasa `work` (generator de ventas), intercala un paso de venta en
+    cada vuelta que no confirma nada: aprovecha la espera real del craft
+    (nunca se adivina de antemano) en vez de solo dormir sin hacer nada."""
     deadline = time.time() + timeout
     streak = 0
+    work_done = work is None
     while time.time() < deadline:
         found = vision.is_present(LUCK_ZERO, region=get_region("CRAFT_DONE_REGION"),
                                   threshold=LUCK_ZERO_THRESHOLD)
         streak = streak + 1 if found else 0
         if streak >= schedule.CRAFT_ZERO_CONFIRMATIONS:
             return True
+        if not work_done:
+            try:
+                next(work)
+                continue  # ya gastó tiempo real vendiendo, re-chequear ya
+            except StopIteration:
+                work_done = True
         time.sleep(schedule.CRAFT_ZERO_POLL_INTERVAL)
     return False
 
 
-def _craft_wait_zero(template) -> bool:
-    """Como _craft, pero espera el fin del craft POR IMAGEN: tras craft_all
-    saca el cursor hacia abajo y espera a que aparezca "luck [0]" en
-    CRAFT_DONE_REGION. Timeout grande de respaldo por si el template falla."""
+def _craft_wait_zero(template, work=None) -> bool:
+    """Craftea y espera el fin SIEMPRE por imagen (nunca por tiempo fijo):
+    si el craft tarda más de lo esperado, sigue esperando en vez de cortar
+    antes de tiempo. Cortar antes dejaba el juego pegado en artificing (el
+    craft seguía en curso) y phase1 después no encontraba greens, cortando
+    el loop entero con un falso "no quedan greens".
+
+    Si se pasa `work` (generator de ventas), lo intercala durante la
+    espera (ver _wait_for_luck_zero) — no se pierde el tiempo muerto."""
     spot = vision.wait_for(template, region=get_region("RECIPE_LIST_AREA"),
                            timeout=RECIPE_FIND_TIMEOUT, threshold=RECIPE_THRESHOLD)
     if not spot:
@@ -246,8 +238,9 @@ def _craft_wait_zero(template) -> bool:
     _park_mouse()
     time.sleep(schedule.CRAFT_ZERO_GRACE)
 
-    print(f"[craft_essence] {template.name} → craft_all, esperando 'luck [0]'...")
-    done = _wait_for_luck_zero(schedule.CRAFT_ZERO_TIMEOUT)
+    vendiendo = " (vendiendo mientras)" if work is not None else ""
+    print(f"[craft_essence] {template.name} → craft_all, esperando 'luck [0]'{vendiendo}...")
+    done = _wait_for_luck_zero(schedule.CRAFT_ZERO_TIMEOUT, work=work)
     if not done:
         print(f"[craft_essence] no vi 'luck [0]' en {schedule.CRAFT_ZERO_TIMEOUT:.0f}s, sigo igual")
     return True
@@ -285,9 +278,9 @@ def run():
     # Subir tiers vendiendo durante las esperas. `work` es el mismo generator
     # en los 3: se pausa y retoma entre esperas.
     work = _sell_steps()
-    _craft(RECIPE_MASTERWORK, schedule.CRAFT_WAIT_MASTERWORK, work)
-    _craft(RECIPE_RARE, schedule.CRAFT_WAIT_RARE, work)
-    _craft(RECIPE_EXOTIC, schedule.CRAFT_WAIT_EXOTIC, work)
+    _craft_wait_zero(RECIPE_MASTERWORK, work)
+    _craft_wait_zero(RECIPE_RARE, work)
+    _craft_wait_zero(RECIPE_EXOTIC, work)
 
     # Si las esperas no alcanzaron, terminar la venta pendiente.
     for _ in work:

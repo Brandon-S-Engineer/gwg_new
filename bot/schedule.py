@@ -1,35 +1,3 @@
-"""Control del loop principal (`py -m bot loop`).
-
-Misma lógica que el bot viejo (`if i % X == 0`), pero en tabla en vez de
-hardcodear cada caso. Cada tarea declara cada cuántas iteraciones corre.
-
-  (every, callable)
-    every=1  -> cada iteración
-    every=5  -> cada 5 iteraciones (corre en i = 5, 10, 15, ...)
-    every=25 -> cada 25 (i = 25, 50, ...)
-
-El loop (bot/__main__.py), por iteración i (desde 1), hace:
-
-    for every, task in TASKS:
-        if i % every == 0:
-            task()
-
-Las tareas corren en el orden de la lista dentro de cada iteración.
-
-MAX_ITERATIONS = -1 corre infinito (como el `for i in range(1, 20001)` viejo).
-Poné un número chico para probar.
-"""
-
-# ============================================================
-# TIMING: todos los tiempos de espera (time.sleep) del bot, en un
-# solo lugar para calibrarlos. Van ANTES del import de rutinas
-# (más abajo) para que cada módulo pueda hacer `from .. import
-# schedule` y leer estas constantes sin import circular.
-#
-# Bajalos con cuidado: la mayoría es el mínimo para que el juego
-# procese la acción anterior antes del siguiente click/screenshot.
-# ============================================================
-
 # --- phase1_salvage_greens (identificar + salvage con rune_crafter) ---
 PHASE1_BEFORE_RIGHT_CLICK = 0.25     # asentar cursor sobre el green antes del right-click
 PHASE1_AFTER_RIGHT_CLICK = 0.8       # que abra el menú contextual
@@ -78,19 +46,8 @@ CRAFT_AFTER_OPEN = 1.0           # tras abrir el banco / artificing station
 CRAFT_AFTER_SEARCH = 0.5         # tras escribir "luck" en la búsqueda
 CRAFT_AFTER_SELECT = 0.5         # tras seleccionar una receta
 
-CRAFT_WAIT_MASTERWORK = 360
-CRAFT_WAIT_RARE = 360
-CRAFT_WAIT_EXOTIC = 220
-
-# quick(): craft incremental cada 2 iteraciones. Medido para 1 stack entero
-# de greens: blue→green 11s, green→yellow 14s, yellow→exotic 9s. Cada 2
-# iteraciones hay mucho menos acumulado, así que esto sobra; la espera se
-# pasa vendiendo igual, no es tiempo perdido.
-CRAFT_QUICK_WAIT_MASTERWORK = 24
-CRAFT_QUICK_WAIT_RARE = 30
-CRAFT_QUICK_WAIT_EXOTIC = 20
-
-# run_after_ectos(): espera por imagen el "luck [0]" en CRAFT_DONE_REGION.
+# Espera del craft SIEMPRE por imagen el "luck [0]" en CRAFT_DONE_REGION
+# (nunca por tiempo fijo — ver docstring del módulo).
 CRAFT_ZERO_GRACE = 2.0     # tras craft_all, antes de empezar a mirar
 CRAFT_ZERO_TIMEOUT = 120   # respaldo por si el template no aparece nunca
 CRAFT_ZERO_POLL_INTERVAL = 1.0  # cada cuánto revisar (un solo match aislado
@@ -187,11 +144,16 @@ from .routines import (
     store_luck,
 )
 
-MAX_ITERATIONS = 90  # -1 = infinito
+MAX_ITERATIONS = 90  # -1 = infinito (segmento GREEN)
 
-STARTUP_DELAY = 5  # 
+STARTUP_DELAY = 5  #
 
-TASKS = [
+# ============================================================
+# GREEN: pipeline de siempre, iteración por iteración (green unidentified
+# gear, luck, exotics, etc.). `py -m bot loop g`
+# ============================================================
+
+TASKS_GREEN = [
     # (every, callable)
     (1, phase1_salvage_greens.run),
     (2, phase3_salvage_rares.run),
@@ -215,8 +177,8 @@ TASKS = [
     # (25, restart_or_not.run),                  # cada 25
 
     # corridas largas (MAX_ITERATIONS grande/-1): estos también van en
-    # FINAL_TASKS, pero ahí solo corren 1 vez al terminar el loop entero.
-    # Acá se repiten cada 30 iteraciones para que no esperen horas.
+    # FINAL_TASKS_GREEN, pero ahí solo corren 1 vez al terminar el loop
+    # entero. Acá se repiten cada 30 iteraciones para que no esperen horas.
     (30, ectos.run),
     # (30, craft_essence.run),
     (30, craft_essence.run_after_ectos),  # procesar la luck de los ectos (espera por imagen)
@@ -226,13 +188,14 @@ TASKS = [
     (30, setup.restore_bank_filter),  # craft_essence/exotics dejan los filtros en otra cosa
 ]
 
-# Corren 1 vez al terminar el loop (no por iteración). sell_all_clean va también
-# acá para limpiar el inventario aunque el loop corte antes del múltiplo de 30.
-FINAL_TASKS = [
+# Corren 1 vez al terminar el segmento GREEN (no por iteración). sell_all_clean
+# va también acá para limpiar el inventario aunque el loop corte antes del
+# múltiplo de 30.
+FINAL_TASKS_GREEN = [
     # phase1_salvage_greens.drain: NO va acá — corre hasta que no quede
     # ningún green (hasta 100 pasadas), sin límite de tiempo, así que si hay
     # backlog el loop se pasa de MAX_ITERATIONS sin avisar. El backlog que
-    # quede se procesa solo en la siguiente corrida (TASKS ya llama a
+    # quede se procesa solo en la siguiente corrida (TASKS_GREEN ya llama a
     # phase1_salvage_greens.run cada iteración).
 
     # phase3_salvage_rares.run,  # limpiar rares que sueltan más ectos
@@ -241,7 +204,31 @@ FINAL_TASKS = [
     #                       # (luego guarda exotic, consume el resto y compacta)
     # deposit_metal_plates.run,  # reclaimed_metal_plates al depósito, al final de todo
     # exotics.run,           # reset vista TP + vender los más caros + salvage del resto
-  
+
                            # (va después de todo el procesamiento de luck: ese traba el TP)
     # debug_green.run,      # captura + scores de lo que quedó sin tomar (tools/debug_output/)
+]
+
+# ============================================================
+# YELLOW: Upgrade Extractor (yellow unidentified gear). `py -m bot loop
+# y<N>` — N = cuántos de los 250 slots barrer (ver YELLOW_MAX_SLOTS más
+# abajo, lo pisa __main__.py antes de correr este segmento). Sin número
+# (o 0) el loop no corre este segmento en absoluto — no hay valor por
+# defecto "razonable" para cuántos yellows hay, tiene que decirlo el
+# usuario cada vez.
+#
+# extract_yellow.run() procesa UN stack completo (identificar + extraer +
+# salvage + limpiar) en una sola llamada, no por iteración como GREEN —
+# por eso TASKS_YELLOW está vacío por ahora: no hay nada que repetir cada
+# N vueltas, solo la corrida única en FINAL_TASKS_YELLOW.
+# ============================================================
+
+YELLOW_MAX_SLOTS = extract_yellow.MAX_SLOTS  # __main__.py lo pisa con el N del comando
+
+TASKS_YELLOW = [
+    # (every, callable) — vacío por ahora, ver nota arriba.
+]
+
+FINAL_TASKS_YELLOW = [
+    lambda: extract_yellow.run(max_slots=YELLOW_MAX_SLOTS),
 ]

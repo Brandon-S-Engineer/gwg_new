@@ -3,7 +3,7 @@
 Salvage rinde más oro que vender los ectos directo. Cada ecto suelta pile of
 crystalline dust, que después vendemos en el TP.
 
-Corre 1 vez al terminar el loop (schedule.FINAL_TASKS):
+Corre cada 30 iteraciones en el segmento GREEN (schedule.TASKS_GREEN):
   1. Salvage de TODOS los stacks de ectos (con silver_fed, infinito).
   2. Vender TODOS los stacks de dust. Al primero -1 copper para vender
      primero; del segundo en adelante NO, para no taparme a mí mismo.

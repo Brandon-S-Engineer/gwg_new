@@ -17,58 +17,98 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | exotics | extract_yellow | open_bags | setup | conn_test | debug_green | click_test [<point_name>]")
+        print("comandos: info | loop [g] [y<N>] | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | exotics | extract_yellow | open_bags | setup | conn_test | debug_green | click_test [<point_name>]")
+        print("  loop: 'g' = green (pipeline de siempre), 'y<N>' = yellow, hasta N de los 250 slots.")
+        print("        orden = orden de los argumentos. Ej: 'loop g y100' o 'loop y250'. Sin args = solo green.")
         return
 
     if cmd == "loop":
         import time
 
-        from . import boot, schedule
+        from . import boot, dialogs, schedule
         from .routines import setup as _setup
+        from .routines.phase1_salvage_greens import recover as _recovery_salvage
+
+        # Segmentos en el orden dado por los argumentos: 'g' = green (el
+        # pipeline de siempre), 'y<N>' = yellow, procesa hasta N de los 250
+        # slots (sin número o con 0, no hace nada — no hay un default
+        # razonable para "cuántos yellows hay").
+        #   py -m bot loop g y100   -> green, después yellow (100)
+        #   py -m bot loop y250     -> solo yellow (250)
+        #   py -m bot loop          -> solo green (comportamiento de siempre)
+        segments = []
+        for tok in sys.argv[2:]:
+            tok = tok.strip().lower()
+            if tok == "g":
+                segments.append(("green", 0))
+            elif tok.startswith("y"):
+                segments.append(("yellow", int(tok[1:]) if tok[1:].isdigit() else 0))
+            else:
+                print(f"[loop] token desconocido: '{tok}' (usar 'g' o 'y<N>')")
+                return
+        if not segments:
+            segments = [("green", 0)]
+
         print(f"[loop] arranca en {schedule.STARTUP_DELAY}s (sacá el mouse de Parsec)...")
         time.sleep(schedule.STARTUP_DELAY)
         boot.focus_game()
         print("[loop] setup inicial...")
         _setup.run()
-        max_iters = schedule.MAX_ITERATIONS
-        i = 1
-        stop = False
-        from . import dialogs
-        from .routines.phase1_salvage_greens import recover as _recovery_salvage
-        while (max_iters == -1 or i <= max_iters) and not stop:
-            if dialogs.check_conn_error():
-                print("[loop] conn error dismisseado, salvage recovery...")
-                _recovery_salvage()
-                print("[loop] reiniciando iteración...")
-                continue
-            print(f"\n=== iter {i} ===")
-            restart_iter = False
-            for every, task in schedule.TASKS:
-                if i % every == 0:
-                    print(f"[loop] run {task.__module__}.{task.__name__} (every {every})")
-                    try:
-                        if task() == config.NO_GREENS:
-                            print("[loop] no quedan greens, fin.")
-                            stop = True
-                            break
-                    except dialogs.ConnErrorDetected:
-                        print("[loop] conn error mid-task, salvage recovery...")
-                        _recovery_salvage()
-                        print("[loop] reiniciando iteración...")
-                        restart_iter = True
-                        break
-                    except Exception as e:
-                        print(f"[loop] task {task.__name__} falló: {e}")
-            if not restart_iter:
-                i += 1
 
-        # Al terminar el loop: tareas finales (1 vez). Ej: salvage ectos + dust.
-        for task in schedule.FINAL_TASKS:
-            print(f"\n[loop] tarea final {task.__module__}.{task.__name__}")
-            try:
-                task()
-            except Exception as e:
-                print(f"[loop] tarea final {task.__name__} falló: {e}")
+        def _run_tasks(tasks, label):
+            if not tasks:
+                return  # nada periódico que correr en este segmento
+            max_iters = schedule.MAX_ITERATIONS
+            i = 1
+            stop = False
+            while (max_iters == -1 or i <= max_iters) and not stop:
+                if dialogs.check_conn_error():
+                    print("[loop] conn error dismisseado, salvage recovery...")
+                    _recovery_salvage()
+                    print("[loop] reiniciando iteración...")
+                    continue
+                print(f"\n=== {label} iter {i} ===")
+                restart_iter = False
+                for every, task in tasks:
+                    if i % every == 0:
+                        print(f"[loop] run {task.__module__}.{task.__name__} (every {every})")
+                        try:
+                            if task() == config.NO_GREENS:
+                                print("[loop] no quedan greens, fin.")
+                                stop = True
+                                break
+                        except dialogs.ConnErrorDetected:
+                            print("[loop] conn error mid-task, salvage recovery...")
+                            _recovery_salvage()
+                            print("[loop] reiniciando iteración...")
+                            restart_iter = True
+                            break
+                        except Exception as e:
+                            print(f"[loop] task {task.__name__} falló: {e}")
+                if not restart_iter:
+                    i += 1
+
+        def _run_final(final_tasks):
+            for task in final_tasks:
+                print(f"\n[loop] tarea final {task.__module__}.{task.__name__}")
+                try:
+                    task()
+                except Exception as e:
+                    print(f"[loop] tarea final {task.__name__} falló: {e}")
+
+        for kind, n in segments:
+            if kind == "green":
+                print("\n[loop] ══════ segmento GREEN ══════")
+                _run_tasks(schedule.TASKS_GREEN, "green")
+                _run_final(schedule.FINAL_TASKS_GREEN)
+            else:
+                if n <= 0:
+                    print("[loop] 'y' sin número (o 0): no se procesa nada de yellow.")
+                    continue
+                print(f"\n[loop] ══════ segmento YELLOW (max_slots={n}) ══════")
+                schedule.YELLOW_MAX_SLOTS = n
+                _run_tasks(schedule.TASKS_YELLOW, "yellow")
+                _run_final(schedule.FINAL_TASKS_YELLOW)
         return
 
     if cmd == "click_test":
