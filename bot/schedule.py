@@ -34,7 +34,6 @@ SELL_AFTER_DISMISS = 0.1             # tooltip ya se fue al bajar
 SELL_AFTER_READY = 0.3               # asentar tras cargar el TP
 SELL_STEP = 0.25                     # entre clicks del panel
 SELL_AFTER_LIST = 1.5                # que se procese el listado
-SELL_AFTER_SUCCESS_CLOSE = 0.2       # asentar tras cerrar el popup "Success"
 
 # --- setup (arrastrar banco + filtros de texto) ---
 SETUP_AFTER_BANK_TAB = 0.5   # tras click en la pestaña banco (asegurar al iniciar)

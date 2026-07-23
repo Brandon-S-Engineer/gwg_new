@@ -41,7 +41,6 @@ SLEEP_AFTER_DISMISS = schedule.SELL_AFTER_DISMISS
 SLEEP_AFTER_READY = schedule.SELL_AFTER_READY
 SLEEP_STEP = schedule.SELL_STEP
 SLEEP_AFTER_LIST = schedule.SELL_AFTER_LIST
-SLEEP_AFTER_SUCCESS_CLOSE = schedule.SELL_AFTER_SUCCESS_CLOSE
 
 
 def _menu_region(point: tuple[int, int]) -> Region:
@@ -114,11 +113,5 @@ def sell_item(name: str, threshold: float = ITEM_THRESHOLD,
         time.sleep(SLEEP_STEP)
     inp.click(get_point("list_item"))         # listar / vender
     time.sleep(SLEEP_AFTER_LIST)
-    # Al listar queda un popup "Success" que NO se cierra solo — GW2 oscurece
-    # toda la pantalla mientras está abierto (efecto de dialog modal), lo que
-    # bajaba el match del template de "luck [0]" durante craft_essence.quick
-    # y lo dejaba pegado esperando sin nunca confirmar. Cerrarlo siempre.
-    inp.click(get_point("sell_success_close"))
-    time.sleep(SLEEP_AFTER_SUCCESS_CLOSE)
     print(f"[sell] {name} listado")
     return True
