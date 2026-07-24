@@ -62,14 +62,14 @@ def salvage_all_ectos() -> bool:
 
 
 def sell_all_dust() -> bool:
-    """Vende cada stack de dust. -1 copper solo al primero."""
+    """Vende cada stack de dust al precio actual (sin undercut: con amarillos
+    en el flow se vende MUCHO más seguido, bajar 1 copper cada vez iría
+    empujando el precio hacia abajo y tapándome a mí mismo)."""
     done = False
-    first = True
     for _ in range(MAX_STACKS):
-        if not sell.sell_item(DUST, threshold=DUST_THRESHOLD, undercut=first):
+        if not sell.sell_item(DUST, threshold=DUST_THRESHOLD):
             break
         done = True
-        first = False
     if not done:
         print("[ectos] no hay crystalline dust para vender")
     return done
