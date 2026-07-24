@@ -241,7 +241,8 @@ TASKS_YELLOW = [
     #   setup.restore_bank_filter             - reponer filtros
     #   store_luck.compact                    - compactar
 
-    (1, ectos.run),
+    (1, lambda: ectos.run(undercut=False)),  # cada iteración, ~222 ectos/stack:
+                                              # sin undercut, no me tapo a mí mismo
     (1, craft_essence.quick),
     (30, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto, ya de vuelta en banco
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)

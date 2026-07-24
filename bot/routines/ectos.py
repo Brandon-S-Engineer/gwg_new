@@ -61,23 +61,27 @@ def salvage_all_ectos() -> bool:
     return done
 
 
-def sell_all_dust() -> bool:
-    """Vende cada stack de dust al precio actual (sin undercut: con amarillos
-    en el flow se vende MUCHO más seguido, bajar 1 copper cada vez iría
-    empujando el precio hacia abajo y tapándome a mí mismo)."""
+def sell_all_dust(undercut: bool = True) -> bool:
+    """Vende cada stack de dust. -1 copper solo al primero (undercut=True,
+    default — así corre en green, cada 30 iteraciones: bajar 1 copper de
+    vez en cuando está bien). En yellow (TASKS_YELLOW pasa undercut=False)
+    corre cada iteración por los ~222 ectos/stack; bajar 1 copper tan
+    seguido empujaría el precio hacia abajo y me taparía a mí mismo."""
     done = False
+    first = True
     for _ in range(MAX_STACKS):
-        if not sell.sell_item(DUST, threshold=DUST_THRESHOLD):
+        if not sell.sell_item(DUST, threshold=DUST_THRESHOLD, undercut=undercut and first):
             break
         done = True
+        first = False
     if not done:
         print("[ectos] no hay crystalline dust para vender")
     return done
 
 
-def run() -> bool:
+def run(undercut: bool = True) -> bool:
     print("[ectos] salvage de ectos + venta de dust...")
     salvage_all_ectos()
-    sold = sell_all_dust()
+    sold = sell_all_dust(undercut=undercut)
     print("[ectos] OK")
     return sold
