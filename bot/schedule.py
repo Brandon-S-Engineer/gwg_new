@@ -101,9 +101,10 @@ EXTRACT_HOVER_USE_ALL = 0.3          # asentar cursor sobre "Use All" antes de c
 EXTRACT_AFTER_IDENTIFY = 8.0         # esperar a que procese el unidentified yellow gear
 # Salvage del gear con silver_fed en el camino SIN extractor (max_slots=0):
 # son ~250 items, no los pocos de un fase3 normal (PHASE3_AFTER_SALVAGE=3.0)
-# — mismo tiempo que PHASE1_AFTER_SALVAGE (fase1 también espera un stack
-# entero salvageado con un kit), pero separado para poder ajustarlo aparte.
-EXTRACT_AFTER_SALVAGE = 19.0
+# — arranca del mismo tiempo que PHASE1_AFTER_SALVAGE (fase1 también espera
+# un stack entero salvageado con un kit) +2s: silver_fed tarda más que el
+# rune_crafter que usa fase1.
+EXTRACT_AFTER_SALVAGE = 21.0
 EXTRACT_AFTER_BANK_DOUBLECLICK = 0.5 # que la yellow aparezca en inv antes de re-escanear
 # El barrido de 250 slots amplifica cualquier segundo de sobra (~18min
 # medidos). Recortado ~2.2x manteniendo el humanismo del movimiento
