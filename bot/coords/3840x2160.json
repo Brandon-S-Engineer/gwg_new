@@ -81,9 +81,9 @@
         {
           "name": "CRAFT_ALL_REGION",
           "x": 3347,
-          "y": 1876,
+          "y": 1869,
           "w": 200,
-          "h": 100
+          "h": 107
         },
         {
           "name": "EXTRACT_WINDOW_REGION",
