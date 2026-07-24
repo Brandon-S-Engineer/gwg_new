@@ -66,17 +66,17 @@
         },
         {
           "name": "CRAFT_INGREDIENT_REGION",
-          "x": 0,
-          "y": 0,
-          "w": 10,
-          "h": 10
+          "x": 3104,
+          "y": 1897,
+          "w": 94,
+          "h": 47
         },
         {
           "name": "BANK_TAB_REGION",
-          "x": 20,
-          "y": 0,
-          "w": 10,
-          "h": 10
+          "x": 2564,
+          "y": 1242,
+          "w": 290,
+          "h": 100
         },
         {
           "name": "EXTRACT_WINDOW_REGION",
