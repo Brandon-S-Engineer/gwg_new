@@ -516,7 +516,10 @@ def run(max_slots: int = 0):
         print("[extract_yellow] sin extractor: salvage directo con silver_fed "
               "(se pierde el upgrade)")
         store_luck.compact()
-        phase3_salvage_rares.run()
+        # No se reusa phase3_salvage_rares.run(): su espera (PHASE3_AFTER_SALVAGE)
+        # es para los pocos rares de un fase3 normal, acá son ~250 items.
+        phase3_salvage_rares.salvage_with_silver_fed()
+        dialogs.sleep_safe(schedule.EXTRACT_AFTER_SALVAGE)
 
     store_luck.compact()
     print("[extract_yellow] OK")

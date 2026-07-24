@@ -94,9 +94,12 @@ OPEN_BAGS_AFTER_OPEN = 8.0          # espera larga tras abrir (que procese el lo
 EXTRACT_BEFORE_RIGHT_CLICK = 0.25    # asentar cursor antes del right-click (identificar)
 EXTRACT_AFTER_RIGHT_CLICK = 0.8      # que abra el menú contextual
 EXTRACT_HOVER_USE_ALL = 0.3          # asentar cursor sobre "Use All" antes de clickear
-EXTRACT_AFTER_IDENTIFY = 19.0        # esperar a que procese el unidentified yellow gear —
-                                      # son ~250 items (vs. los pocos de greens en fase1,
-                                      # PHASE1_AFTER_IDENTIFY=8.0), tarda bastante más
+EXTRACT_AFTER_IDENTIFY = 8.0         # esperar a que procese el unidentified yellow gear
+# Salvage del gear con silver_fed en el camino SIN extractor (max_slots=0):
+# son ~250 items, no los pocos de un fase3 normal (PHASE3_AFTER_SALVAGE=3.0)
+# — mismo tiempo que PHASE1_AFTER_SALVAGE (fase1 también espera un stack
+# entero salvageado con un kit), pero separado para poder ajustarlo aparte.
+EXTRACT_AFTER_SALVAGE = 19.0
 EXTRACT_AFTER_BANK_DOUBLECLICK = 0.5 # que la yellow aparezca en inv antes de re-escanear
 # El barrido de 250 slots amplifica cualquier segundo de sobra (~18min
 # medidos). Recortado ~2.2x manteniendo el humanismo del movimiento
