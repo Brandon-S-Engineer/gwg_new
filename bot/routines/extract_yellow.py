@@ -37,7 +37,9 @@ Pipeline completo:
      resultado es idéntico para upgrades (investigado por el usuario).
      Mismo patrón bulk que silver_fed/rune_crafter (copper_fed_salvage_rare):
      right-click al kit → click en la opción → Accept.
-  5. Reponer filtros normales (setup.restore_bank_filter) + compactar.
+  5. Compactar (los filtros no se tocan acá: craft_essence.quick, que en
+     TASKS_YELLOW corre justo después en la misma iteración, ya repone el
+     filtro 'unid' del inventario solo; nada en este módulo toca 'luck').
 
 Sin round-trip al banco: se probó separar runes/sigils al banco primero,
 pero cortar el salvage caro a tiempo por imagen es más simple y más rápido
@@ -94,7 +96,7 @@ from .. import vision
 from ..config import ITEMS_DIR
 from ..coords_loader import get_point, get_region
 from ..regions import Region
-from . import phase3_salvage_rares, setup, store_luck
+from . import phase3_salvage_rares, store_luck
 from .phase1_salvage_greens import USE_ALL, USE_ALL_THRESHOLD
 
 YELLOW_GEAR = ITEMS_DIR / "yellow_gear.png"
@@ -516,7 +518,6 @@ def run(max_slots: int = 0):
         store_luck.compact()
         phase3_salvage_rares.run()
 
-    setup.restore_bank_filter()
     store_luck.compact()
     print("[extract_yellow] OK")
     return True
