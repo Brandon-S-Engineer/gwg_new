@@ -65,6 +65,20 @@
           "h": 140
         },
         {
+          "name": "CRAFT_INGREDIENT_REGION",
+          "x": 0,
+          "y": 0,
+          "w": 10,
+          "h": 10
+        },
+        {
+          "name": "BANK_TAB_REGION",
+          "x": 20,
+          "y": 0,
+          "w": 10,
+          "h": 10
+        },
+        {
           "name": "EXTRACT_WINDOW_REGION",
           "x": 208,
           "y": 282,
@@ -2226,6 +2240,18 @@
         {
           "name": "luck_zero",
           "image": "luck_zero.png"
+        },
+        {
+          "name": "ingredient_zero",
+          "image": "ingredient_zero.png"
+        },
+        {
+          "name": "bank_tab",
+          "image": "bank_tab.png"
+        },
+        {
+          "name": "refinement",
+          "image": "refinement.png"
         },
         {
           "name": "yellow_gear",

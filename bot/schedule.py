@@ -40,6 +40,10 @@ SETUP_AFTER_BANK_TAB = 0.5   # tras click en la pestaña banco (asegurar al inic
 SETUP_AFTER_DRAG = 0.5       # tras soltar el drag del banco
 SETUP_AFTER_KEYPRESS = 0.5   # entre cada tecla de apertura de ventana (i / o / m)
 SETUP_AFTER_FILTER = 0.3     # tras escribir en el campo de filtro
+# ensure_bank_tab: confirmar que el click a 'banco' prendió de verdad (ver
+# BANK_TAB/REFINEMENT ahí) en vez de asumirlo a ciegas.
+BANK_TAB_CONFIRM_TIMEOUT = 15.0
+BANK_TAB_RETRY_POLL = 1.0
 
 # --- craft_essence (subir tiers de esencia en la artificing station) ---
 CRAFT_AFTER_OPEN = 1.0           # tras abrir el banco / artificing station

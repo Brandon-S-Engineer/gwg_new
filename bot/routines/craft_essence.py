@@ -43,9 +43,15 @@ Coordenadas necesarias (agregar con el picker):
     craft_all         - botón Craft All
 
 Regiones necesarias (agregar con el picker):
-    RECIPE_LIST_AREA  - caja que cubre las 3 filas de resultados
-    CRAFT_DONE_REGION - zona del botón de craft donde aparece "luck [0]"
-                        al terminar (para run_after_ectos)
+    RECIPE_LIST_AREA      - caja que cubre las 3 filas de resultados
+    CRAFT_DONE_REGION     - zona del botón de craft donde aparece "luck [0]"
+                            al terminar (para run_after_ectos)
+    CRAFT_INGREDIENT_REGION - zona del panel de Ingredients donde aparece
+                            "I have 0." en rojo al agotarse el ingrediente
+                            base — señal INDEPENDIENTE de que terminó,
+                            además del "luck [0]" del botón (ver
+                            _wait_for_luck_zero: cualquiera de las dos
+                            confirma, por si una queda tapada/oscurecida)
 
 Items necesarios (capturar con el picker, pestaña de items):
     recipe_masterwork, recipe_rare, recipe_exotic - recorte de cada
@@ -53,6 +59,9 @@ Items necesarios (capturar con el picker, pestaña de items):
     incluir el conteo entre paréntesis al final (ese número cambia).
     luck_zero - el "luck [0]" que aparece al terminar un craft (sirve
     para los 3 tiers).
+    ingredient_zero - el "I have 0." en rojo del panel de Ingredients
+    (recortar SOLO ese texto, no el nombre del ingrediente arriba, que
+    cambia por tier).
 """
 
 import datetime
@@ -81,6 +90,13 @@ RECIPE_EXOTIC = ITEMS_DIR / "recipe_exotic.png"
 # Capturar con el picker; sirve igual para los 3 tiers.
 LUCK_ZERO = ITEMS_DIR / "luck_zero.png"
 LUCK_ZERO_THRESHOLD = 0.85
+
+# Segunda señal, independiente de la de arriba: "I have 0." del ingrediente
+# base, en el panel de Ingredients (zona distinta a CRAFT_DONE_REGION). Con
+# cualquiera de las dos alcanza para confirmar — si algo tapa/oscurece una
+# (ej. un popup), la otra la respalda.
+INGREDIENT_ZERO = ITEMS_DIR / "ingredient_zero.png"
+INGREDIENT_ZERO_THRESHOLD = 0.85
 
 # Sacar el cursor hacia abajo tras clickear craft_all, para que no tape
 # el "luck [0]" al reconocerlo por imagen.
@@ -214,6 +230,12 @@ def _wait_for_luck_zero(timeout: float, work=None) -> bool:
     confirmaciones era lo que hacía que, al terminar el craft, todavía se
     vendieran 1-2 items más antes de pasar al siguiente tier.
 
+    Segunda señal (INGREDIENT_ZERO): además del "luck [0]" del botón, se
+    chequea el "I have 0." del ingrediente base en el panel de Ingredients
+    (otra zona de la pantalla) — cualquiera de las dos cuenta como lectura
+    positiva. Si una queda tapada/oscurecida por algo (ej. un popup), la
+    otra la respalda.
+
     Candado extra (CRAFT_ZERO_STATIC_POLLS): un craft en curso va cambiando
     la región (contador bajando, animación); si deja de moverse del todo
     durante varias lecturas seguidas es porque ya terminó, aunque el
@@ -224,11 +246,19 @@ def _wait_for_luck_zero(timeout: float, work=None) -> bool:
     streak = 0
     work_done = work is None
     region = get_region("CRAFT_DONE_REGION")
+    ingredient_region = get_region("CRAFT_INGREDIENT_REGION")
+    # ingredient_zero.png es placeholder hasta que se capture de verdad con
+    # el picker: sin eso, un match de casualidad contra 10x10 de ruido
+    # daría un falso "terminado" — mejor no chequear esta señal todavía.
+    check_ingredient = vision.is_calibrated(INGREDIENT_ZERO)
     prev_frame = None
     static_streak = 0
     ever_changed = False
     while time.time() < deadline:
         found = vision.is_present(LUCK_ZERO, region=region, threshold=LUCK_ZERO_THRESHOLD)
+        if not found and check_ingredient:
+            found = vision.is_present(INGREDIENT_ZERO, region=ingredient_region,
+                                      threshold=INGREDIENT_ZERO_THRESHOLD)
         streak = streak + 1 if found else 0
         if streak >= schedule.CRAFT_ZERO_CONFIRMATIONS:
             return True

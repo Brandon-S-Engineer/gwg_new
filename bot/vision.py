@@ -55,6 +55,15 @@ def is_present(template_path: Path, region: Region | None = None,
     return find(template_path, region, threshold, color) is not None
 
 
+def is_calibrated(template_path: Path, min_size: int = 20) -> bool:
+    """True si el archivo existe y NO es un placeholder chico (los que se
+    dejan para coordenadas nuevas son 10x10; una captura real del picker
+    siempre es más grande). Usar para no bloquear/disparar en falso con
+    lógica nueva hasta que el usuario capture la imagen de verdad."""
+    img = cv2.imread(str(template_path), 0)
+    return img is not None and (img.shape[0] > min_size or img.shape[1] > min_size)
+
+
 def wait_for(template_path: Path, region: Region | None = None,
              timeout: float | None = None,
              threshold: float | None = None,
