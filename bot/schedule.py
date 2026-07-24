@@ -185,15 +185,12 @@ TASKS_GREEN = [
     # En iter 1 no corre (todavía no hay luck). Reemplaza a store_luck y
     # al craft_essence.run gigante del final.
     (2, craft_essence.quick),
-    (10, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto, ya de vuelta en banco
+    (30, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto, ya de vuelta en banco
 
     (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
     # (25, restart_or_not.run),                  # cada 25
 
-    # corridas largas (MAX_ITERATIONS_GREEN grande/-1): estos también van en
-    # FINAL_TASKS_GREEN, pero ahí solo corren 1 vez al terminar el loop
-    # entero. Acá se repiten cada 30 iteraciones para que no esperen horas.
     (30, ectos.run),
     # (30, craft_essence.run),
     (30, craft_essence.run_after_ectos),  # procesar la luck de los ectos (espera por imagen)
@@ -203,9 +200,6 @@ TASKS_GREEN = [
     (30, setup.restore_bank_filter),  # craft_essence/exotics dejan los filtros en otra cosa
 ]
 
-# Corren 1 vez al terminar el segmento GREEN (no por iteración). sell_all_clean
-# va también acá para limpiar el inventario aunque el loop corte antes del
-# múltiplo de 30.
 FINAL_TASKS_GREEN = [
     # phase1_salvage_greens.drain: NO va acá — corre hasta que no quede
     # ningún green (hasta 100 pasadas), sin límite de tiempo, así que si hay
@@ -224,23 +218,7 @@ FINAL_TASKS_GREEN = [
     # debug_green.run,      # captura + scores de lo que quedó sin tomar (tools/debug_output/)
 ]
 
-# ============================================================
-# YELLOW: Upgrade Extractor (yellow unidentified gear). `py -m bot loop
-# y<N>` — el número NO es "cuántos yellows hay", es cuántos de los 250
-# slots barrer CON EL EXTRACTOR INFINITO para sacarles sigil/rune antes
-# de salvagear (ver extract_yellow.run):
-#   y100 / y250  -> usa el extractor, hasta N slots, separa salvage caro/
-#                   barato (gear con silver_fed, upgrades con copper_fed)
-#   y  (0 o sin número) -> SIN extractor, salvage directo con silver_fed
-#                   (más rápido, pero se pierde el upgrade del stack)
-#
-# Cada iteración procesa UN stack completo (identificar + [extraer] +
-# salvage + limpiar filtros/compactar), como una llamada a
-# extract_yellow.run() — por eso "every=1": cada vuelta es un stack nuevo,
-# hasta MAX_ITERATIONS_YELLOW o hasta que no quede yellow gear (mismo
-# sentinel NO_GREENS que usa fase1, run() lo devuelve si no identificó
-# nada).
-# ============================================================
+#? ============================================================ #
 
 YELLOW_MAX_SLOTS = 0  # __main__.py lo pisa con el N de 'loop y<N>' antes de correr
 
@@ -257,10 +235,14 @@ TASKS_YELLOW = [
     #   phase3_salvage_rares.run              - salvage directo, sin extractor (solo si max_slots==0)
     #   setup.restore_bank_filter             - reponer filtros
     #   store_luck.compact                    - compactar
+
+    (1, ectos.run),
+    (1, craft_essence.quick),
+    (30, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto, ya de vuelta en banco
+    (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
+    (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
+    (30, deposit_metal_plates.run),
+    (30, exotics.run),
 ]
 
-# Corren 1 vez al terminar el segmento YELLOW (no por iteración). Vacío por
-# ahora — nada necesita correr "una sola vez al final" todavía, a
-# diferencia de green (ectos/craft/exotics que solo tiene sentido hacer
-# de a poco cada 30). Mismo lugar para agregarlo si hace falta después.
 FINAL_TASKS_YELLOW = []

@@ -17,10 +17,11 @@ def main() -> None:
         print(f"resolution : {config.SCREEN_WIDTH}x{config.SCREEN_HEIGHT}")
         print(f"coords     : {config.COORDS_PATH}")
         print(f"items dir  : {config.ITEMS_DIR}")
-        print("comandos: info | loop [g] [y<N>] | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | exotics | extract_yellow | open_bags | setup | conn_test | debug_green | click_test [<point_name>]")
-        print("  loop: 'g' = green (pipeline de siempre). 'y<N>' = yellow con Upgrade Extractor")
-        print("        (N = slots a barrer, no cantidad de yellows). 'y' sola = yellow SIN extractor.")
-        print("        orden = orden de los argumentos. Ej: 'loop g y100' o 'loop y250'. Sin args = solo green.")
+        print("comandos: info | loop [y<N>] | phase1 | phase2 | phase3 | sell | ectos | sell_all_clean | deposit_metal_plates | craft_essence | exotics | extract_yellow | open_bags | setup | conn_test | debug_green | click_test [<point_name>]")
+        print("  loop: siempre corre amarillos primero (si hay) y después verdes, automático.")
+        print("        y<N> = usar el Upgrade Extractor con N de los 250 slots al procesar amarillos")
+        print("        (N = slots a barrer, no cantidad de yellows). Sin argumento = amarillos SIN extractor.")
+        print("        Ej: 'loop y100' o simplemente 'loop'.")
         return
 
     if cmd == "loop":
@@ -30,28 +31,27 @@ def main() -> None:
         from .routines import setup as _setup
         from .routines.phase1_salvage_greens import recover as _recovery_salvage
 
-        # Segmentos en el orden dado por los argumentos: 'g' = green (el
-        # pipeline de siempre), 'y<N>' = yellow. El número NO es "cuántos
-        # yellows hay" — es cuántos de los 250 slots barrer con el Upgrade
-        # Extractor antes de salvagear (separa el salvage caro del barato).
-        # Sin número (o 0) procesa yellows igual, pero SIN extractor:
-        # identifica y salvage directo (se pierde el upgrade, más rápido).
-        #   py -m bot loop g y100   -> green, después yellow con extractor (100 slots)
-        #   py -m bot loop y250     -> solo yellow con extractor (250 slots)
-        #   py -m bot loop y        -> solo yellow SIN extractor
-        #   py -m bot loop          -> solo green (comportamiento de siempre)
-        segments = []
-        for tok in sys.argv[2:]:
-            tok = tok.strip().lower()
-            if tok == "g":
-                segments.append(("green", 0))
-            elif tok.startswith("y"):
-                segments.append(("yellow", int(tok[1:]) if tok[1:].isdigit() else 0))
+        # Un solo argumento opcional: y<N> = usar el Upgrade Extractor con N
+        # de los 250 slots cuando toque procesar amarillos (separa el salvage
+        # caro del barato). Sin argumento = sin extractor, salvage directo
+        # (se pierde el upgrade, más rápido).
+        #   py -m bot loop        -> sin extractor
+        #   py -m bot loop y100   -> con extractor, 100 slots
+        #
+        # Siempre corre amarillos primero y después verdes — no hace falta
+        # elegir: si no hay amarillos, ese segmento corta casi al instante
+        # (identify_one no encuentra nada, config.NO_GREENS) y sigue de
+        # largo con verdes. Así los 3 casos (solo amarillos, solo verdes,
+        # los dos) quedan cubiertos sin pedirle nada más al usuario.
+        n = 0
+        if len(sys.argv) > 2:
+            tok = sys.argv[2].strip().lower()
+            if tok.startswith("y") and (tok[1:] == "" or tok[1:].isdigit()):
+                n = int(tok[1:]) if tok[1:].isdigit() else 0
             else:
-                print(f"[loop] token desconocido: '{tok}' (usar 'g' o 'y<N>')")
+                print(f"[loop] argumento desconocido: '{tok}' (usar 'y<N>' o nada)")
                 return
-        if not segments:
-            segments = [("green", 0)]
+        schedule.YELLOW_MAX_SLOTS = n
 
         print(f"[loop] arranca en {schedule.STARTUP_DELAY}s (sacá el mouse de Parsec)...")
         time.sleep(schedule.STARTUP_DELAY)
@@ -99,17 +99,14 @@ def main() -> None:
                 except Exception as e:
                     print(f"[loop] tarea final {task.__name__} falló: {e}")
 
-        for kind, n in segments:
-            if kind == "green":
-                print("\n[loop] ══════ segmento GREEN ══════")
-                _run_tasks(schedule.TASKS_GREEN, "green", schedule.MAX_ITERATIONS_GREEN)
-                _run_final(schedule.FINAL_TASKS_GREEN)
-            else:
-                modo = f"con extractor, max_slots={n}" if n > 0 else "SIN extractor"
-                print(f"\n[loop] ══════ segmento YELLOW ({modo}) ══════")
-                schedule.YELLOW_MAX_SLOTS = n
-                _run_tasks(schedule.TASKS_YELLOW, "yellow", schedule.MAX_ITERATIONS_YELLOW)
-                _run_final(schedule.FINAL_TASKS_YELLOW)
+        modo = f"con extractor, max_slots={n}" if n > 0 else "SIN extractor"
+        print(f"\n[loop] ══════ amarillos primero, si hay ({modo}) ══════")
+        _run_tasks(schedule.TASKS_YELLOW, "yellow", schedule.MAX_ITERATIONS_YELLOW)
+        _run_final(schedule.FINAL_TASKS_YELLOW)
+
+        print("\n[loop] ══════ verdes ══════")
+        _run_tasks(schedule.TASKS_GREEN, "green", schedule.MAX_ITERATIONS_GREEN)
+        _run_final(schedule.FINAL_TASKS_GREEN)
         return
 
     if cmd == "click_test":
