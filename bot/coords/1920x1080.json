@@ -79,6 +79,13 @@
           "h": 10
         },
         {
+          "name": "CRAFT_ALL_REGION",
+          "x": 40,
+          "y": 0,
+          "w": 10,
+          "h": 10
+        },
+        {
           "name": "EXTRACT_WINDOW_REGION",
           "x": 208,
           "y": 282,
@@ -2252,6 +2259,10 @@
         {
           "name": "refinement",
           "image": "refinement.png"
+        },
+        {
+          "name": "craft_all_button",
+          "image": "craft_all_button.png"
         },
         {
           "name": "yellow_gear",

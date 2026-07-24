@@ -79,6 +79,13 @@
           "h": 100
         },
         {
+          "name": "CRAFT_ALL_REGION",
+          "x": 3347,
+          "y": 1876,
+          "w": 200,
+          "h": 100
+        },
+        {
           "name": "EXTRACT_WINDOW_REGION",
           "x": 1070,
           "y": 1105,
@@ -2279,6 +2286,10 @@
         {
           "name": "refinement",
           "image": "refinement.png"
+        },
+        {
+          "name": "craft_all_button",
+          "image": "craft_all_button.png"
         },
         {
           "name": "destroy",

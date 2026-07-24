@@ -52,6 +52,9 @@ Regiones necesarias (agregar con el picker):
                             además del "luck [0]" del botón (ver
                             _wait_for_luck_zero: cualquiera de las dos
                             confirma, por si una queda tapada/oscurecida)
+    CRAFT_ALL_REGION      - misma zona que la coordenada 'craft_all', para
+                            buscar el botón por imagen en vez de clickear
+                            a ciegas (ver _click_craft_all)
 
 Items necesarios (capturar con el picker, pestaña de items):
     recipe_masterwork, recipe_rare, recipe_exotic - recorte de cada
@@ -62,6 +65,8 @@ Items necesarios (capturar con el picker, pestaña de items):
     ingredient_zero - el "I have 0." en rojo del panel de Ingredients
     (recortar SOLO ese texto, no el nombre del ingrediente arriba, que
     cambia por tier).
+    craft_all_button - recorte del botón "Craft All" en su estado normal
+    (activo, con items para craftear) — NO el estado gris/deshabilitado.
 """
 
 import datetime
@@ -97,6 +102,11 @@ LUCK_ZERO_THRESHOLD = 0.85
 # (ej. un popup), la otra la respalda.
 INGREDIENT_ZERO = ITEMS_DIR / "ingredient_zero.png"
 INGREDIENT_ZERO_THRESHOLD = 0.85
+
+# Botón "Craft All" por imagen (misma zona que el punto craft_all) en vez
+# de coordenada fija — más confiable si el botón se corre un poco.
+CRAFT_ALL_BUTTON = ITEMS_DIR / "craft_all_button.png"
+CRAFT_ALL_THRESHOLD = 0.85
 
 # Sacar el cursor hacia abajo tras clickear craft_all, para que no tape
 # el "luck [0]" al reconocerlo por imagen.
@@ -206,6 +216,20 @@ def quick(materials=None):
     setup.filter_inventory()
 
 
+def _click_craft_all():
+    """Clickea 'Craft All' por imagen dentro de CRAFT_ALL_REGION en vez de
+    la coordenada fija — si craft_all_button.png todavía es el placeholder
+    (sin capturar de verdad con el picker), usa el punto de siempre."""
+    if vision.is_calibrated(CRAFT_ALL_BUTTON):
+        spot = vision.wait_for(CRAFT_ALL_BUTTON, region=get_region("CRAFT_ALL_REGION"),
+                               timeout=RECIPE_FIND_TIMEOUT, threshold=CRAFT_ALL_THRESHOLD)
+        if spot:
+            inp.click(spot)
+            return
+        print("[craft_essence] no encontré 'Craft All' por imagen, uso coordenada")
+    inp.click(get_point("craft_all"))
+
+
 def _park_mouse():
     """Cursor abajo del botón de craft, fuera de CRAFT_DONE_REGION, para que
     no tape el "luck [0]" en el reconocimiento por imagen."""
@@ -302,7 +326,7 @@ def _craft_wait_zero(template, work=None) -> bool:
 
     inp.click(spot)
     time.sleep(schedule.CRAFT_AFTER_SELECT)
-    inp.click(get_point("craft_all"))
+    _click_craft_all()
     _park_mouse()
     time.sleep(schedule.CRAFT_ZERO_GRACE)
 
