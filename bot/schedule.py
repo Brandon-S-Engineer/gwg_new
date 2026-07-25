@@ -39,6 +39,7 @@ SELL_AFTER_LIST = 1.5                # que se procese el listado
 SETUP_AFTER_BANK_TAB = 0.5   # tras click en la pestaña banco (asegurar al iniciar)
 SETUP_AFTER_DRAG = 0.5       # tras soltar el drag del banco
 SETUP_AFTER_KEYPRESS = 0.5   # entre cada tecla de apertura de ventana (i / o / m)
+SETUP_AFTER_EXTRACTOR = 1.0  # tras el doble-click al Upgrade Extractor (abrir ventana)
 SETUP_AFTER_FILTER = 0.3     # tras escribir en el campo de filtro
 # ensure_bank_tab: confirmar que el click a 'banco' prendió de verdad (ver
 # BANK_TAB/REFINEMENT ahí) en vez de asumirlo a ciegas.

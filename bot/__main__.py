@@ -279,12 +279,21 @@ def main() -> None:
         boot.focus_game()
         if sub == "all":
             setup.run()
+        elif sub == "force":
+            setup.run(force=True)   # rearma todo aunque las ventanas ya estén
+        elif sub == "check":
+            print("[setup] listo para arrancar" if setup.windows_ready()
+                  else "[setup] falta abrir algo")
         elif sub == "tab":
             setup.ensure_bank_tab()
+        elif sub == "artificing":
+            setup.ensure_artificing_tab()
         elif sub == "drag":
             setup.drag_bank()
         elif sub == "windows":
             setup.open_windows()
+        elif sub == "extractor":
+            setup.open_extractor()
         elif sub == "inv":
             setup.filter_inventory()
         elif sub == "bank":

@@ -86,6 +86,34 @@
           "h": 107
         },
         {
+          "name": "INVENTORY_TITLE_REGION",
+          "x": 60,
+          "y": 25,
+          "w": 280,
+          "h": 65
+        },
+        {
+          "name": "TP_TITLE_REGION",
+          "x": 2590,
+          "y": 5,
+          "w": 560,
+          "h": 60
+        },
+        {
+          "name": "EXTRACTOR_TITLE_REGION",
+          "x": 1070,
+          "y": 1105,
+          "w": 632,
+          "h": 60
+        },
+        {
+          "name": "ARTIFICING_TITLE_REGION",
+          "x": 2580,
+          "y": 1150,
+          "w": 350,
+          "h": 60
+        },
+        {
           "name": "EXTRACT_WINDOW_REGION",
           "x": 1070,
           "y": 1105,
@@ -2088,6 +2116,11 @@
           "name": "upgrade_extractor_window",
           "x": 1363,
           "y": 1451
+        },
+        {
+          "name": "upgrade_extractor_item",
+          "x": -100,
+          "y": -100
         }
       ],
       "items": [
@@ -2290,6 +2323,22 @@
         {
           "name": "craft_all_button",
           "image": "craft_all_button.png"
+        },
+        {
+          "name": "inventory_title",
+          "image": "inventory_title.png"
+        },
+        {
+          "name": "tp_title",
+          "image": "tp_title.png"
+        },
+        {
+          "name": "extractor_title",
+          "image": "extractor_title.png"
+        },
+        {
+          "name": "artificing_title",
+          "image": "artificing_title.png"
         },
         {
           "name": "destroy",
