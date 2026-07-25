@@ -1,3 +1,8 @@
 20260723_150215 | receta=recipe_masterwork.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260723_150215_recipe_masterwork.png
 20260723_150421 | receta=recipe_rare.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260723_150421_recipe_rare.png
 20260723_205949 | receta=recipe_masterwork.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260723_205949_recipe_masterwork.png
+20260724_110429 | receta=recipe_rare.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260724_110429_recipe_rare.png
+20260724_120309 | receta=recipe_exotic.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260724_120309_recipe_exotic.png
+20260724_131145 | receta=recipe_exotic.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260724_131145_recipe_exotic.png
+20260724_141816 | receta=recipe_rare.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260724_141816_recipe_rare.png
+20260724_151659 | receta=recipe_rare.png | timeout=120s | confirmations=3 | poll=1.0s | screenshot=20260724_151659_recipe_rare.png
