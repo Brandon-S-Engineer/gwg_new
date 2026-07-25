@@ -249,11 +249,11 @@ TASKS_YELLOW = [
     (1, lambda: ectos.run(undercut=False)),  # cada iteración, ~222 ectos/stack:
                                               # sin undercut, no me tapo a mí mismo
     (1, craft_essence.quick),
-    (30, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto, ya de vuelta en banco
-    (30, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
-    (30, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
-    (30, deposit_metal_plates.run),
-    (30, exotics.run),
+    (10, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto, ya de vuelta en banco
+    (10, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
+    (10, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
+    (10, deposit_metal_plates.run),
+    (10, exotics.run),
 ]
 
 FINAL_TASKS_YELLOW = []
