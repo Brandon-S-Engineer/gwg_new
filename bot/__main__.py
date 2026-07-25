@@ -282,6 +282,7 @@ def main() -> None:
         elif sub == "force":
             setup.run(force=True)   # rearma todo aunque las ventanas ya estén
         elif sub == "check":
+            setup.diagnose_windows()
             print("[setup] listo para arrancar" if setup.windows_ready()
                   else "[setup] falta abrir algo")
         elif sub == "tab":

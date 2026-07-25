@@ -115,6 +115,43 @@ def windows_ready() -> bool:
     return True
 
 
+def diagnose_windows():
+    """Por qué windows_ready() dice que no. Busca cada título DOS veces: en
+    su región y en toda la pantalla. Si en pantalla completa matchea alto
+    pero en la región no, la región está mal puesta (no el template).
+    `py -m bot setup check`"""
+    import cv2
+    for name, region_name, label in WINDOWS:
+        tpl_path = ITEMS_DIR / f"{name}.png"
+        tpl = cv2.imread(str(tpl_path), 0)
+        if tpl is None:
+            print(f"{label:20} FALTA {tpl_path.name}")
+            continue
+        r = get_region(region_name)
+        th, tw = tpl.shape[:2]
+        if th > r.h or tw > r.w:
+            print(f"{label:20} template {tw}x{th} NO ENTRA en {region_name} ({r.w}x{r.h})")
+            continue
+
+        def _best(reg):
+            screen = vision.capture_screen(reg)
+            res = cv2.matchTemplate(screen, tpl, cv2.TM_CCOEFF_NORMED)
+            _, val, _, loc = cv2.minMaxLoc(res)
+            ox, oy = (reg.x, reg.y) if reg else (0, 0)
+            return val, (ox + loc[0], oy + loc[1])
+
+        in_region, _ = _best(r)
+        full, at = _best(None)
+        ok = "OK " if in_region >= WINDOW_THRESHOLD else "NO "
+        print(f"{ok}{label:20} región={in_region:.3f}  pantalla={full:.3f} en {at}")
+        if in_region < WINDOW_THRESHOLD <= full:
+            print(f"    -> está en pantalla pero fuera de {region_name} "
+                  f"({r.x},{r.y} {r.w}x{r.h}): agrandá/movéla ahí")
+        elif full < WINDOW_THRESHOLD:
+            print(f"    -> no matchea ni en pantalla completa: la ventana está "
+                  f"cerrada, o {tpl_path.name} se capturó de otra vista")
+
+
 def filter_inventory(text: str = "unid"):
     """text por defecto alcanza con 'unid', no hay items con nombre parecido.
     extract_yellow.py pasa 'rune'/'sigil' para separar upgrades."""
