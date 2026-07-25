@@ -102,9 +102,9 @@
         {
           "name": "EXTRACTOR_TITLE_REGION",
           "x": 1070,
-          "y": 1105,
+          "y": 1270,
           "w": 632,
-          "h": 60
+          "h": 100
         },
         {
           "name": "ARTIFICING_TITLE_REGION",
