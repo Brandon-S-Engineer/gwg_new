@@ -28,10 +28,11 @@ Flujo:
   4. Armar el silver_fed en modo "Use" (cursor de salvage) y recorrer el grid
      fijo de slots (post-compact), salvage + Accept por imagen; para en el
      primer slot vacío (Accept no aparece).
-  5. Depositar los globs of dark matter que soltó el salvage (misma lógica
-     que deposit_metal_plates: right-click → template del botón → click).
-     Con un right-click extra por delante: si el salvage tocó un ecto por
-     error, el silver_fed se queda armado y se come el primer right-click.
+  5. Depositar los reclaimed metal plates y globs of dark matter que soltó
+     el salvage (misma lógica que deposit_metal_plates: right-click →
+     template del botón → click). Con un right-click extra por delante: si
+     el salvage tocó un ecto por error, el silver_fed se queda armado y se
+     come el primer right-click.
   6. Destruir las inscripciones que soltó el salvage (valen tan poco que no
      vale la pena venderlas): right-click → 'Destroy' (por imagen) →
      confirmar en EXOTIC_ACCEPT_REGION.
@@ -286,11 +287,17 @@ def run():
     # slot_N ya no coincide con lo que realmente queda.
     store_luck.compact()
     _salvage_rest_exotics()
-    # El salvage de los exotics suelta dark matter: depositarlo al final.
+    # El salvage de los exotics suelta dark matter Y reclaimed metal plates:
+    # depositar los dos acá (no solo dark matter — las metal plates dependían
+    # nada más de la tarea genérica (30, deposit_metal_plates.run), que no
+    # tiene esta protección y se comía el right-click si el silver_fed
+    # quedó armado, así que no se estaban procesando).
     # pre_right_click=True: si el salvage tocó un ecto por error, el
     # silver_fed se queda armado y el primer right-click no abre el menú.
-    deposit_metal_plates.run(materials=[deposit_metal_plates.GLOBS_OF_DARK_MATTER],
-                             pre_right_click=True)
+    deposit_metal_plates.run(
+        materials=[deposit_metal_plates.RECLAIMED_METAL_PLATES,
+                   deposit_metal_plates.GLOBS_OF_DARK_MATTER],
+        pre_right_click=True)
     # Las inscripciones que soltó el salvage valen tan poco que se destruyen
     # directo en vez de venderlas.
     _destroy_inscriptions()
