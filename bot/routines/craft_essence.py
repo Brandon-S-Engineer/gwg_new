@@ -166,8 +166,9 @@ def open_and_search_luck(force: bool = False):
     search`) sin correr los ~7 min de craft completos.
     """
     global _luck_searched
-    inp.click(get_point("artificing_station"))
-    time.sleep(schedule.CRAFT_AFTER_OPEN)
+    # Confirmado por imagen: si el paso anterior no soltó el control, este
+    # click se perdía y todo el craft fallaba (recetas no encontradas, etc.).
+    setup.ensure_artificing_tab()
     if _luck_searched and not force:
         return
     inp.click(get_point("search_production"))
@@ -359,8 +360,7 @@ def _log_craft_zero_timeout(template) -> None:
 def _store_exotic_and_finish():
     """Pestaña banco + filtro 'luck' (si no, no salen todas las exotic) +
     guardar exotic (doble-click) + consumir remanente + compactar."""
-    inp.click(get_point("banco"))
-    time.sleep(schedule.CRAFT_AFTER_OPEN)
+    setup.ensure_bank_tab()   # confirmado por imagen, no click a ciegas
     setup.filter_bank()
     for _ in range(MAX_STORE_PASSES):
         if not store_luck.run(store_luck.EXOTIC):

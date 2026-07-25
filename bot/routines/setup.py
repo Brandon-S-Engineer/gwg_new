@@ -75,14 +75,17 @@ def filter_bank(text: str = "luck"):
     time.sleep(schedule.SETUP_AFTER_FILTER)
 
 
-def ensure_bank_tab():
-    """Click banco + CONFIRMAR por imagen que realmente abrió. El click a
-    veces no prende: si el craft de luck todavía no soltó el control (una
-    confirmación temprana falsa en _wait_for_luck_zero), seguimos parados
-    en artificing y el click se pierde — reintenta hasta ver 'bank_tab' o
-    agotar el timeout, en vez de asumir a ciegas que ya estamos en banco."""
-    inp.click(get_point("banco"))
-    time.sleep(schedule.SETUP_AFTER_BANK_TAB)
+def _ensure_tab(point: str, target, other, label: str, settle: float):
+    """Click en la pestaña + CONFIRMAR por imagen que realmente cambió. El
+    click a veces no prende: si el craft de luck todavía no soltó el control
+    (una confirmación temprana falsa en _wait_for_luck_zero), se pierde —
+    reintenta mientras se siga viendo la OTRA pestaña, hasta confirmar la
+    propia o agotar el timeout, en vez de asumir a ciegas dónde estamos.
+
+    Las dos pestañas se leen en la misma BANK_TAB_REGION: bank_tab (banco) y
+    refinement (artificing), así que el chequeo va en las dos direcciones."""
+    inp.click(get_point(point))
+    time.sleep(settle)
 
     if not (vision.is_calibrated(BANK_TAB) and vision.is_calibrated(REFINEMENT)):
         return  # bank_tab.png/refinement.png todavía son el placeholder:
@@ -91,15 +94,33 @@ def ensure_bank_tab():
     deadline = time.time() + schedule.BANK_TAB_CONFIRM_TIMEOUT
     while time.time() < deadline:
         region = get_region("BANK_TAB_REGION")
-        if vision.is_present(BANK_TAB, region=region, threshold=BANK_TAB_THRESHOLD):
+        if vision.is_present(target[0], region=region, threshold=target[1]):
             return
-        if vision.is_present(REFINEMENT, region=region, threshold=REFINEMENT_THRESHOLD):
-            print("[setup] 'banco' no prendió (todavía en artificing), reintento click...")
-            inp.click(get_point("banco"))
-            time.sleep(schedule.SETUP_AFTER_BANK_TAB)
+        if vision.is_present(other[0], region=region, threshold=other[1]):
+            print(f"[setup] '{point}' no prendió (seguimos en {label}), reintento click...")
+            inp.click(get_point(point))
+            time.sleep(settle)
             continue
         time.sleep(schedule.BANK_TAB_RETRY_POLL)
-    print("[setup] no pude confirmar que 'banco' abrió, sigo igual")
+    print(f"[setup] no pude confirmar que '{point}' abrió, sigo igual")
+
+
+def ensure_bank_tab():
+    """Pestaña banco, confirmada por imagen (ver _ensure_tab)."""
+    _ensure_tab("banco",
+                (BANK_TAB, BANK_TAB_THRESHOLD),
+                (REFINEMENT, REFINEMENT_THRESHOLD),
+                "artificing", schedule.SETUP_AFTER_BANK_TAB)
+
+
+def ensure_artificing_tab():
+    """Pestaña artificing, confirmada por imagen. Mismo problema que al
+    revés: si el paso anterior (ectos/salvage/venta) todavía no soltó el
+    control, el click se pierde y el craft de luck entero falla."""
+    _ensure_tab("artificing_station",
+                (REFINEMENT, REFINEMENT_THRESHOLD),
+                (BANK_TAB, BANK_TAB_THRESHOLD),
+                "banco", schedule.CRAFT_AFTER_OPEN)
 
 
 def restore_bank_filter():
