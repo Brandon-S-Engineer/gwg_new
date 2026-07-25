@@ -279,6 +279,11 @@ def test_deposit_dark_matter():
 def run():
     """Corre todo el flujo (`py -m bot exotics`)."""
     print("[exotics] limpieza de exotics...")
+    # Depositar reclaimed metal plates que hayan quedado de ANTES de este
+    # run (ej. del procesamiento de amarillos, que también las suelta) —
+    # depositar solo DESPUÉS del salvage de acá abajo no alcanzaba.
+    deposit_metal_plates.run(materials=[deposit_metal_plates.RECLAIMED_METAL_PLATES],
+                             pre_right_click=True)
     _reset_tp_view()
     store_luck.compact()
     _sell_top_exotics()
