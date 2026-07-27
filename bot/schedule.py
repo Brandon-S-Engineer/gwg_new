@@ -253,8 +253,17 @@ TASKS_YELLOW = [
     (10, lambda: sell_materials.run(sell_materials.SLOW)),    # el resto, ya de vuelta en banco
     (10, sell_seals.run),                                    # vender sellos en TP (dan poquitos)
     (10, sell_all_clean.run),                                # limpieza: vender todos los mats restantes
+
+    # Dejar el inventario limpio ANTES de exotics, igual que en green (allá
+    # viene dentro de run_after_ectos): guardar la exotic al banco, consumir
+    # la poca luck que resta y compactar. Sin esto, exotics barre slot_1..20
+    # a ciegas con el silver_fed armado y se puede llevar puesta la esencia
+    # exotic que quedó suelta. Acá NO se recraftea: craft_essence.quick ya
+    # corre cada iteración más arriba.
+    (10, craft_essence.store_and_clean),
     (10, deposit_metal_plates.run),
     (10, exotics.run),
+    (10, setup.restore_bank_filter),  # exotics/craft dejan los filtros en otra cosa
 ]
 
 FINAL_TASKS_YELLOW = []

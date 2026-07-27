@@ -369,6 +369,19 @@ def _store_exotic_and_finish():
     store_luck.compact()
 
 
+def store_and_clean():
+    """Solo la limpieza de cierre, sin craftear: guardar la exotic al banco,
+    consumir la poca luck que resta y compactar.
+
+    Va antes de exotics.run: ese barre slot_1..20 a ciegas con el silver_fed
+    armado, así que si queda esencia exotic suelta en el inventario se la
+    puede llevar puesta. En green esto viene gratis dentro de
+    run_after_ectos; en yellow craft_essence.quick ya craftea CADA
+    iteración, así que recraftear ahí sería tiempo tirado — se necesita
+    nada más este cierre."""
+    _store_exotic_and_finish()
+
+
 def run_after_ectos():
     """Iter 30, después de ectos: procesar la luck que soltaron. Sin venta
     en paralelo (ya se vendió antes en la iteración); cada tier espera por
