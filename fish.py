@@ -42,7 +42,7 @@ pyautogui.PAUSE = 0
 BAR_REGION = (642, 733, 171, 28)
 
 # Zona del "!" rojo sobre la cabeza. None = no lanza ni recoge solo.
-ALERT_REGION = None
+ALERT_REGION = (701, 484, 77, 88)
 
 KEY_LEFT = "2"
 KEY_RIGHT = "3"
