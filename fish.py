@@ -197,7 +197,7 @@ class Recorder:
 
 def _failsafe():
     x, y = pyautogui.position()
-    return x <= 2 and y <= 2
+    return 0 <= x <= 2 and 0 <= y <= 2  # hay monitor con coords negativas
 
 
 def run(dry=False):
