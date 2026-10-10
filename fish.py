@@ -3,7 +3,7 @@
 Uso (Mac: python3, Windows: py):
   python3 fish.py calib            marcar esquinas de la barra -> imprime BAR_REGION
   python3 fish.py watch            igual pero sin tocar teclas
-Ambos guardan capturas + frames.csv en captures/fish/
+Capturas + frames.csv (captures/fish/): descomentar rec en run()
   python3 fish.py                  detecta el minijuego solo
 Salir: Ctrl+C en la terminal, o mouse a la esquina arriba-izquierda.
   python3 fish.py debug img.png    prueba la detección sobre una captura
@@ -246,7 +246,7 @@ def run(dry=False):
     keys = Keys()
     chaser = None
     seen = lost = 0
-    rec = Recorder()
+    # rec = Recorder()  # capturas + frames.csv para afinar
     print(f"[fish] region={BAR_REGION} dry={dry}  esperando minijuego...")
     try:
         while not _failsafe():
@@ -271,7 +271,7 @@ def run(dry=False):
                     print("[fish] fin, esperando el siguiente")
                     keys.release()
                     chaser = None
-            rec(img, ys, gs, keys.held, t0)
+            # rec(img, ys, gs, keys.held, t0)
             time.sleep(max(0.0, TICK - (time.perf_counter() - t0)))
     except KeyboardInterrupt:
         pass
