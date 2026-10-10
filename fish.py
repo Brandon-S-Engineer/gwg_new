@@ -12,6 +12,7 @@ Salir: Ctrl+C en la terminal, o mouse a la esquina arriba-izquierda.
 import random
 import sys
 import time
+from collections import deque
 from datetime import datetime
 from pathlib import Path
 
@@ -53,12 +54,17 @@ TICK = 0.012
 CONFIRM_FRAMES = 3      # frames seguidos con ambas barras antes de actuar
 LOST_FRAMES = 8         # frames sin barras -> minijuego terminado
 
+# Medido en el juego vía Parsec (frames.csv)
+LATENCY_S = 0.20        # tecla -> la amarilla se mueve
+BAR_SPEED_YW = 1.08     # velocidad amarilla en anchos-amarillos/s (~40 px/s)
+VEL_WINDOW_S = 0.08     # ventana para la velocidad de la verde
+
 # Humanización
-REACT_MS = (30, 70)
-DZ_ON = (0.05, 0.10)    # fracción del ancho amarillo: empezar a mover
-DZ_OFF = (0.00, 0.03)   # dejar de mover
-LOOKAHEAD_S = (0.06, 0.12)
-MIN_HOLD_MS = (20, 45)
+REACT_MS = (10, 35)
+DZ_ON = (0.03, 0.07)    # fracción del ancho amarillo: empezar a mover
+DZ_OFF = (0.00, 0.02)   # dejar de mover
+LOOKAHEAD_S = (0.04, 0.09)  # extra sobre LATENCY_S para la verde
+MIN_HOLD_MS = (15, 35)
 
 
 def grab(region):
@@ -117,31 +123,48 @@ class Keys:
 
 
 class Chaser:
-    """Un minijuego: hold 2/3 con histéresis, predicción y retardo humano."""
+    """Un minijuego: hold 2/3 compensando la latencia de Parsec."""
+
+    _DIR = {None: 0, KEY_RIGHT: 1, KEY_LEFT: -1}
 
     def __init__(self, keys):
         self.keys = keys
         self.dz_on = random.uniform(*DZ_ON)
         self.dz_off = random.uniform(*DZ_OFF)
-        self.look = random.uniform(*LOOKAHEAD_S)
-        self.prev = None
-        self.vel = 0.0
+        self.look = LATENCY_S + random.uniform(*LOOKAHEAD_S)
+        self.gh = deque()
+        self.cmds = deque([(0.0, 0)], maxlen=50)
         self.pending = None
         self.pending_at = 0.0
         self.changed_at = 0.0
+
+    def _green_vel(self):
+        if len(self.gh) < 3:
+            return 0.0
+        t, g = np.array(self.gh).T
+        return float(np.polyfit(t - t[-1], g, 1)[0])
+
+    def _in_flight(self, now, speed):
+        """Movimiento de teclas ya mandadas que el juego aún no muestra."""
+        total, t_end = 0.0, now
+        for t, u in reversed(self.cmds):
+            t0 = max(t, now - LATENCY_S)
+            if t_end > t0:
+                total += u * speed * (t_end - t0)
+            if t <= now - LATENCY_S:
+                break
+            t_end = t
+        return total
 
     def step(self, ys, gs, now):
         yc = (ys[0] + ys[1]) / 2
         gc = (gs[0] + gs[1]) / 2
         yw = max(ys[1] - ys[0], 1)
-        if self.prev:
-            pc, pt = self.prev
-            dt = now - pt
-            if dt > 0:
-                self.vel = 0.6 * self.vel + 0.4 * (gc - pc) / dt
-        self.prev = (gc, now)
+        self.gh.append((now, gc))
+        while self.gh[0][0] < now - VEL_WINDOW_S:
+            self.gh.popleft()
 
-        err = gc + self.vel * self.look - yc
+        err = (gc + self._green_vel() * self.look) - (yc + self._in_flight(now, yw * BAR_SPEED_YW))
         cur = self.keys.held
         if cur is None:
             want = None if abs(err) < yw * self.dz_on else (KEY_RIGHT if err > 0 else KEY_LEFT)
@@ -159,6 +182,7 @@ class Chaser:
             self.pending_at = now + _ms(REACT_MS)
         if now >= self.pending_at:
             self.keys.set(want)
+            self.cmds.append((now, self._DIR[want]))
             self.changed_at = now
             self.pending = None
 
