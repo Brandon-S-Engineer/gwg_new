@@ -3,6 +3,7 @@
 Uso (Mac: python3, Windows: py):
   python3 fish.py calib            click en esquinas de la barra -> imprime BAR_REGION
   python3 fish.py calib alert      click en esquinas de la zona del "!" -> ALERT_REGION
+  python3 fish.py snap             cada click guarda la zona del "!" en captures/alert/
   python3 fish.py watch            igual pero sin tocar teclas
 Capturas + frames.csv (captures/fish/): descomentar rec en run()
   python3 fish.py                  detecta el minijuego solo
@@ -388,6 +389,25 @@ def calib(what="bar"):
     print(f"{name} = ({min(x0, x1)}, {min(y0, y1)}, {abs(x1 - x0)}, {abs(y1 - y0)})")
 
 
+def snap():
+    out = Path("captures/alert")
+    out.mkdir(parents=True, exist_ok=True)
+    x, y, w, h = ALERT_REGION
+    print("Click cuando salga el '!'. Ctrl+C para salir.")
+    try:
+        while True:
+            _wait_click()
+            img = grab(ALERT_REGION)
+            ctx = grab((x - 60, y - 60, w + 120, h + 120))
+            on, red = alert_on(img)
+            name = datetime.now().strftime("%H%M%S_%f")[:9]
+            cv2.imwrite(str(out / f"snap_{name}.png"), img)
+            cv2.imwrite(str(out / f"snap_{name}_ctx.png"), ctx)
+            print(f"  guardada snap_{name}  rojo={red}px {'-> detecta !' if on else '-> NO detecta'}")
+    except KeyboardInterrupt:
+        pass
+
+
 def debug(path):
     img = cv2.imread(path)
     ys, gs = detect(img)
@@ -404,6 +424,8 @@ if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "run"
     if mode == "calib":
         calib(sys.argv[2] if len(sys.argv) > 2 else "bar")
+    elif mode == "snap":
+        snap()
     elif mode == "watch":
         run(dry=True)
     elif mode == "debug":
