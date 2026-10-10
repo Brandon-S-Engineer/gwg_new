@@ -58,7 +58,7 @@ REACT_ALERT_MS = (220, 420)
 
 # Nodo
 AUTO_CASTS = 3          # relanza solo tras las primeras 3; luego lanzas tú
-RECAST_DELAY_S = (1.7, 2.6)
+RECAST_DELAY_S = (3.0, 3.2)
 SAME_NODE_GAP_S = 20.0  # fin de minijuego -> "!" en menos de esto = mismo nodo
 
 YELLOW_HSV = ((5, 100, 45), (34, 255, 255))
