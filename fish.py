@@ -2,7 +2,7 @@
 
 Uso (Mac: python3, Windows: py):
   python3 fish.py calib            marcar esquinas de la barra -> imprime BAR_REGION
-  python3 fish.py watch            solo detecta e imprime, no toca teclas
+  python3 fish.py watch            no toca teclas; guarda capturas en captures/fish/
   python3 fish.py                  detecta el minijuego solo
 Salir: Ctrl+C en la terminal, o mouse a la esquina arriba-izquierda.
   python3 fish.py debug img.png    prueba la detección sobre una captura
@@ -11,6 +11,8 @@ Salir: Ctrl+C en la terminal, o mouse a la esquina arriba-izquierda.
 import random
 import sys
 import time
+from datetime import datetime
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -34,7 +36,7 @@ pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0
 
 # (x, y, w, h) de la franja de la barra. Sacarlo con `python3 fish.py calib`.
-BAR_REGION = (0, 0, 300, 30)
+BAR_REGION = (642, 733, 171, 28)
 
 KEY_LEFT = "2"
 KEY_RIGHT = "3"
@@ -161,6 +163,38 @@ class Chaser:
             self.pending = None
 
 
+SAVE_EVERY = 0.25       # watch: franja cada 0.25 s
+CTX_EVERY = 2.0         # watch: contexto alrededor cada 2 s
+CTX_PAD = 80
+MAX_SAVES = 600
+
+
+class Recorder:
+    def __init__(self):
+        self.dir = Path("captures/fish") / datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self.n = 0
+        self.last = self.last_ctx = 0.0
+        self.prev_state = None
+        print(f"[fish] guardando en {self.dir}")
+
+    def __call__(self, img, ys, gs, now):
+        state = (ys is not None, gs is not None)
+        changed = state != self.prev_state
+        self.prev_state = state
+        if self.n >= MAX_SAVES or not (changed or now - self.last >= SAVE_EVERY):
+            return
+        self.last = now
+        self.n += 1
+        tag = lambda c, sp: f"{c}{sp[0]}-{sp[1]}" if sp else f"{c}-"
+        cv2.imwrite(str(self.dir / f"{self.n:04d}_{tag('y', ys)}_{tag('g', gs)}.png"), img)
+        if now - self.last_ctx >= CTX_EVERY:
+            self.last_ctx = now
+            x, y, w, h = BAR_REGION
+            ctx = grab((max(0, x - CTX_PAD), max(0, y - CTX_PAD), w + 2 * CTX_PAD, h + 2 * CTX_PAD))
+            cv2.imwrite(str(self.dir / f"{self.n:04d}_ctx.png"), ctx)
+
+
 def _failsafe():
     x, y = pyautogui.position()
     return x <= 2 and y <= 2
@@ -170,11 +204,15 @@ def run(dry=False):
     keys = Keys()
     chaser = None
     seen = lost = 0
+    rec = Recorder() if dry else None
     print(f"[fish] region={BAR_REGION} dry={dry}  esperando minijuego...")
     try:
         while not _failsafe():
             t0 = time.perf_counter()
-            ys, gs = detect(grab(BAR_REGION))
+            img = grab(BAR_REGION)
+            ys, gs = detect(img)
+            if rec:
+                rec(img, ys, gs, t0)
             if ys and gs:
                 seen += 1
                 lost = 0
