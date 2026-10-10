@@ -51,7 +51,7 @@ KEY_CAST = "1"
 
 # "!" rojo
 RED_HSV = (((0, 120, 110), (10, 255, 255)), ((170, 120, 110), (180, 255, 255)))
-ALERT_MIN_FRAC = 0.03   # fracción de la zona en rojo para contar como "!"
+ALERT_MIN_FRAC = 0.006  # "!" llena ~1.5% de la zona; sin "!" da 0
 ALERT_FRAMES = 2
 ALERT_COOLDOWN_S = 4.0  # tras apretar 1, no volver a reaccionar
 REACT_ALERT_MS = (220, 420)
