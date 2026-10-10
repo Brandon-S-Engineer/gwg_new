@@ -2,7 +2,8 @@
 
 Uso (Mac: python3, Windows: py):
   python3 fish.py calib            marcar esquinas de la barra -> imprime BAR_REGION
-  python3 fish.py watch            no toca teclas; guarda capturas en captures/fish/
+  python3 fish.py watch            igual pero sin tocar teclas
+Ambos guardan capturas + frames.csv en captures/fish/
   python3 fish.py                  detecta el minijuego solo
 Salir: Ctrl+C en la terminal, o mouse a la esquina arriba-izquierda.
   python3 fish.py debug img.png    prueba la detección sobre una captura
@@ -53,11 +54,11 @@ CONFIRM_FRAMES = 3      # frames seguidos con ambas barras antes de actuar
 LOST_FRAMES = 8         # frames sin barras -> minijuego terminado
 
 # Humanización
-REACT_MS = (55, 130)
-DZ_ON = (0.10, 0.20)    # fracción del ancho amarillo: empezar a mover
-DZ_OFF = (0.03, 0.08)   # dejar de mover
+REACT_MS = (30, 70)
+DZ_ON = (0.05, 0.10)    # fracción del ancho amarillo: empezar a mover
+DZ_OFF = (0.00, 0.03)   # dejar de mover
 LOOKAHEAD_S = (0.06, 0.12)
-MIN_HOLD_MS = (35, 70)
+MIN_HOLD_MS = (20, 45)
 
 
 def grab(region):
@@ -175,12 +176,20 @@ class Recorder:
         self.n = 0
         self.last = self.last_ctx = 0.0
         self.prev_state = None
+        self.csv = open(self.dir / "frames.csv", "w", buffering=1)
+        self.csv.write("t,y0,y1,g0,g1,key\n")
         print(f"[fish] guardando en {self.dir}")
 
-    def __call__(self, img, ys, gs, now):
+    def __call__(self, img, ys, gs, key, now):
         state = (ys is not None, gs is not None)
         changed = state != self.prev_state
         self.prev_state = state
+        if ys or gs or changed:
+            y0, y1 = ys or ("", "")
+            g0, g1 = gs or ("", "")
+            self.csv.write(f"{now:.4f},{y0},{y1},{g0},{g1},{key or ''}\n")
+        if not (ys or gs or changed):
+            return
         if self.n >= MAX_SAVES or not (changed or now - self.last >= SAVE_EVERY):
             return
         self.last = now
@@ -203,15 +212,13 @@ def run(dry=False):
     keys = Keys()
     chaser = None
     seen = lost = 0
-    rec = Recorder() if dry else None
+    rec = Recorder()
     print(f"[fish] region={BAR_REGION} dry={dry}  esperando minijuego...")
     try:
         while not _failsafe():
             t0 = time.perf_counter()
             img = grab(BAR_REGION)
             ys, gs = detect(img)
-            if rec:
-                rec(img, ys, gs, t0)
             if ys and gs:
                 seen += 1
                 lost = 0
@@ -230,6 +237,7 @@ def run(dry=False):
                     print("[fish] fin, esperando el siguiente")
                     keys.release()
                     chaser = None
+            rec(img, ys, gs, keys.held, t0)
             time.sleep(max(0.0, TICK - (time.perf_counter() - t0)))
     except KeyboardInterrupt:
         pass
