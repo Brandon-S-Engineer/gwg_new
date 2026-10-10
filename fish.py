@@ -1,14 +1,15 @@
 """fish.py — solo el minijuego: mueve la barra amarilla (2/3) para seguir la verde.
 
-Uso:
-  py fish.py calib            marcar esquinas de la barra -> imprime BAR_REGION
-  py fish.py watch            solo detecta e imprime, no toca teclas
-  py fish.py                  corre (Ctrl+C para salir)
-  py fish.py debug img.png    prueba la detección sobre una captura
+Uso (Mac: python3, Windows: py):
+  python3 fish.py calib            marcar esquinas de la barra -> imprime BAR_REGION
+  python3 fish.py watch            solo detecta e imprime, no toca teclas
+  python3 fish.py                  1 = lanzar, 2do 1 = minijuego. Cmd+C para salir
+  python3 fish.py debug img.png    prueba la detección sobre una captura
 """
 
 import random
 import sys
+import threading
 import time
 
 import cv2
@@ -32,12 +33,11 @@ import pyautogui
 pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0
 
-try:
-    import keyboard as _kb
-except ImportError:
-    _kb = None
+from pynput import keyboard as _pk
 
-# (x, y, w, h) de la franja de la barra. Sacarlo con `py fish.py calib`.
+_kb = _pk.Controller()
+
+# (x, y, w, h) de la franja de la barra. Sacarlo con `python3 fish.py calib`.
 BAR_REGION = (0, 0, 300, 30)
 
 KEY_LEFT = "2"
@@ -51,6 +51,7 @@ MIN_WIDTH = 4           # ancho mínimo del blob
 TICK = 0.012
 CONFIRM_FRAMES = 3      # frames seguidos con ambas barras antes de actuar
 LOST_FRAMES = 8         # frames sin barras -> minijuego terminado
+ARM_TIMEOUT = 10.0      # 2do "1" sin barra -> ese "1" era un lanzamiento
 
 # Humanización
 REACT_MS = (55, 130)
@@ -100,10 +101,10 @@ class Keys:
         self.held = None
 
     def _down(self, k):
-        _kb.press(k) if _kb else pyautogui.keyDown(k)
+        _kb.press(k)
 
     def _up(self, k):
-        _kb.release(k) if _kb else pyautogui.keyUp(k)
+        _kb.release(k)
 
     def set(self, k):
         if k == self.held:
@@ -165,14 +166,63 @@ class Chaser:
             self.pending = None
 
 
+class Trigger:
+    """Cuenta los "1": el segundo arma el bot. Cmd+C lo apaga."""
+
+    _CMD = {_pk.Key.cmd, _pk.Key.cmd_l, _pk.Key.cmd_r}
+
+    def __init__(self):
+        self.count = 0
+        self.armed_at = None
+        self.stop = threading.Event()
+        self._cmd = False
+        self._lock = threading.Lock()
+
+    def _char(self, key):
+        return getattr(key, "char", None)
+
+    def on_press(self, key):
+        if key in self._CMD:
+            self._cmd = True
+        elif self._cmd and self._char(key) in ("c", "C"):
+            self.stop.set()
+            return False
+        elif self._char(key) == "1":
+            with self._lock:
+                if self.armed_at is not None:
+                    return
+                self.count += 1
+                if self.count >= 2:
+                    self.count = 0
+                    self.armed_at = time.perf_counter()
+                    print("[fish] 2do 1 -> armado")
+                else:
+                    print("[fish] lanzado")
+
+    def on_release(self, key):
+        if key in self._CMD:
+            self._cmd = False
+
+    def disarm(self, count=0):
+        with self._lock:
+            self.armed_at = None
+            self.count = count
+
+
 def run(dry=False):
     keys = Keys()
+    trig = Trigger()
+    listener = _pk.Listener(on_press=trig.on_press, on_release=trig.on_release)
+    listener.start()
     chaser = None
     seen = lost = 0
-    print(f"[fish] region={BAR_REGION} dry={dry}  Ctrl+C para salir")
+    print(f"[fish] region={BAR_REGION} dry={dry}  Cmd+C para salir")
     try:
-        while True:
+        while not trig.stop.is_set():
             t0 = time.perf_counter()
+            if not dry and trig.armed_at is None:
+                time.sleep(0.03)
+                continue
             ys, gs = detect(grab(BAR_REGION))
             if ys and gs:
                 seen += 1
@@ -192,11 +242,17 @@ def run(dry=False):
                     print("[fish] fin")
                     keys.release()
                     chaser = None
+                    trig.disarm()
+                elif not chaser and not dry and t0 - trig.armed_at > ARM_TIMEOUT:
+                    print("[fish] sin barra, cuento ese 1 como lanzamiento")
+                    trig.disarm(count=1)
             time.sleep(max(0.0, TICK - (time.perf_counter() - t0)))
     except KeyboardInterrupt:
         pass
     finally:
         keys.release()
+        listener.stop()
+        print("[fish] apagado")
 
 
 def calib():
