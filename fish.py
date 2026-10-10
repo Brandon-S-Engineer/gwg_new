@@ -1,7 +1,8 @@
 """fish.py — solo el minijuego: mueve la barra amarilla (2/3) para seguir la verde.
 
 Uso (Mac: python3, Windows: py):
-  python3 fish.py calib            marcar esquinas de la barra -> imprime BAR_REGION
+  python3 fish.py calib            click en esquinas de la barra -> imprime BAR_REGION
+  python3 fish.py calib alert      click en esquinas de la zona del "!" -> ALERT_REGION
   python3 fish.py watch            igual pero sin tocar teclas
 Capturas + frames.csv (captures/fish/): descomentar rec en run()
   python3 fish.py                  detecta el minijuego solo
@@ -40,8 +41,24 @@ pyautogui.PAUSE = 0
 # (x, y, w, h) de la franja de la barra. Sacarlo con `python3 fish.py calib`.
 BAR_REGION = (642, 733, 171, 28)
 
+# Zona del "!" rojo sobre la cabeza. None = no lanza ni recoge solo.
+ALERT_REGION = None
+
 KEY_LEFT = "2"
 KEY_RIGHT = "3"
+KEY_CAST = "1"
+
+# "!" rojo
+RED_HSV = (((0, 120, 110), (10, 255, 255)), ((170, 120, 110), (180, 255, 255)))
+ALERT_MIN_FRAC = 0.03   # fracción de la zona en rojo para contar como "!"
+ALERT_FRAMES = 2
+ALERT_COOLDOWN_S = 4.0  # tras apretar 1, no volver a reaccionar
+REACT_ALERT_MS = (220, 420)
+
+# Nodo
+AUTO_CASTS = 3          # relanza solo tras las primeras 3; luego lanzas tú
+RECAST_DELAY_S = (1.7, 2.6)
+SAME_NODE_GAP_S = 20.0  # fin de minijuego -> "!" en menos de esto = mismo nodo
 
 YELLOW_HSV = ((5, 100, 45), (34, 255, 255))
 GREEN_HSV = ((38, 70, 140), (75, 255, 255))
@@ -122,6 +139,11 @@ class Keys:
 
     def release(self):
         self.set(None)
+
+    def tap(self, k):
+        pyautogui.keyDown(k)
+        time.sleep(_ms((60, 120)))
+        pyautogui.keyUp(k)
 
 
 class Chaser:
@@ -245,22 +267,33 @@ def _failsafe():
     return 0 <= x <= 2 and 0 <= y <= 2  # hay monitor con coords negativas
 
 
-def _region_visible():
+def _region_visible(region):
     if not _sct:
         return True
-    x, y, w, h = BAR_REGION
+    x, y, w, h = region
     return any(m["left"] <= x and m["top"] <= y and x + w <= m["left"] + m["width"]
                and y + h <= m["top"] + m["height"] for m in _sct.monitors[1:])
 
 
+def alert_on(img):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    red = sum(cv2.countNonZero(cv2.inRange(hsv, lo, hi)) for lo, hi in RED_HSV)
+    return red >= ALERT_MIN_FRAC * img.shape[0] * img.shape[1], red
+
+
 def run(dry=False):
-    if not _region_visible():
-        print(f"[fish] OJO: BAR_REGION={BAR_REGION} no cae en ningún monitor. Corre calib.")
+    for name, reg in (("BAR_REGION", BAR_REGION), ("ALERT_REGION", ALERT_REGION)):
+        if reg and not _region_visible(reg):
+            print(f"[fish] OJO: {name}={reg} no cae en ningún monitor. Corre calib.")
     keys = Keys()
     chaser = None
-    seen = lost = 0
+    seen = lost = alert_seen = 0
+    node_n = 0              # peces en el nodo actual
+    last_end = None
+    recast_at = None
+    alert_block = 0.0
     # rec = Recorder()  # capturas + frames.csv para afinar
-    print(f"[fish] region={BAR_REGION} dry={dry}  esperando minijuego...")
+    print(f"[fish] bar={BAR_REGION} alert={ALERT_REGION} dry={dry}  esperando...")
     try:
         while not _failsafe():
             t0 = time.perf_counter()
@@ -273,6 +306,7 @@ def run(dry=False):
                     if chaser is None:
                         print("[fish] minijuego")
                         chaser = Chaser(keys)
+                        recast_at = None
                     if dry:
                         print(f"amarillo={ys} verde={gs}")
                     else:
@@ -281,9 +315,39 @@ def run(dry=False):
                 seen = 0
                 lost += 1
                 if chaser and lost >= LOST_FRAMES:
-                    print("[fish] fin, esperando el siguiente")
                     keys.release()
                     chaser = None
+                    node_n += 1
+                    last_end = t0
+                    alert_block = t0 + 1.0
+                    if ALERT_REGION and node_n < AUTO_CASTS:
+                        recast_at = t0 + random.uniform(*RECAST_DELAY_S)
+                        print(f"[fish] pez #{node_n}, relanzo en {recast_at - t0:.1f}s")
+                    else:
+                        print(f"[fish] pez #{node_n}, lanza tú")
+
+            if ALERT_REGION and chaser is None:
+                on, red = alert_on(grab(ALERT_REGION))
+                alert_seen = alert_seen + 1 if on else 0
+                if dry and red:
+                    print(f"rojo={red}px {'-> !' if on else ''}")
+                if alert_seen >= ALERT_FRAMES and t0 >= alert_block:
+                    if last_end is None or t0 - last_end > SAME_NODE_GAP_S:
+                        if node_n:
+                            print("[fish] nodo nuevo")
+                        node_n = 0
+                    print(f"[fish] ! -> {KEY_CAST} (pez #{node_n + 1})")
+                    alert_block = t0 + ALERT_COOLDOWN_S
+                    recast_at = None
+                    if not dry:
+                        time.sleep(_ms(REACT_ALERT_MS))
+                        keys.tap(KEY_CAST)
+                if recast_at and t0 >= recast_at:
+                    recast_at = None
+                    alert_block = t0 + 1.0
+                    print(f"[fish] relanzo ({KEY_CAST})")
+                    if not dry:
+                        keys.tap(KEY_CAST)
             # rec(img, ys, gs, keys.held, t0)
             time.sleep(max(0.0, TICK - (time.perf_counter() - t0)))
     except KeyboardInterrupt:
@@ -293,13 +357,35 @@ def run(dry=False):
         print("[fish] apagado")
 
 
-def calib():
+def _mouse_down():
+    if sys.platform == "win32":
+        return bool(ctypes.windll.user32.GetAsyncKeyState(0x01) & 0x8000)
+    from Quartz import (CGEventSourceButtonState, kCGEventSourceStateCombinedSessionState,
+                        kCGMouseButtonLeft)
+    return CGEventSourceButtonState(kCGEventSourceStateCombinedSessionState, kCGMouseButtonLeft)
+
+
+def _wait_click():
+    while _mouse_down():
+        time.sleep(0.01)
+    while not _mouse_down():
+        time.sleep(0.01)
+    pos = pyautogui.position()
+    while _mouse_down():
+        time.sleep(0.01)
+    return pos
+
+
+def calib(what="bar"):
+    name, label = {"bar": ("BAR_REGION", "la barra"),
+                   "alert": ("ALERT_REGION", 'la zona del "!" (arriba de la cabeza)')}[what]
     pts = []
-    for name in ("arriba-izquierda", "abajo-derecha"):
-        input(f"Mouse en la esquina {name} de la barra y Enter...")
-        pts.append(pyautogui.position())
+    for corner in ("arriba-izquierda", "abajo-derecha"):
+        print(f"Click en la esquina {corner} de {label}...")
+        pts.append(_wait_click())
+        print(f"  {pts[-1]}")
     (x0, y0), (x1, y1) = pts
-    print(f"BAR_REGION = ({x0}, {y0}, {x1 - x0}, {y1 - y0})")
+    print(f"{name} = ({min(x0, x1)}, {min(y0, y1)}, {abs(x1 - x0)}, {abs(y1 - y0)})")
 
 
 def debug(path):
@@ -317,7 +403,7 @@ def debug(path):
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "run"
     if mode == "calib":
-        calib()
+        calib(sys.argv[2] if len(sys.argv) > 2 else "bar")
     elif mode == "watch":
         run(dry=True)
     elif mode == "debug":
