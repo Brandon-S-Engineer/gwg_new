@@ -43,7 +43,9 @@ KEY_RIGHT = "3"
 
 YELLOW_HSV = ((5, 100, 45), (34, 255, 255))
 GREEN_HSV = ((38, 70, 140), (75, 255, 255))
-MIN_COL_PX = 6          # px por columna para contarla
+BAND = (0.3, 0.8)       # filas de la barra (fracción del alto); fuera quedan íconos
+YELLOW_COL_PX = 2       # con la verde adentro solo quedan los 2 bordes amarillos
+GREEN_COL_PX = 5
 MIN_WIDTH = 4           # ancho mínimo del blob
 
 TICK = 0.012
@@ -66,8 +68,8 @@ def grab(region):
     return cv2.cvtColor(np.array(pyautogui.screenshot(region=region)), cv2.COLOR_RGB2BGR)
 
 
-def _span(mask):
-    cols = np.flatnonzero((mask > 0).sum(0) >= MIN_COL_PX)
+def _span(mask, min_px):
+    cols = np.flatnonzero((mask > 0).sum(0) >= min_px)
     if cols.size == 0:
         return None
     # run más largo de columnas contiguas
@@ -80,13 +82,10 @@ def _span(mask):
 
 def detect(img):
     """-> (yellow_span, green_span); cada uno (x0, x1) o None."""
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    y = cv2.inRange(hsv, *YELLOW_HSV)
-    g = cv2.inRange(hsv, *GREEN_HSV)
-    g_span = _span(g)
-    if g_span:
-        y[:, g_span[0]:g_span[1] + 1] = 0  # el verde dentro del amarillo no lo ensucia
-    return _span(y), g_span
+    h = img.shape[0]
+    hsv = cv2.cvtColor(img[int(h * BAND[0]):int(h * BAND[1])], cv2.COLOR_BGR2HSV)
+    return (_span(cv2.inRange(hsv, *YELLOW_HSV), YELLOW_COL_PX),
+            _span(cv2.inRange(hsv, *GREEN_HSV), GREEN_COL_PX))
 
 
 def _ms(r):
