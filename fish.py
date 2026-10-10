@@ -232,7 +232,17 @@ def _failsafe():
     return 0 <= x <= 2 and 0 <= y <= 2  # hay monitor con coords negativas
 
 
+def _region_visible():
+    if not _sct:
+        return True
+    x, y, w, h = BAR_REGION
+    return any(m["left"] <= x and m["top"] <= y and x + w <= m["left"] + m["width"]
+               and y + h <= m["top"] + m["height"] for m in _sct.monitors[1:])
+
+
 def run(dry=False):
+    if not _region_visible():
+        print(f"[fish] OJO: BAR_REGION={BAR_REGION} no cae en ningún monitor. Corre calib.")
     keys = Keys()
     chaser = None
     seen = lost = 0
