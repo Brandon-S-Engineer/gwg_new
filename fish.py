@@ -53,7 +53,7 @@ MIN_WIDTH = 4           # ancho mínimo del blob
 TICK = 0.012
 CONFIRM_FRAMES = 3      # frames seguidos con ambas barras antes de actuar
 LOST_FRAMES = 8         # frames sin barras -> minijuego terminado
-FROZEN_FRAMES = 3       # barras quietas -> pez atrapado, soltar
+FROZEN_FRAMES = 6       # barras quietas -> pez atrapado, soltar (3 daba falsos en juego)
 FROZEN_TOL = 1          # px; atrapado tiembla ±1, moviendo avanza ~1/frame
 
 # Medido en el juego vía Parsec (frames.csv)
@@ -140,6 +140,7 @@ class Chaser:
         self.pending_at = 0.0
         self.changed_at = 0.0
         self.recent = deque(maxlen=FROZEN_FRAMES + 1)
+        self.caught = False
 
     def _green_vel(self):
         if len(self.gh) < 3:
@@ -160,12 +161,14 @@ class Chaser:
         return total
 
     def step(self, ys, gs, now):
+        if self.caught:
+            return
         self.recent.append((*ys, *gs))
         if len(self.recent) == self.recent.maxlen and all(
                 abs(a - b) <= FROZEN_TOL for f in self.recent for a, b in zip(f, self.recent[0])):
-            if self.keys.held:
-                print("[fish] barras quietas, suelto")
-                self.keys.release()
+            print("[fish] barras quietas, suelto")
+            self.keys.release()
+            self.caught = True
             return
         yc = (ys[0] + ys[1]) / 2
         gc = (gs[0] + gs[1]) / 2
