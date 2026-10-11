@@ -78,6 +78,9 @@ FROZEN_TOL = 1          # px; atrapado tiembla ±1, moviendo avanza ~1/frame
 LATENCY_S = 0.20        # tecla -> la amarilla se mueve
 BAR_SPEED_YW = 1.08     # velocidad amarilla en anchos-amarillos/s (~40 px/s)
 VEL_WINDOW_S = 0.08     # ventana para la velocidad de la verde
+TRACK = (0.15, 0.94)    # pista en fracción del ancho de BAR_REGION (recalibrar si cambia)
+EDGE_MARGIN_YW = 0.4    # la amarilla no se acerca a la orilla más que esto (en anchos amarillos)
+PARK_DZ = 0.25          # en el límite, zona muerta más ancha: espera quieta
 
 # Humanización
 REACT_MS = (10, 35)
@@ -152,8 +155,9 @@ class Chaser:
 
     _DIR = {None: 0, KEY_RIGHT: 1, KEY_LEFT: -1}
 
-    def __init__(self, keys):
+    def __init__(self, keys, width=None):
         self.keys = keys
+        self.width = width
         self.dz_on = random.uniform(*DZ_ON)
         self.dz_off = random.uniform(*DZ_OFF)
         self.look = LATENCY_S + random.uniform(*LOOKAHEAD_S)
@@ -200,10 +204,18 @@ class Chaser:
         while self.gh[0][0] < now - VEL_WINDOW_S:
             self.gh.popleft()
 
-        err = (gc + self._green_vel() * self.look) - (yc + self._in_flight(now, yw * BAR_SPEED_YW))
+        target = gc + self._green_vel() * self.look
+        dz_on = self.dz_on
+        if self.width:
+            pad = yw / 2 + yw * EDGE_MARGIN_YW
+            lo, hi = self.width * TRACK[0] + pad, self.width * TRACK[1] - pad
+            if not lo <= target <= hi:
+                target = min(max(target, lo), hi)
+                dz_on = PARK_DZ
+        err = target - (yc + self._in_flight(now, yw * BAR_SPEED_YW))
         cur = self.keys.held
         if cur is None:
-            want = None if abs(err) < yw * self.dz_on else (KEY_RIGHT if err > 0 else KEY_LEFT)
+            want = None if abs(err) < yw * dz_on else (KEY_RIGHT if err > 0 else KEY_LEFT)
         else:
             dir_ok = (err > 0) == (cur == KEY_RIGHT)
             want = cur if dir_ok and abs(err) > yw * self.dz_off else None
@@ -306,7 +318,7 @@ def run(dry=False):
                 if seen >= CONFIRM_FRAMES:
                     if chaser is None:
                         print("[fish] minijuego")
-                        chaser = Chaser(keys)
+                        chaser = Chaser(keys, img.shape[1])
                         recast_at = None
                     if dry:
                         print(f"amarillo={ys} verde={gs}")
