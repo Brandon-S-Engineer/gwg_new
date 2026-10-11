@@ -86,7 +86,9 @@ PARK_DZ = 0.25          # en el límite, zona muerta más ancha: espera quieta
 REACT_MS = (10, 35)
 DZ_ON = (0.03, 0.07)    # fracción del ancho amarillo: empezar a mover
 DZ_OFF = (0.00, 0.02)   # dejar de mover
-LOOKAHEAD_S = (0.04, 0.09)  # extra sobre LATENCY_S para la verde
+LOOKAHEAD_S = (0.06, 0.12)  # cuánto adelanta a la verde al perseguir
+HOLD_EDGE_YW = 0.08     # verde adentro y a más de esto del borde -> no moverse
+HOLD_LEAD = 1.5         # arranca antes si la verde llega al borde en < latencia
 MIN_HOLD_MS = (15, 35)
 
 
@@ -160,7 +162,7 @@ class Chaser:
         self.width = width
         self.dz_on = random.uniform(*DZ_ON)
         self.dz_off = random.uniform(*DZ_OFF)
-        self.look = LATENCY_S + random.uniform(*LOOKAHEAD_S)
+        self.look = random.uniform(*LOOKAHEAD_S)
         self.gh = deque()
         self.cmds = deque([(0.0, 0)], maxlen=50)
         self.pending = None
@@ -214,8 +216,11 @@ class Chaser:
                 dz_on = PARK_DZ
         err = target - (yc + self._in_flight(now, yw * BAR_SPEED_YW))
         cur = self.keys.held
+        edge = yw * HOLD_EDGE_YW
+        drift = self._green_vel() * LATENCY_S * HOLD_LEAD
+        holding = gs[0] + min(drift, 0) >= ys[0] + edge and gs[1] + max(drift, 0) <= ys[1] - edge
         if cur is None:
-            want = None if abs(err) < yw * dz_on else (KEY_RIGHT if err > 0 else KEY_LEFT)
+            want = None if holding or abs(err) < yw * dz_on else (KEY_RIGHT if err > 0 else KEY_LEFT)
         else:
             dir_ok = (err > 0) == (cur == KEY_RIGHT)
             want = cur if dir_ok and abs(err) > yw * self.dz_off else None
